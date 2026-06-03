@@ -9,6 +9,7 @@ import errorHandler from './middlewares/error.middleware.js';
 import router from './routes/index.js';
 import logger from './config/logger.js';
 import ApiError from './utils/ApiError.js';
+import connectDB from './config/db.js';
 
 const app = express();
 
@@ -70,6 +71,16 @@ app.get(['/', '/api/v1'], (req, res) => {
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'OK', timestamp: new Date() });
+});
+
+// Database connection middleware (critical for serverless / Vercel execution)
+app.use('/api/v1', async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    next(error);
+  }
 });
 
 // API Routes
