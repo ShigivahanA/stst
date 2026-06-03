@@ -63,7 +63,7 @@ app.use(
 );
 
 // Root endpoint
-app.get('/', (req, res) => {
+app.get(['/', '/api/v1'], (req, res) => {
   res.status(200).json({ status: 'success', message: 'API is working' });
 });
 
