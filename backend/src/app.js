@@ -62,6 +62,11 @@ app.use(
   })
 );
 
+// Root endpoint
+app.get('/', (req, res) => {
+  res.status(200).json({ status: 'success', message: 'API is working' });
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'OK', timestamp: new Date() });
