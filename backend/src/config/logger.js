@@ -34,16 +34,23 @@ const format = winston.format.combine(
 
 const transports = [
   new winston.transports.Console({ format }),
-  new winston.transports.File({
-    filename: 'logs/error.log',
-    level: 'error',
-    format: winston.format.combine(winston.format.uncolorize(), winston.format.json()),
-  }),
-  new winston.transports.File({
-    filename: 'logs/combined.log',
-    format: winston.format.combine(winston.format.uncolorize(), winston.format.json()),
-  }),
 ];
+
+// Add file transports only in local development (avoiding Vercel read-only filesystem crash)
+const env = process.env.NODE_ENV || 'development';
+if (env === 'development' && !process.env.VERCEL) {
+  transports.push(
+    new winston.transports.File({
+      filename: 'logs/error.log',
+      level: 'error',
+      format: winston.format.combine(winston.format.uncolorize(), winston.format.json()),
+    }),
+    new winston.transports.File({
+      filename: 'logs/combined.log',
+      format: winston.format.combine(winston.format.uncolorize(), winston.format.json()),
+    })
+  );
+}
 
 const logger = winston.createLogger({
   level: level(),
