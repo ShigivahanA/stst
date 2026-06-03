@@ -13,6 +13,9 @@ import connectDB from './config/db.js';
 
 const app = express();
 
+// Trust proxy (required for secure cookies behind reverse proxies like Vercel)
+app.set('trust proxy', 1);
+
 // Set security HTTP headers
 app.use(helmet());
 
