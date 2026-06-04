@@ -3,9 +3,9 @@ import logger from '../config/logger.js';
 import * as templates from '../utils/emailTemplates.js';
 
 const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 465,
-  secure: true,
+  host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+  port: parseInt(process.env.EMAIL_PORT || '465'),
+  secure: process.env.EMAIL_SECURE !== 'false', // Default to true unless explicitly 'false'
   auth: {
     user: process.env.EMAIL_USER || 'shigivahan@gmail.com',
     pass: process.env.EMAIL_PASS || 'ttrw ypgy jvuy ztjf',
