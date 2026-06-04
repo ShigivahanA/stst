@@ -1,55 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { RotateCcw, Clock, CreditCard, ShieldCheck } from 'lucide-react'
-
-const returnSteps = [
-  { name: 'Step 1: Initiate', time: 'Online Request', desc: 'Log in to your account, go to "Order History", select the order and click "Return Items" to start.' },
-  { name: 'Step 2: Label & Pack', time: 'Prepaid Label', desc: 'Print the prepaid return shipping label. Package the item(s) securely and attach the label.' },
-  { name: 'Step 3: Drop Off', time: 'Authorized Hub', desc: 'Drop off the package at any authorized shipping location.' }
-]
-
-const refundInfo = [
-  {
-    title: 'Return Policy',
-    icon: ShieldCheck,
-    desc: 'We accept returns within 30 days of purchase for most items. Products must be in original condition with all packaging and tags intact.',
-    extra: [
-      'Personalized or custom-made products',
-      'Digital downloads',
-      'Gift cards',
-      'Personal care items that have been opened'
-    ]
-  },
-  {
-    title: 'Processing Time',
-    icon: Clock,
-    desc: 'Return processing typically takes 3-5 business days from the time we receive your item. Refunds are usually processed within 7-10 business days, depending on your payment method.'
-  },
-  {
-    title: 'Refund Methods',
-    icon: CreditCard,
-    desc: 'Refunds will be issued to the original payment method used for the purchase. For credit card payments, it may take an additional 3-5 business days for the refund to appear on your statement. You may also choose to receive store credit, which will be issued immediately upon approval of your return.'
-  }
-]
-
-const returnsFaqs = [
-  {
-    q: 'What if I received a defective item?',
-    a: 'If you receive a defective item, please contact our customer service team within 48 hours of delivery. We\'ll arrange for a replacement or refund at no additional cost to you.'
-  },
-  {
-    q: 'Do I have to pay for return shipping?',
-    a: 'Return shipping is free for defective items or if we sent the wrong product. For other returns, a flat fee of $5.99 will be deducted from your refund to cover return shipping costs.'
-  },
-  {
-    q: 'Can I exchange an item instead of returning it?',
-    a: 'Yes, you can request an exchange for a different size, color, or similar item of equal value. Simply select "Exchange" instead of "Return" when initiating the process in your account.'
-  },
-  {
-    q: 'What if my return is outside the 30-day window?',
-    a: 'Returns after 30 days are evaluated on a case-by-case basis. Please contact our customer service team to discuss your situation.'
-  }
-]
+import { RotateCcw, Clock, CreditCard, ShieldCheck, Loader2 } from 'lucide-react'
+import api from '../services/api'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -116,6 +68,76 @@ function AccordionItem({ question, answer, isOpen, onToggle }) {
 
 export default function ReturnsAndRefunds() {
   const [openIndex, setOpenIndex] = useState(null)
+  const [returnSteps, setReturnSteps] = useState([])
+  const [refundInfo, setRefundInfo] = useState([])
+  const [returnsFaqs, setReturnsFaqs] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    api.get('/content/page/returns')
+      .then(res => {
+        const sections = res.data.data?.sections || []
+        const steps = []
+        const infoList = []
+        const faqs = []
+
+        sections.forEach(sec => {
+          if (sec.heading.startsWith('[Step]')) {
+            const name = sec.heading.replace('[Step]', '').trim()
+            const parts = sec.body.split('|')
+            const time = parts[0]?.trim() || ''
+            const desc = parts[1]?.trim() || ''
+            steps.push({ name, time, desc })
+          } else if (sec.heading.startsWith('[Info]')) {
+            const title = sec.heading.replace('[Info]', '').trim()
+            let icon = ShieldCheck
+            const tLower = title.toLowerCase()
+            if (tLower.includes('time') || tLower.includes('process') || tLower.includes('schedule')) {
+              icon = Clock
+            } else if (tLower.includes('method') || tLower.includes('card') || tLower.includes('payment')) {
+              icon = CreditCard
+            }
+
+            const lines = sec.body.split('\n')
+            const descLines = []
+            const extra = []
+            lines.forEach(line => {
+              if (line.trim().startsWith('- ')) {
+                extra.push(line.trim().replace(/^- /, ''))
+              } else {
+                descLines.push(line)
+              }
+            })
+
+            infoList.push({
+              title,
+              icon,
+              desc: descLines.join('\n').trim(),
+              extra: extra.length > 0 ? extra : null
+            })
+          } else if (sec.heading.startsWith('[FAQ]')) {
+            const q = sec.heading.replace('[FAQ]', '').trim()
+            faqs.push({ q, a: sec.body })
+          } else {
+            faqs.push({ q: sec.heading, a: sec.body })
+          }
+        })
+
+        setReturnSteps(steps)
+        setRefundInfo(infoList)
+        setReturnsFaqs(faqs)
+      })
+      .catch(err => console.error('Error loading returns data:', err))
+      .finally(() => setLoading(false))
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-artisan-dark flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-artisan-grey" />
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-artisan-dark bg-noise pt-24 md:pt-32 pb-24 relative overflow-hidden">
@@ -166,7 +188,7 @@ export default function ReturnsAndRefunds() {
                   initial={{ y: "100%" }}
                   animate={{ y: 0 }}
                   transition={{ duration: 0.8, delay: 0.15, ease: [0.33, 1, 0.68, 1] }}
-                  className="block text-outline"
+                  className="block text-outline animate-pulse"
                 >
                   REFUNDS.
                 </motion.span>
@@ -179,99 +201,105 @@ export default function ReturnsAndRefunds() {
         </header>
 
         {/* SECTION 1: RETURN INSTRUCTIONS */}
-        <div className="mb-20 space-y-6">
-          <div className="space-y-2">
-            <span className="text-[9px] font-mono font-bold text-artisan-light/30 uppercase tracking-widest block">Return Instructions</span>
-            <p className="text-xs font-mono text-artisan-light/50 uppercase tracking-widest leading-relaxed max-w-2xl">
-              To initiate a return, follow these simple steps:
-            </p>
-          </div>
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-6"
-          >
-            {returnSteps.map((step, idx) => (
-              <motion.div
-                key={idx}
-                variants={itemVariants}
-                className="border border-artisan-light/10 p-6 relative overflow-hidden bg-artisan-light/[0.01] hover:border-artisan-grey/40 hover:bg-artisan-light/[0.02] transition-colors duration-300 flex flex-col justify-between group cursor-default"
-              >
-                <div className="flex justify-between items-center mb-6">
-                  <span className="w-8 h-8 border border-artisan-light/15 flex items-center justify-center text-artisan-grey group-hover:bg-artisan-grey group-hover:text-artisan-dark transition-colors duration-300 shrink-0">
-                    <RotateCcw className="w-4 h-4" />
-                  </span>
-                  <span className="text-[8px] font-mono text-artisan-light/30 uppercase tracking-widest block font-bold">
-                    [ ACTION // 0{idx + 1} ]
-                  </span>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-baseline gap-2">
-                    <h3 className="text-base font-display font-extrabold uppercase text-artisan-light group-hover:text-artisan-grey transition-colors duration-300">{step.name}</h3>
-                    <span className="text-[9px] font-mono text-artisan-grey font-bold uppercase tracking-widest">{step.time}</span>
+        {returnSteps.length > 0 && (
+          <div className="mb-20 space-y-6">
+            <div className="space-y-2">
+              <span className="text-[9px] font-mono font-bold text-artisan-light/30 uppercase tracking-widest block">Return Instructions</span>
+              <p className="text-xs font-mono text-artisan-light/50 uppercase tracking-widest leading-relaxed max-w-2xl">
+                To initiate a return, follow these simple steps:
+              </p>
+            </div>
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              className="grid grid-cols-1 md:grid-cols-3 gap-6"
+            >
+              {returnSteps.map((step, idx) => (
+                <motion.div
+                  key={idx}
+                  variants={itemVariants}
+                  className="border border-artisan-light/10 p-6 relative overflow-hidden bg-artisan-light/[0.01] hover:border-artisan-grey/40 hover:bg-artisan-light/[0.02] transition-colors duration-300 flex flex-col justify-between group cursor-default"
+                >
+                  <div className="flex justify-between items-center mb-6">
+                    <span className="w-8 h-8 border border-artisan-light/15 flex items-center justify-center text-artisan-grey group-hover:bg-artisan-grey group-hover:text-artisan-dark transition-colors duration-300 shrink-0">
+                      <RotateCcw className="w-4 h-4" />
+                    </span>
+                    <span className="text-[8px] font-mono text-artisan-light/30 uppercase tracking-widest block font-bold">
+                      [ ACTION // 0{idx + 1} ]
+                    </span>
                   </div>
-                  <p className="text-xs sm:text-sm font-body text-artisan-light/60 normal-case leading-relaxed">{step.desc}</p>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-baseline gap-2">
+                      <h3 className="text-base font-display font-extrabold uppercase text-artisan-light group-hover:text-artisan-grey transition-colors duration-300">{step.name}</h3>
+                      <span className="text-[9px] font-mono text-artisan-grey font-bold uppercase tracking-widest">{step.time}</span>
+                    </div>
+                    <p className="text-xs sm:text-sm font-body text-artisan-light/60 normal-case leading-relaxed">{step.desc}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
+        )}
 
         {/* SECTION 2: REFUND INFO */}
-        <div className="mb-24 space-y-16 max-w-3xl">
-          {refundInfo.map((info, idx) => {
-            const Icon = info.icon
-            return (
-              <motion.div
-                key={idx}
-                variants={itemVariants}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, margin: "-100px" }}
-                className="space-y-4 border-l-2 border-artisan-grey pl-6 py-2 relative"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="w-8 h-8 border border-artisan-light/15 flex items-center justify-center text-artisan-grey shrink-0">
-                    <Icon className="w-4 h-4" />
-                  </span>
-                  <h3 className="text-xl sm:text-2xl font-display font-extrabold uppercase text-artisan-light tracking-tight">{info.title}</h3>
-                </div>
-                <p className="text-sm sm:text-base font-body text-artisan-light/70 normal-case leading-relaxed max-w-2xl">{info.desc}</p>
-                {info.extra && (
-                  <ul className="mt-4 space-y-2 list-disc list-inside text-xs sm:text-sm text-artisan-light/60 font-body pl-2">
-                    {info.extra.map((item, extraIdx) => (
-                      <li key={extraIdx} className="normal-case">{item}</li>
-                    ))}
-                  </ul>
-                )}
-              </motion.div>
-            )
-          })}
-        </div>
+        {refundInfo.length > 0 && (
+          <div className="mb-24 space-y-16 max-w-3xl">
+            {refundInfo.map((info, idx) => {
+              const Icon = info.icon
+              return (
+                <motion.div
+                  key={idx}
+                  variants={itemVariants}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true, margin: "-100px" }}
+                  className="space-y-4 border-l-2 border-artisan-grey pl-6 py-2 relative"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="w-8 h-8 border border-artisan-light/15 flex items-center justify-center text-artisan-grey shrink-0">
+                      <Icon className="w-4 h-4" />
+                    </span>
+                    <h3 className="text-xl sm:text-2xl font-display font-extrabold uppercase text-artisan-light tracking-tight">{info.title}</h3>
+                  </div>
+                  <p className="text-sm sm:text-base font-body text-artisan-light/70 normal-case leading-relaxed max-w-2xl">{info.desc}</p>
+                  {info.extra && (
+                    <ul className="mt-4 space-y-2 list-disc list-inside text-xs sm:text-sm text-artisan-light/60 font-body pl-2">
+                      {info.extra.map((item, extraIdx) => (
+                        <li key={extraIdx} className="normal-case">{item}</li>
+                      ))}
+                    </ul>
+                  )}
+                </motion.div>
+              )
+            })}
+          </div>
+        )}
 
         {/* SECTION 3: FAQ ACCORDIONS */}
-        <div className="max-w-3xl mx-auto space-y-6 pt-8 border-t border-artisan-light/5">
-          <span className="text-[9px] font-mono font-bold text-artisan-light/30 uppercase tracking-widest block">Returns FAQ</span>
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            className="space-y-4"
-          >
-            {returnsFaqs.map((faq, idx) => (
-              <AccordionItem
-                key={idx}
-                question={faq.q}
-                answer={faq.a}
-                isOpen={openIndex === idx}
-                onToggle={() => setOpenIndex(openIndex === idx ? null : idx)}
-              />
-            ))}
-          </motion.div>
-        </div>
+        {returnsFaqs.length > 0 && (
+          <div className="max-w-3xl mx-auto space-y-6 pt-8 border-t border-artisan-light/5">
+            <span className="text-[9px] font-mono font-bold text-artisan-light/30 uppercase tracking-widest block">Returns FAQ</span>
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              className="space-y-4"
+            >
+              {returnsFaqs.map((faq, idx) => (
+                <AccordionItem
+                  key={idx}
+                  question={faq.q}
+                  answer={faq.a}
+                  isOpen={openIndex === idx}
+                  onToggle={() => setOpenIndex(openIndex === idx ? null : idx)}
+                />
+              ))}
+            </motion.div>
+          </div>
+        )}
 
       </div>
     </div>

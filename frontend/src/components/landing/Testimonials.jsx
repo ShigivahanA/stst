@@ -3,48 +3,50 @@ import { motion, useInView, AnimatePresence } from 'framer-motion'
 import { Quote, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
 import api from '../../services/api'
 
+// Normalise both the new flat model (userName, userRole, userLocation)
+// and the old legacy nested-user shape so either works seamlessly
+function normaliseReview(r) {
+  return {
+    _id: r._id,
+    text: r.text || r.comment || '',
+    name: r.userName || r.user?.name || 'Anonymous',
+    role: r.userRole || r.user?.role || 'Verified Customer',
+    location: r.userLocation || r.user?.onboardingData?.location || 'Tamil Nadu',
+  }
+}
+
+const FALLBACK_REVIEWS = [
+  {
+    _id: '1',
+    text: "STAT Surgical Supplies has been our trusted partner for rehabilitation equipment. Their wholesale pricing and product quality are unmatched. Highly recommended for any medical professional!",
+    user: { name: 'Dr. Priya Sharma', role: 'Orthopedic Surgeon', onboardingData: { location: 'Chennai' } }
+  },
+  {
+    _id: '2',
+    text: "We have been sourcing respiratory care products from STAT for over 2 years. Their delivery is always on time, and the customer service team is extremely responsive and helpful.",
+    user: { name: 'Rajesh Kumar', role: 'Hospital Procurement Manager', onboardingData: { location: 'Chennai' } }
+  },
+  {
+    _id: '3',
+    text: "Excellent range of diagnostic tools at competitive prices. STAT Surgical Supplies has everything a modern clinic needs. The team goes above and beyond to fulfill our requirements.",
+    user: { name: 'Dr. Anitha Balan', role: 'Clinic Director', onboardingData: { location: 'Pammal' } }
+  }
+]
+
 export default function Testimonials() {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: '-100px' })
   const [current, setCurrent] = useState(0)
-  const [reviews, setReviews] = useState([
-    {
-      _id: '1',
-      text: "STAT Surgical Supplies has been our trusted partner for rehabilitation equipment. Their wholesale pricing and product quality are unmatched. Highly recommended for any medical professional!",
-      user: {
-        name: 'Dr. Priya Sharma',
-        role: 'Orthopedic Surgeon',
-        onboardingData: { location: 'Chennai' }
-      }
-    },
-    {
-      _id: '2',
-      text: "We have been sourcing respiratory care products from STAT for over 2 years. Their delivery is always on time, and the customer service team is extremely responsive and helpful.",
-      user: {
-        name: 'Rajesh Kumar',
-        role: 'Hospital Procurement Manager',
-        onboardingData: { location: 'Chennai' }
-      }
-    },
-    {
-      _id: '3',
-      text: "Excellent range of diagnostic tools at competitive prices. STAT Surgical Supplies has everything a modern clinic needs. The team goes above and beyond to fulfill our requirements.",
-      user: {
-        name: 'Dr. Anitha Balan',
-        role: 'Clinic Director',
-        onboardingData: { location: 'Pammal' }
-      }
-    }
-  ])
+  const [reviews, setReviews] = useState(FALLBACK_REVIEWS.map(normaliseReview))
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchReviews = async () => {
       try {
         setLoading(true)
-        const res = await api.get('/listings/reviews/landing')
+        const res = await api.get('/content/reviews')
         if (res.data.data?.length > 0) {
-          setReviews(res.data.data)
+          setReviews(res.data.data.map(normaliseReview))
         }
       } catch (err) {
         console.error('Failed to fetch landing reviews', err)
@@ -57,6 +59,7 @@ export default function Testimonials() {
 
   const next = () => setCurrent((prev) => (prev + 1) % reviews.length)
   const prev = () => setCurrent((prev) => (prev - 1 + reviews.length) % reviews.length)
+
 
   if (loading) {
     return (
@@ -131,18 +134,18 @@ export default function Testimonials() {
                 {/* Quote Text */}
                 <div className="lg:col-span-9">
                   <p className="text-xl md:text-2xl lg:text-4xl font-display font-extrabold uppercase text-artisan-light leading-tight">
-                    "{reviews[current].text || reviews[current].comment}"
+                    "{reviews[current].text}"
                   </p>
                 </div>
 
                 {/* Author Info */}
                 <div className="lg:col-span-3 lg:border-l-2 border-artisan-light/10 lg:pl-8 pt-4 lg:pt-0">
                   <div className="text-lg md:text-xl font-display font-extrabold text-artisan-grey uppercase mb-1">
-                    {reviews[current].user?.name}
+                    {reviews[current].name}
                   </div>
                   <div className="text-[10px] font-mono font-bold text-artisan-light/40 uppercase tracking-[0.3em] leading-relaxed">
-                    {reviews[current].user?.role || 'Verified Customer'} <br /> 
-                    {reviews[current].user?.onboardingData?.location || 'Tamil Nadu'}
+                    {reviews[current].role} <br />
+                    {reviews[current].location}
                   </div>
                   
                   {/* Small Inverted Quote Icon */}

@@ -8,7 +8,7 @@ import AnalyticsEvent from '../models/analytics.model.js';
 import User from '../models/user.model.js';
 import ApiError from '../utils/ApiError.js';
 import logger from '../config/logger.js';
-import { sendOrderSuccessEmail, sendOrderFailureEmail } from './email.service.js';
+import { sendOrderSuccessEmail, sendOrderFailureEmail, sendShippingUpdateEmail } from './email.service.js';
 
 export const createCheckoutOrder = async ({ userId, items, sessionId, conversionSource }) => {
   const session = await mongoose.startSession();
@@ -155,6 +155,15 @@ export const verifyRazorpayPayment = async ({
     // Update order payments logs
     order.paymentStatus = 'paid';
     order.orderStatus = 'processing';
+    order.shippingStatus = 'pending';
+    order.shippingTrackingNumber = `TRK${Math.floor(1000000000 + Math.random() * 9000000000)}`;
+    order.shippingHistory = [
+      {
+        status: 'pending',
+        description: 'Order paid successfully. Undergoing sterilization and quality verification.',
+        timestamp: new Date(),
+      }
+    ];
     order.razorpayPaymentId = razorpayPaymentId;
     order.razorpaySignature = razorpaySignature;
     await order.save({ session });
@@ -216,6 +225,11 @@ export const verifyRazorpayPayment = async ({
 
     await session.commitTransaction();
     session.endSession();
+
+    // Trigger simulated shipping progression updates in background
+    simulateShippingUpdates(order._id).catch((err) => {
+      logger.error(`Failed to start shipping simulation for Order ${order._id}: ${err.message}`);
+    });
 
     // Send order confirmation email asynchronously
     if (order.user) {
@@ -313,4 +327,69 @@ export const handleRazorpayWebhook = async (signature, rawBody) => {
 
 export const getOrderHistory = async (userId) => {
   return await Order.find({ user: userId }).populate('items.product', 'name sku price').sort('-createdAt');
+};
+
+export const getOrderDetail = async (orderId, user) => {
+  const order = await Order.findById(orderId)
+    .populate('user', 'name email role')
+    .populate('items.product');
+
+  if (!order) {
+    throw new ApiError(404, 'Order not found');
+  }
+
+  // Authorize: admins can read any order, users can only read their own
+  if (user.role !== 'admin' && order.user?._id?.toString() !== user._id.toString()) {
+    throw new ApiError(403, 'You are not authorized to view this order');
+  }
+
+  return order;
+};
+
+export const simulateShippingUpdates = async (orderId) => {
+  const intervals = [
+    { delay: 15000, status: 'shipped', desc: 'Order sterilized, packaged and handed over to courier partner.' },
+    { delay: 30000, status: 'in_transit', desc: 'Order in transit through regional courier facility.' },
+    { delay: 45000, status: 'out_for_delivery', desc: 'Order out for delivery with local surgical delivery agent.' },
+    { delay: 60000, status: 'delivered', desc: 'Order delivered successfully to shipping address.' }
+  ];
+
+  for (const step of intervals) {
+    setTimeout(async () => {
+      try {
+        const order = await Order.findById(orderId).populate('user');
+        if (!order || order.orderStatus === 'cancelled' || order.orderStatus === 'refunded') {
+          // Stop simulation if order is cancelled or refunded
+          return;
+        }
+
+        order.shippingStatus = step.status;
+        order.shippingHistory.push({
+          status: step.status,
+          description: step.desc,
+          timestamp: new Date()
+        });
+
+        if (step.status === 'delivered') {
+          order.orderStatus = 'completed';
+        }
+
+        await order.save();
+
+        if (order.user) {
+          await sendShippingUpdateEmail(
+            order.user.email,
+            order.user.name,
+            order._id.toString(),
+            step.status,
+            step.desc
+          );
+        }
+        
+        logger.info(`Shipping simulation: Order ${orderId} updated to ${step.status}`);
+      } catch (err) {
+        logger.error(`Error in shipping simulation for Order ${orderId}: ${err.message}`);
+      }
+    }, step.delay);
+  }
 };

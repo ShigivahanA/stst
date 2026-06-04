@@ -10,11 +10,11 @@ export const createProduct = asyncHandler(async (req, res) => {
 });
 
 export const getProducts = asyncHandler(async (req, res) => {
-  const { page, limit, sortBy, sortOrder, category, search } = req.query;
-  const filter = { active: true }; // Only return active products to public by default
+  const { page, limit, sortBy, sortOrder, category, search, all } = req.query;
+  const filter = all === 'true' ? {} : { active: true };
   const options = {
     page: page ? parseInt(page, 10) : 1,
-    limit: limit ? parseInt(limit, 10) : 10,
+    limit: limit ? parseInt(limit, 10) : 100,
     sortBy: sortBy || 'createdAt',
     sortOrder: sortOrder || 'desc',
     category,

@@ -46,7 +46,14 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    if (error.response.status === 401 && !originalRequest._retry) {
+    const isAuthRequest = originalRequest.url && (
+      originalRequest.url.includes('/auth/login') ||
+      originalRequest.url.includes('/auth/register') ||
+      originalRequest.url.includes('/auth/refresh-token') ||
+      originalRequest.url.includes('/auth/logout')
+    );
+
+    if (error.response.status === 401 && !originalRequest._retry && !isAuthRequest) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });

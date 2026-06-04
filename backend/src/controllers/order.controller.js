@@ -50,3 +50,13 @@ export const getHistory = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, history, 'Order history fetched successfully'));
 });
+
+export const getOrderDetail = asyncHandler(async (req, res) => {
+  const orderId = req.params.id;
+  const user = req.user;
+
+  const order = await orderService.getOrderDetail(orderId, user);
+  return res
+    .status(200)
+    .json(new ApiResponse(200, order, 'Order details fetched successfully'));
+});

@@ -3,17 +3,22 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 
-export default function ProtectedRoute({ children }) {
+export default function ProtectedRoute({ children, requiredRole }) {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const { addToast } = useToast();
 
   useEffect(() => {
-    if (!loading && !user) {
-      addToast('Please login to access this portal', 'error');
-      navigate('/');
+    if (!loading) {
+      if (!user) {
+        addToast('Please login to access this portal', 'error');
+        navigate('/login');
+      } else if (requiredRole && user.role !== requiredRole) {
+        addToast('Access denied. Admin privileges required.', 'error');
+        navigate('/');
+      }
     }
-  }, [user, loading, navigate, addToast]);
+  }, [user, loading, navigate, addToast, requiredRole]);
 
   if (loading) {
     return (
@@ -23,5 +28,5 @@ export default function ProtectedRoute({ children }) {
     );
   }
 
-  return user ? children : null;
+  return user && (!requiredRole || user.role === requiredRole) ? children : null;
 }

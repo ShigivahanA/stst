@@ -200,7 +200,7 @@ export default function AllProduct() {
       <div className="flex flex-col lg:flex-row flex-1">
 
         {/* Sidebar Filters - Desktop */}
-        <aside className="hidden lg:flex w-64 xl:w-72 border-r border-artisan-light/5 flex-col sticky top-28 h-[calc(100vh-112px)] p-6 xl:p-8 shrink-0">
+        <aside className="hidden lg:flex w-64 xl:w-72 border-r border-artisan-light/5 flex-col sticky top-24 lg:top-28 h-[calc(100vh-120px)] p-6 xl:p-8 shrink-0 overflow-y-auto">
           <FilterContent />
           <div className="mt-auto pt-8 border-t border-artisan-light/5 space-y-4">
             <div className="flex justify-between items-center">

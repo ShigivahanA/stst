@@ -47,6 +47,22 @@ const productSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    featured: {
+      type: Boolean,
+      default: false,
+    },
+    images: [
+      {
+        url: {
+          type: String,
+          required: true,
+        },
+        publicId: {
+          type: String,
+          required: true,
+        }
+      }
+    ],
   },
   {
     timestamps: true,

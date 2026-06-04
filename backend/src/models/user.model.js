@@ -124,6 +124,18 @@ const userSchema = new mongoose.Schema(
         ref: 'Product',
       },
     ],
+    isBanned: {
+      type: Boolean,
+      default: false,
+    },
+    banUntil: {
+      type: Date,
+      default: null,
+    },
+    banReason: {
+      type: String,
+      default: '',
+    },
   },
   {
     timestamps: true,

@@ -18,7 +18,9 @@ import {
   ShoppingBag,
   Clock,
   ShieldCheck,
-  FileText
+  FileText,
+  Truck,
+  ChevronRight
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
@@ -280,8 +282,8 @@ export default function OrdersHistory() {
                                   </div>
                                   <div className="text-right shrink-0">
                                     <span className="text-[10px] font-mono text-artisan-light/40 uppercase tracking-widest">{item.quantity} × </span>
-                                    <span className="text-xs font-mono font-bold text-artisan-light">₹{item.priceAtPurchase.toLocaleString()}</span>
-                                    <p className="text-[9px] font-mono text-artisan-light/30 mt-0.5">₹{(item.quantity * item.priceAtPurchase).toLocaleString()}</p>
+                                    <span className="text-xs font-mono font-bold text-artisan-light">₹{(item.priceAtPurchase || item.product?.price || 0).toLocaleString()}</span>
+                                    <p className="text-[9px] font-mono text-artisan-light/30 mt-0.5">₹{(item.quantity * (item.priceAtPurchase || item.product?.price || 0)).toLocaleString()}</p>
                                   </div>
                                 </div>
                               ))}
@@ -317,7 +319,7 @@ export default function OrdersHistory() {
                             {/* Right details */}
                             <div className="space-y-3">
                               <h4 className="text-[9px] font-mono font-bold uppercase tracking-widest text-artisan-light/30">Fulfillment Information</h4>
-                              <div className="space-y-2 text-[10px] font-mono text-artisan-light/75 leading-relaxed bg-artisan-light/[0.01] p-4 border border-artisan-light/5">
+                              <div className="space-y-3 text-[10px] font-mono text-artisan-light/75 leading-relaxed bg-artisan-light/[0.01] p-4 border border-artisan-light/5">
                                 <div className="flex items-center gap-2">
                                   <Clock className="w-3.5 h-3.5 text-artisan-light/35" />
                                   <span>
@@ -332,11 +334,35 @@ export default function OrdersHistory() {
                                             : 'Refund processed'}
                                   </span>
                                 </div>
-                                <div className="flex items-center gap-2">
+                                {order.shippingStatus && (
+                                  <div className="flex items-center gap-2">
+                                    <Truck className="w-3.5 h-3.5 text-artisan-light/35" />
+                                    <span className="uppercase font-bold text-artisan-grey">
+                                      Shipping: {order.shippingStatus === 'pending' && order.paymentStatus === 'paid' ? 'processing' : order.shippingStatus}
+                                    </span>
+                                  </div>
+                                )}
+                                {order.shippingTrackingNumber && (
+                                  <div className="flex items-center gap-2">
+                                    <FileText className="w-3.5 h-3.5 text-artisan-light/35" />
+                                    <span>Tracking Code: {order.shippingTrackingNumber}</span>
+                                  </div>
+                                )}
+                                <div className="flex items-center gap-2 border-t border-artisan-light/5 pt-2 mt-1">
                                   <ShieldCheck className="w-3.5 h-3.5 text-artisan-light/35" />
                                   <span>STAT Quality Standards Assured</span>
                                 </div>
                               </div>
+                              
+                              {order.shippingTrackingNumber && (
+                                <Link 
+                                  to={`/orders/${order._id}`}
+                                  className="w-full mt-2 py-3 bg-artisan-light/5 border border-artisan-light/10 text-artisan-light font-mono text-[9px] font-bold uppercase tracking-widest hover:bg-artisan-light hover:text-artisan-dark flex items-center justify-center gap-2 transition-all"
+                                >
+                                  <span>Track Live Shipment Details</span>
+                                  <ChevronRight className="w-3 h-3" />
+                                </Link>
+                              )}
                             </div>
 
                           </div>

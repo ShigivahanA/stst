@@ -2,29 +2,31 @@ import { useRef, useState, useEffect } from 'react'
 import { motion, useInView } from 'framer-motion'
 import api from '../../services/api'
 
+const FALLBACK_STATS = [
+  { value: '500+', label: 'Trusted by Hospitals', description: 'Serving medical institutions' },
+  { value: '₹', label: 'Wholesale Pricing', description: 'Best prices guaranteed' },
+  { value: 'PAN', label: 'Pan-India Delivery', description: 'Fast & reliable shipping' },
+  { value: '100%', label: 'Quality Assured', description: 'Certified products only' },
+]
+
 export default function Stats() {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: '-100px' })
-  const [platformStats, setPlatformStats] = useState({ users: 0, listings: 0 })
+  const [stats, setStats] = useState(FALLBACK_STATS)
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await api.get('/listings/stats')
-        setPlatformStats(res.data.data)
+        const res = await api.get('/content/stats')
+        if (res.data.data?.length > 0) {
+          setStats(res.data.data)
+        }
       } catch (err) {
         console.error('Failed to fetch platform stats', err)
       }
     }
     fetchStats()
   }, [])
-
-  const stats = [
-    { value: '500+', label: 'Trusted by Hospitals', description: 'Serving medical institutions' },
-    { value: '₹', label: 'Wholesale Pricing', description: 'Best prices guaranteed' },
-    { value: 'PAN', label: 'Pan-India Delivery', description: 'Fast & reliable shipping' },
-    { value: '100%', label: 'Quality Assured', description: 'Certified products only' },
-  ]
 
   return (
     <section ref={ref} className="bg-artisan-dark bg-noise border-b border-artisan-light min-h-screen flex flex-col">
@@ -43,7 +45,7 @@ export default function Stats() {
         <div className="flex flex-col border-t-2 border-artisan-light">
           {stats.map((stat, i) => (
             <motion.div
-              key={stat.label}
+              key={stat._id || stat.label}
               initial={{ opacity: 0, x: -20 }}
               animate={isInView ? { opacity: 1, x: 0 } : {}}
               transition={{ duration: 0.8, delay: i * 0.1 }}
@@ -61,7 +63,7 @@ export default function Stats() {
                 </motion.div>
               </div>
 
-              {/* Label & Description Column */}
+              {/* Label Column */}
               <div className="lg:col-span-4">
                 <h3 className="text-lg lg:text-2xl font-display font-extrabold uppercase text-artisan-light group-hover:text-artisan-dark transition-colors duration-500 mb-1">
                   {stat.label}
@@ -81,3 +83,4 @@ export default function Stats() {
     </section>
   )
 }
+

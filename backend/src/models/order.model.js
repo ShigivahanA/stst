@@ -55,6 +55,30 @@ const orderSchema = new mongoose.Schema(
       enum: ['pending', 'paid', 'failed', 'refunded'],
       default: 'pending',
     },
+    shippingStatus: {
+      type: String,
+      enum: ['pending', 'shipped', 'in_transit', 'out_for_delivery', 'delivered', 'failed'],
+      default: 'pending',
+    },
+    shippingTrackingNumber: {
+      type: String,
+      default: '',
+    },
+    shippingHistory: [
+      {
+        status: {
+          type: String,
+          enum: ['pending', 'shipped', 'in_transit', 'out_for_delivery', 'delivered', 'failed'],
+        },
+        description: {
+          type: String,
+        },
+        timestamp: {
+          type: Date,
+          default: Date.now,
+        },
+      }
+    ],
     razorpayOrderId: {
       type: String,
       required: true,

@@ -12,8 +12,13 @@ import Wishlist from './pages/Wishlist'
 import Cart from './pages/Cart'
 import Profile from './pages/Profile'
 import OrdersHistory from './pages/OrdersHistory'
+import OrderDetail from './pages/OrderDetail'
 import AdminDashboard from './pages/AdminDashboard'
 import AdminUsers from './pages/AdminUsers'
+import AdminUserDetail from './pages/AdminUserDetail'
+import AdminProduct from './pages/AdminProduct'
+import AdminNewProduct from './pages/AdminNewProduct'
+import AdminProductDetail from './pages/AdminProductDetail'
 import AdminContent from './pages/AdminContent'
 import Shipping from './pages/Shipping'
 import ReturnsAndRefunds from './pages/ReturnsAndRefunds'
@@ -34,6 +39,7 @@ import Terms from './pages/Terms'
 import Verification from './pages/Verification'
 import ProtectedRoute from './components/ProtectedRoute'
 import ScrollToTop from './components/ScrollToTop'
+import AnalyticsTracker from './components/AnalyticsTracker'
 
 import { useAuth } from './context/AuthContext'
 import ConsentModal from './components/auth/ConsentModal'
@@ -45,18 +51,13 @@ function App() {
     location.pathname.startsWith('/resetpassword/') ||
     location.pathname.startsWith('/verifyemail/')
 
-  // Determine if we should show the global consent modal
-  const showGlobalConsent = user &&
-    user.onboardingCompleted &&
-    !user.termsAccepted &&
-    !location.pathname.startsWith('/onboarding')
 
   return (
     <div className="min-h-screen bg-artisan-dark">
-      {showGlobalConsent && <ConsentModal onComplete={() => { }} />}
       <ScrollToTop />
+      <AnalyticsTracker />
       {!isAuthPage && <Navbar />}
-      <main className="relative overflow-hidden">
+      <main className="relative">
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={location.pathname}
@@ -84,7 +85,6 @@ function App() {
               <Route path="/login" element={<Auth />} />
               <Route path="/signup" element={<Auth />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/onboarding" element={<Navigate to="/allproduct" replace />} />
               <Route path="/verification" element={
                 <ProtectedRoute>
                   <Verification />
@@ -120,18 +120,43 @@ function App() {
                   <OrdersHistory />
                 </ProtectedRoute>
               } />
-              <Route path="/admin" element={
+              <Route path="/orders/:id" element={
                 <ProtectedRoute>
+                  <OrderDetail />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin" element={
+                <ProtectedRoute requiredRole="admin">
                   <AdminDashboard />
                 </ProtectedRoute>
               } />
               <Route path="/admin/users" element={
-                <ProtectedRoute>
+                <ProtectedRoute requiredRole="admin">
                   <AdminUsers />
                 </ProtectedRoute>
               } />
+              <Route path="/admin/users/:id" element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminUserDetail />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/products" element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminProduct />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/products/new" element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminNewProduct />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/products/:id" element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminProductDetail />
+                </ProtectedRoute>
+              } />
               <Route path="/admin/content" element={
-                <ProtectedRoute>
+                <ProtectedRoute requiredRole="admin">
                   <AdminContent />
                 </ProtectedRoute>
               } />

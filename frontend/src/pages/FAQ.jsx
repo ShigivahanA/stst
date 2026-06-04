@@ -1,98 +1,8 @@
 import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { Search, Truck, RotateCcw, Package, CreditCard, ArrowRight } from 'lucide-react'
-
-const faqData = [
-  {
-    category: 'Orders & Shipping',
-    icon: Truck,
-    questions: [
-      {
-        q: 'How long does shipping take within India?',
-        a: 'Most orders are processed within 24-48 hours. Delivery takes 3-5 business days for major cities and 5-7 business days for regional clinics and hospitals across India.'
-      },
-      {
-        q: 'Do you offer express delivery for urgent surgical supplies?',
-        a: 'Yes, express overnight shipping is available for select items to hospitals and clinics across major metros. Please contact support via WhatsApp or call to request express dispatch.'
-      },
-      {
-        q: 'How can I track my bulk order?',
-        a: 'Once shipped, a tracking number and link from our shipping partners (Delhivery, BlueDart, DTDC) will be sent to your registered email and WhatsApp.'
-      },
-      {
-        q: 'Do you deliver to remote clinics and hospital facilities?',
-        a: 'Yes, we ship to healthcare professionals and institutions across all pincodes in India.'
-      }
-    ]
-  },
-  {
-    category: 'Returns & Refunds',
-    icon: RotateCcw,
-    questions: [
-      {
-        q: 'What is your return policy on medical/surgical equipment?',
-        a: 'Due to sterility and safety standards, returns are accepted within 7 days of delivery only for unused, unopened items in their original packaging. Lifesaving and sterilized items are not returnable once opened.'
-      },
-      {
-        q: 'How do I initiate a refund or exchange?',
-        a: 'To request a return/refund, email statsurgicalsupplies@gmail.com with your order number and invoice. Our quality control team will inspect the item before approval.'
-      },
-      {
-        q: 'What if I receive a damaged or incorrect medical device?',
-        a: 'Report any issues within 24 hours of receipt with unboxing videos/photos. We will immediately arrange a replacement or complete refund.'
-      },
-      {
-        q: 'How long does the refund processing take?',
-        a: 'Approved refunds are processed within 5-7 business days to the original payment method or hospital account.'
-      }
-    ]
-  },
-  {
-    category: 'Products & Inventory',
-    icon: Package,
-    questions: [
-      {
-        q: 'Are all STAT Surgical products certified and quality tested?',
-        a: 'Absolutely. All products are CE/ISO certified and undergo strict multi-point inspections before dispatch to ensure clinical compliance.'
-      },
-      {
-        q: 'Do you provide warranty and servicing for diagnostic devices?',
-        a: 'Yes, diagnostic devices like ECG monitors and pulse oximeters come with a 1-year manufacturer warranty. We also provide post-purchase calibration support.'
-      },
-      {
-        q: 'Can I request a custom bulk quote for hospital setups?',
-        a: 'Yes! We specialize in wholesale procurement for clinics and hospitals. Reach out via our Support form or WhatsApp to get a custom bulk quote.'
-      },
-      {
-        q: 'What should I do if an item I need is out of stock?',
-        a: 'You can sign up for stock alerts or directly message our team. We can source specific surgical supplies through our wholesale network.'
-      }
-    ]
-  },
-  {
-    category: 'Account & Payment',
-    icon: CreditCard,
-    questions: [
-      {
-        q: 'How do I create an account?',
-        a: 'Click the Sign Up button at the top right, fill in your details (name, email, hospital/clinic name, password), and verify your email.'
-      },
-      {
-        q: 'What payment methods do you accept?',
-        a: 'We accept all major credit/debit cards, UPI (Google Pay, PhonePe, Paytm), Net Banking (SBI, HDFC, ICICI), Razorpay, and direct Bank Transfer (RTGS/NEFT) for institutional bulk orders.'
-      },
-      {
-        q: 'Is my payment information secure?',
-        a: 'Yes, all transactions are processed through secure, PCI-DSS compliant payment gateways (Razorpay) utilizing 256-bit SSL encryption.'
-      },
-      {
-        q: 'How do I reset my password?',
-        a: 'Go to the Login page, click "Forgot Password", enter your registered email, and we will send a password reset link to your email inbox.'
-      }
-    ]
-  }
-]
+import { Search, Truck, RotateCcw, Package, CreditCard, ArrowRight, HelpCircle, Loader2 } from 'lucide-react'
+import api from '../services/api'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -130,9 +40,7 @@ function AccordionItem({ question, answer, isOpen, onToggle }) {
           {question}
         </span>
         <span className="ml-4 shrink-0 w-8 h-8 rounded-full bg-artisan-light/5 border border-artisan-light/10 flex items-center justify-center text-artisan-light/60 group-hover:bg-artisan-grey group-hover:text-artisan-dark transition-all duration-500 relative overflow-hidden">
-          {/* Horizontal line of the plus/minus symbol */}
           <span className="absolute w-3 h-[2px] bg-current" />
-          {/* Vertical line of the plus/minus symbol: rotates and fades out on expand */}
           <motion.span
             className="absolute w-[2px] h-3 bg-current"
             animate={{ rotate: isOpen ? 90 : 0, opacity: isOpen ? 0 : 1 }}
@@ -161,8 +69,62 @@ function AccordionItem({ question, answer, isOpen, onToggle }) {
 
 export default function FAQ() {
   const [searchQuery, setSearchQuery] = useState('')
-  const [activeCategory, setActiveCategory] = useState('Orders & Shipping')
+  const [activeCategory, setActiveCategory] = useState('')
   const [openIndex, setOpenIndex] = useState(null)
+  const [faqData, setFaqData] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    api.get('/content/page/faq')
+      .then(res => {
+        const sections = res.data.data?.sections || []
+        const categoriesMap = {}
+
+        sections.forEach(sec => {
+          let category = 'General'
+          let question = sec.heading
+
+          const match = sec.heading.match(/^\[(.*?)\]\s*(.*)$/)
+          if (match) {
+            category = match[1].trim()
+            question = match[2].trim()
+          }
+
+          if (!categoriesMap[category]) {
+            let icon = HelpCircle
+            const cLower = category.toLowerCase()
+            if (cLower.includes('shipping') || cLower.includes('order')) {
+              icon = Truck
+            } else if (cLower.includes('return') || cLower.includes('refund')) {
+              icon = RotateCcw
+            } else if (cLower.includes('product') || cLower.includes('inventory')) {
+              icon = Package
+            } else if (cLower.includes('account') || cLower.includes('pay')) {
+              icon = CreditCard
+            }
+
+            categoriesMap[category] = {
+              category,
+              icon,
+              questions: []
+            }
+          }
+
+          categoriesMap[category].questions.push({
+            q: question,
+            a: sec.body
+          })
+        })
+
+        const parsedCategories = Object.values(categoriesMap)
+        setFaqData(parsedCategories)
+        if (parsedCategories.length > 0) {
+          setActiveCategory(parsedCategories[0].category)
+        }
+      })
+      .catch(err => console.error('Error fetching FAQ data:', err))
+      .finally(() => setLoading(false))
+  }, [])
 
   // When active category changes, close any open accordion
   useEffect(() => {
@@ -180,11 +142,10 @@ export default function FAQ() {
         q.a.toLowerCase().includes(searchQuery.toLowerCase())
       )
     })).filter(cat => cat.questions.length > 0)
-  }, [searchQuery])
+  }, [searchQuery, faqData])
 
   const displayQuestions = useMemo(() => {
     if (searchQuery.trim()) {
-      // Flatten all matching questions
       return filteredData.flatMap(cat =>
         cat.questions.map(q => ({ ...q, category: cat.category }))
       )
@@ -192,13 +153,20 @@ export default function FAQ() {
       const cat = faqData.find(c => c.category === activeCategory)
       return cat ? cat.questions : []
     }
-  }, [searchQuery, filteredData, activeCategory])
+  }, [searchQuery, filteredData, activeCategory, faqData])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-artisan-dark flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-artisan-grey" />
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-artisan-dark bg-noise pt-24 md:pt-32 pb-24 relative overflow-hidden">
       {/* Background Graphic Accents */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden select-none z-0">
-        {/* Subtle glowing radial background */}
         <div className="absolute -top-40 right-1/4 w-[500px] h-[500px] rounded-full bg-artisan-grey/5 blur-[120px] mix-blend-multiply dark:mix-blend-screen animate-pulse" style={{ animationDuration: '8s' }} />
 
         {/* Animated Clinical Scope SVG */}
@@ -256,7 +224,7 @@ export default function FAQ() {
                   initial={{ y: "100%" }}
                   animate={{ y: 0 }}
                   transition={{ duration: 0.8, delay: 0.15, ease: [0.33, 1, 0.68, 1] }}
-                  className="block text-outline"
+                  className="block text-outline animate-pulse"
                 >
                   ANSWERS.
                 </motion.span>
@@ -270,7 +238,6 @@ export default function FAQ() {
 
         {/* SEARCH BAR */}
         <div className="max-w-xl mb-16 relative group">
-          {/* Subtle glow behind input */}
           <div className="absolute inset-0 bg-artisan-grey/5 blur-xl rounded-full opacity-0 group-focus-within:opacity-100 transition-opacity duration-700 pointer-events-none" />
 
           <div className="relative border-b border-artisan-light/10 focus-within:border-artisan-grey transition-all duration-500 pb-2">
@@ -296,7 +263,7 @@ export default function FAQ() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
 
           {/* Left panel: Category selector */}
-          {!searchQuery.trim() && (
+          {!searchQuery.trim() && faqData.length > 0 && (
             <div className="lg:col-span-4 space-y-3">
               <span className="text-[9px] font-mono font-bold text-artisan-light/30 uppercase tracking-widest block mb-4">FAQ Categories</span>
               <div className="flex flex-col gap-2 border-l border-artisan-light/5 pl-0">
@@ -312,7 +279,6 @@ export default function FAQ() {
                           : 'border-artisan-light/10 text-artisan-light/60 hover:border-artisan-grey hover:text-artisan-light'
                         }`}
                     >
-                      {/* Sliding active background marker */}
                       {isActive && (
                         <motion.div
                           layoutId="activeCategoryBg"
@@ -337,7 +303,7 @@ export default function FAQ() {
           )}
 
           {/* Right panel: Accordion list */}
-          <div className={`${searchQuery.trim() ? 'lg:col-span-12' : 'lg:col-span-8'} space-y-6`}>
+          <div className={`${searchQuery.trim() || faqData.length === 0 ? 'lg:col-span-12' : 'lg:col-span-8'} space-y-6`}>
             {searchQuery.trim() && (
               <span className="text-[9px] font-mono font-bold text-artisan-light/30 uppercase tracking-widest block">
                 Search Results ({displayQuestions.length})
@@ -345,7 +311,7 @@ export default function FAQ() {
             )}
 
             <motion.div
-              key={activeCategory + searchQuery} // triggers remount & entrance animation on change
+              key={activeCategory + searchQuery}
               variants={containerVariants}
               initial="hidden"
               animate="visible"
@@ -374,7 +340,7 @@ export default function FAQ() {
         </div>
 
         {/* CTA SECTION */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
@@ -382,7 +348,7 @@ export default function FAQ() {
           className="mt-20 border border-artisan-light/10 p-8 md:p-10 bg-artisan-light/[0.01] relative overflow-hidden flex flex-col md:flex-row justify-between items-start md:items-center gap-6"
         >
           <div className="absolute inset-0 bg-gradient-to-r from-artisan-grey/5 to-transparent pointer-events-none" />
-          
+
           <div className="space-y-2 relative z-10 max-w-2xl">
             <h3 className="text-xl sm:text-2xl font-display font-extrabold uppercase text-artisan-light tracking-tight">
               Can't find what you're looking for?
@@ -391,9 +357,9 @@ export default function FAQ() {
               Our customer support team is here to help with any questions you may have.
             </p>
           </div>
-          
-          <Link 
-            to="/support" 
+
+          <Link
+            to="/support"
             className="relative z-10 shrink-0 px-8 py-4 bg-artisan-grey text-artisan-dark font-display font-extrabold uppercase tracking-[0.4em] text-[10px] hover:bg-artisan-light hover:text-artisan-dark transition-all duration-300 flex items-center gap-3 group"
           >
             <span>Contact Support</span>

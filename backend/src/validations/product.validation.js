@@ -17,7 +17,14 @@ const createProduct = {
     category: Joi.string().required().trim(),
     lowstockthreshold: Joi.number().integer().min(0).default(10),
     active: Joi.boolean().default(true),
+    featured: Joi.boolean().default(false),
     image: Joi.string().allow(''),
+    images: Joi.array().items(
+      Joi.object().keys({
+        url: Joi.string().required(),
+        publicId: Joi.string().required(),
+      })
+    ).max(6).default([]),
   }),
 };
 
@@ -34,7 +41,14 @@ const updateProduct = {
     category: Joi.string().trim(),
     lowstockthreshold: Joi.number().integer().min(0),
     active: Joi.boolean(),
+    featured: Joi.boolean(),
     image: Joi.string().allow(''),
+    images: Joi.array().items(
+      Joi.object().keys({
+        url: Joi.string().required(),
+        publicId: Joi.string().required(),
+      })
+    ).max(6),
   }).min(1),
 };
 

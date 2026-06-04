@@ -58,7 +58,7 @@ async function runTests() {
       body: JSON.stringify({
         name: 'Super Admin',
         email: 'admin@example.com',
-        password: 'adminpassword',
+        password: 'password123',
         role: 'admin',
       }),
     });
@@ -79,11 +79,10 @@ async function runTests() {
       body: JSON.stringify({
         sku: 'LAPTOP-PRO-15',
         name: 'Developer Laptop Pro 15',
-        description: 'High performance laptop for software developers.',
-        costPrice: 80000,
-        retailPrice: 120000,
+        desc: 'High performance laptop for software developers.',
+        price: 120000,
         quantity: 50,
-        lowStockThreshold: 5,
+        lowstockthreshold: 5,
         category: 'Electronics',
       }),
     });
@@ -100,11 +99,10 @@ async function runTests() {
       body: JSON.stringify({
         sku: 'MOUSE-MX-3',
         name: 'Ergonomic Wireless Mouse',
-        description: 'Advanced ergonomic mouse.',
-        costPrice: 4000,
-        retailPrice: 8000,
+        desc: 'Advanced ergonomic mouse.',
+        price: 8000,
         quantity: 4,
-        lowStockThreshold: 5,
+        lowstockthreshold: 5,
         category: 'Accessories',
       }),
     });

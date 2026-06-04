@@ -109,13 +109,13 @@ export default function Hero() {
               </motion.button>
             </Link>
 
-            <Link to={user ? '/profile' : '/signup'} className="w-full sm:w-auto">
+            <Link to={user ? (user.role === 'admin' ? '/admin' : '/profile') : '/signup'} className="w-full sm:w-auto">
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 className="w-full px-14 py-6 border-2 border-artisan-light text-artisan-light font-display font-extrabold uppercase tracking-widest text-xs flex items-center justify-center gap-3 hover:bg-artisan-light hover:text-artisan-dark transition-all duration-300"
               >
-                {user ? 'Go to Profile' : 'Join Us'}
+                {user ? (user.role === 'admin' ? 'Go to Admin Hub' : 'Go to Profile') : 'Join Us'}
                 <ArrowRight className="w-4 h-4" />
               </motion.button>
             </Link>

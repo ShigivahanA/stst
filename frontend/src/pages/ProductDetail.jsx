@@ -91,6 +91,25 @@ export default function ProductDetail() {
    }
 
    const handleAddToCart = async () => {
+      const sessionId = sessionStorage.getItem('analytics_session_id') || `sess_${Date.now()}`;
+      const itemPrice = tool.price !== undefined ? tool.price : tool.pricePerDay;
+      try {
+         if (!user || user.role !== 'admin') {
+            await api.post('/analytics/event', {
+               sessionId,
+               eventName: 'add_to_cart',
+               properties: {
+                  productId: tool._id,
+                  name: tool.name || tool.title,
+                  price: itemPrice,
+                  quantity
+               }
+            });
+         }
+      } catch (err) {
+         console.error('Failed to log add_to_cart event', err);
+      }
+
       if (user) {
          try {
             const res = await api.post('/auth/cart', { productId: tool._id, quantity })

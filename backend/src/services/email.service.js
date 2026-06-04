@@ -71,3 +71,14 @@ export const sendTwoFactorOtpEmail = async (to, name, otp) => {
   const html = templates.getTwoFactorOtpTemplate(name, otp);
   return await sendEmail(to, 'Security Protocol: Two-Factor Verification Code', html);
 };
+
+export const sendSuspensionEmail = async (to, name, duration, reason) => {
+  const html = templates.getSuspensionTemplate(name, duration, reason);
+  return await sendEmail(to, 'Security Alert: Account Access Suspended', html);
+};
+
+export const sendShippingUpdateEmail = async (to, name, orderId, shippingStatus, description) => {
+  const html = templates.getShippingUpdateTemplate(name, orderId, shippingStatus, description);
+  return await sendEmail(to, `Shipping Update: Order #${orderId.slice(-8).toUpperCase()} is now ${shippingStatus.toUpperCase()}`, html);
+};
+

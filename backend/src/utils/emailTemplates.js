@@ -405,3 +405,65 @@ export const getTwoFactorOtpTemplate = (name, otp) => {
   `;
   return wrapTemplate('Security Code Verification', content);
 };
+
+export const getSuspensionTemplate = (name, duration, reason) => {
+  const content = `
+    <h2 style="color: #FF3B30; font-size: 20px; font-weight: 700; margin-top: 0; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.02em;">Account Suspended</h2>
+    <p style="margin-top: 0; margin-bottom: 16px;">Dear ${name},</p>
+    <p style="margin-top: 0; margin-bottom: 20px;">We write to inform you that your access privileges to the STAT Surgical Supplies portal have been suspended by system administration.</p>
+    
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="font-size: 13px; background-color: #000000; border: 1px solid #FF3B30; border-radius: 6px; margin-bottom: 24px;">
+      <tr>
+        <td style="padding: 14px; border-bottom: 1px solid #FF3B30;">
+          <span style="color: #FF3B30; text-transform: uppercase; font-size: 11px; font-weight: 600; display: block; margin-bottom: 4px;">Suspension Period</span>
+          <strong style="color: #F6F6F6; font-size: 14px;">${duration}</strong>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding: 14px;">
+          <span style="color: #FF3B30; text-transform: uppercase; font-size: 11px; font-weight: 600; display: block; margin-bottom: 4px;">Reason for Action</span>
+          <span style="color: #F6F6F6; font-size: 13px; line-height: 1.5;">${reason || 'Violation of procurement guidelines or terms of service.'}</span>
+        </td>
+      </tr>
+    </table>
+    
+    <table border="0" cellpadding="10" cellspacing="0" width="100%" style="background-color: #000000; border: 1px solid #FF3B30; border-radius: 6px; margin-bottom: 20px;">
+      <tr>
+        <td style="padding: 16px; font-size: 13px; color: #F6F6F6; line-height: 1.5;">
+          <strong style="color: #FF3B30;">Notice:</strong> During this suspension period, you will not be able to log in, place orders, or access surgical supply catalogs.
+        </td>
+      </tr>
+    </table>
+    
+    <p style="margin-top: 0; margin-bottom: 0; color: #FF3B30; font-size: 14px;">If you believe this suspension is in error or wish to appeal the decision, please contact administrative support.</p>
+  `;
+  return wrapTemplate('Account Suspension Protocol', content);
+};
+
+export const getShippingUpdateTemplate = (name, orderId, shippingStatus, description) => {
+  const content = `
+    <h2 style="color: #5C3E94; font-size: 20px; font-weight: 700; margin-top: 0; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.02em;">Shipping Update: ${shippingStatus.toUpperCase()}</h2>
+    <p style="margin-top: 0; margin-bottom: 16px;">Dear ${name},</p>
+    <p style="margin-top: 0; margin-bottom: 16px;">Your order <strong>#${orderId.slice(-8).toUpperCase()}</strong> has a new tracking update:</p>
+    
+    <div style="background-color: #000000; border: 1px solid #5C3E94; padding: 20px; margin-bottom: 24px; font-family: monospace; border-radius: 4px;">
+      <p style="margin: 0; font-weight: bold; color: #5C3E94; font-size: 14px;">STATUS: ${shippingStatus.toUpperCase()}</p>
+      <p style="margin: 8px 0 0 0; color: #F6F6F6; font-size: 12px; line-height: 1.5;">${description}</p>
+      <p style="margin: 8px 0 0 0; color: #888888; font-size: 10px;">Timestamp: ${new Date().toLocaleString()}</p>
+    </div>
+
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 24px;">
+      <tr>
+        <td align="center">
+          <a href="http://localhost:5173/orders/${orderId}" style="display: inline-block; background-color: #5C3E94; color: #000000; font-weight: 700; text-decoration: none; padding: 14px 30px; text-transform: uppercase; letter-spacing: 0.1em; font-size: 12px; border-radius: 4px;">
+            Track Order Details
+          </a>
+        </td>
+      </tr>
+    </table>
+    
+    <p style="margin-top: 0; margin-bottom: 0; color: #5C3E94; font-size: 14px;">If you have any questions or require procurement support, please connect with our administrative team.</p>
+  `;
+  return wrapTemplate(`Order Status Update - ${orderId.slice(-8).toUpperCase()}`, content);
+};
+

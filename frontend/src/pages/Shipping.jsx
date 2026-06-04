@@ -1,49 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Truck, Clock, Globe, ShieldCheck } from 'lucide-react'
-
-const shippingMethods = [
-  { name: 'Standard Shipping', time: '3-5 business days', desc: 'Affordable delivery for standard orders across regional routes.' },
-  { name: 'Express Shipping', time: '1-2 business days', desc: 'Fast-tracked air dispatch for time-sensitive tools and orders.' },
-  { name: 'Same-Day Delivery', time: 'select areas only', desc: 'Immediate dispatch for urgent local needs within eligible zones.' }
-]
-
-const shippingInfo = [
-  {
-    title: 'Processing Time',
-    icon: Clock,
-    desc: 'Orders are typically processed within 24 hours of being placed. During peak seasons or promotional periods, processing may take up to 48 hours.'
-  },
-  {
-    title: 'International Shipping',
-    icon: Globe,
-    desc: 'We ship to over 100 countries worldwide. International shipping typically takes 7-14 business days, depending on the destination and customs processing.'
-  },
-  {
-    title: 'Shipping Costs',
-    icon: ShieldCheck,
-    desc: 'Shipping costs are calculated based on weight, dimensions, and destination. Free shipping is available for orders over $50 within the continental US.'
-  }
-]
-
-const shippingFaqs = [
-  {
-    q: 'How can I track my order?',
-    a: 'Once your order ships, you\'ll receive a tracking number via email. You can also track your order in your account dashboard under "Order History."'
-  },
-  {
-    q: 'What if my package is lost or damaged?',
-    a: 'If your package is lost or damaged during transit, please contact our customer service team immediately so we can assist you with a replacement or refund.'
-  },
-  {
-    q: 'Do you ship to P.O. boxes?',
-    a: 'Yes, standard shipping supports deliveries to P.O. boxes. Express and same-day dispatches require a physical, verified shipping or residential address.'
-  },
-  {
-    q: 'Can I change my shipping address after placing an order?',
-    a: 'Address modifications are supported as long as the order has not yet been processed. Please contact our support team immediately to request an address update.'
-  }
-]
+import { Truck, Clock, Globe, ShieldCheck, Loader2 } from 'lucide-react'
+import api from '../services/api'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -110,6 +68,59 @@ function AccordionItem({ question, answer, isOpen, onToggle }) {
 
 export default function Shipping() {
   const [openIndex, setOpenIndex] = useState(null)
+  const [shippingMethods, setShippingMethods] = useState([])
+  const [shippingInfo, setShippingInfo] = useState([])
+  const [shippingFaqs, setShippingFaqs] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    api.get('/content/page/shipping')
+      .then(res => {
+        const sections = res.data.data?.sections || []
+        const methods = []
+        const info = []
+        const faqs = []
+
+        sections.forEach(sec => {
+          if (sec.heading.startsWith('[Method]')) {
+            const name = sec.heading.replace('[Method]', '').trim()
+            const parts = sec.body.split('|')
+            const time = parts[0]?.trim() || ''
+            const desc = parts[1]?.trim() || ''
+            methods.push({ name, time, desc })
+          } else if (sec.heading.startsWith('[Info]')) {
+            const title = sec.heading.replace('[Info]', '').trim()
+            let icon = ShieldCheck
+            const tLower = title.toLowerCase()
+            if (tLower.includes('time') || tLower.includes('process') || tLower.includes('schedule')) {
+              icon = Clock
+            } else if (tLower.includes('internat') || tLower.includes('globe') || tLower.includes('world')) {
+              icon = Globe
+            }
+            info.push({ title, icon, desc: sec.body })
+          } else if (sec.heading.startsWith('[FAQ]')) {
+            const q = sec.heading.replace('[FAQ]', '').trim()
+            faqs.push({ q, a: sec.body })
+          } else {
+            faqs.push({ q: sec.heading, a: sec.body })
+          }
+        })
+
+        setShippingMethods(methods)
+        setShippingInfo(info)
+        setShippingFaqs(faqs)
+      })
+      .catch(err => console.error('Error loading shipping data:', err))
+      .finally(() => setLoading(false))
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-artisan-dark flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-artisan-grey" />
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-artisan-dark bg-noise pt-24 md:pt-32 pb-24 relative overflow-hidden">
@@ -160,7 +171,7 @@ export default function Shipping() {
                   initial={{ y: "100%" }}
                   animate={{ y: 0 }}
                   transition={{ duration: 0.8, delay: 0.15, ease: [0.33, 1, 0.68, 1] }}
-                  className="block text-outline"
+                  className="block text-outline animate-pulse"
                 >
                   POLICIES.
                 </motion.span>
@@ -173,92 +184,98 @@ export default function Shipping() {
         </header>
 
         {/* SECTION 1: SHIPPING METHODS */}
-        <div className="mb-20 space-y-6">
-          <div className="space-y-2">
-            <span className="text-[9px] font-mono font-bold text-artisan-light/30 uppercase tracking-widest block">Shipping Methods</span>
-            <p className="text-xs font-mono text-artisan-light/50 uppercase tracking-widest leading-relaxed max-w-2xl">
-              We offer various shipping methods to meet your needs:
-            </p>
-          </div>
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-6"
-          >
-            {shippingMethods.map((method, idx) => (
-              <motion.div
-                key={idx}
-                variants={itemVariants}
-                className="border border-artisan-light/10 p-6 relative overflow-hidden bg-artisan-light/[0.01] hover:border-artisan-grey/40 hover:bg-artisan-light/[0.02] transition-colors duration-300 flex flex-col justify-between group cursor-default"
-              >
-                <div className="flex justify-between items-center mb-6">
-                  <span className="w-8 h-8 border border-artisan-light/15 flex items-center justify-center text-artisan-grey group-hover:bg-artisan-grey group-hover:text-artisan-dark transition-colors duration-300 shrink-0">
-                    <Truck className="w-4 h-4" />
-                  </span>
-                  <span className="text-[8px] font-mono text-artisan-light/30 uppercase tracking-widest block font-bold">
-                    [ METHOD // 0{idx + 1} ]
-                  </span>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-baseline gap-2">
-                    <h3 className="text-base font-display font-extrabold uppercase text-artisan-light group-hover:text-artisan-grey transition-colors duration-300">{method.name}</h3>
-                    <span className="text-[9px] font-mono text-artisan-grey font-bold uppercase tracking-widest">{method.time}</span>
+        {shippingMethods.length > 0 && (
+          <div className="mb-20 space-y-6">
+            <div className="space-y-2">
+              <span className="text-[9px] font-mono font-bold text-artisan-light/30 uppercase tracking-widest block">Shipping Methods</span>
+              <p className="text-xs font-mono text-artisan-light/50 uppercase tracking-widest leading-relaxed max-w-2xl">
+                We offer various shipping methods to meet your needs:
+              </p>
+            </div>
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              className="grid grid-cols-1 md:grid-cols-3 gap-6"
+            >
+              {shippingMethods.map((method, idx) => (
+                <motion.div
+                  key={idx}
+                  variants={itemVariants}
+                  className="border border-artisan-light/10 p-6 relative overflow-hidden bg-artisan-light/[0.01] hover:border-artisan-grey/40 hover:bg-artisan-light/[0.02] transition-colors duration-300 flex flex-col justify-between group cursor-default"
+                >
+                  <div className="flex justify-between items-center mb-6">
+                    <span className="w-8 h-8 border border-artisan-light/15 flex items-center justify-center text-artisan-grey group-hover:bg-artisan-grey group-hover:text-artisan-dark transition-colors duration-300 shrink-0">
+                      <Truck className="w-4 h-4" />
+                    </span>
+                    <span className="text-[8px] font-mono text-artisan-light/30 uppercase tracking-widest block font-bold">
+                      [ METHOD // 0{idx + 1} ]
+                    </span>
                   </div>
-                  <p className="text-xs sm:text-sm font-body text-artisan-light/60 normal-case leading-relaxed">{method.desc}</p>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-baseline gap-2">
+                      <h3 className="text-base font-display font-extrabold uppercase text-artisan-light group-hover:text-artisan-grey transition-colors duration-300">{method.name}</h3>
+                      <span className="text-[9px] font-mono text-artisan-grey font-bold uppercase tracking-widest">{method.time}</span>
+                    </div>
+                    <p className="text-xs sm:text-sm font-body text-artisan-light/60 normal-case leading-relaxed">{method.desc}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
+        )}
 
         {/* SECTION 2: SHIPPING INFO */}
-        <div className="mb-24 space-y-16 max-w-3xl">
-          {shippingInfo.map((info, idx) => {
-            const Icon = info.icon
-            return (
-              <motion.div
-                key={idx}
-                variants={itemVariants}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, margin: "-100px" }}
-                className="space-y-4 border-l-2 border-artisan-grey pl-6 py-2 relative"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="w-8 h-8 border border-artisan-light/15 flex items-center justify-center text-artisan-grey shrink-0">
-                    <Icon className="w-4 h-4" />
-                  </span>
-                  <h3 className="text-xl sm:text-2xl font-display font-extrabold uppercase text-artisan-light tracking-tight">{info.title}</h3>
-                </div>
-                <p className="text-sm sm:text-base font-body text-artisan-light/70 normal-case leading-relaxed max-w-2xl">{info.desc}</p>
-              </motion.div>
-            )
-          })}
-        </div>
+        {shippingInfo.length > 0 && (
+          <div className="mb-24 space-y-16 max-w-3xl">
+            {shippingInfo.map((info, idx) => {
+              const Icon = info.icon
+              return (
+                <motion.div
+                  key={idx}
+                  variants={itemVariants}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true, margin: "-100px" }}
+                  className="space-y-4 border-l-2 border-artisan-grey pl-6 py-2 relative"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="w-8 h-8 border border-artisan-light/15 flex items-center justify-center text-artisan-grey shrink-0">
+                      <Icon className="w-4 h-4" />
+                    </span>
+                    <h3 className="text-xl sm:text-2xl font-display font-extrabold uppercase text-artisan-light tracking-tight">{info.title}</h3>
+                  </div>
+                  <p className="text-sm sm:text-base font-body text-artisan-light/70 normal-case leading-relaxed max-w-2xl">{info.desc}</p>
+                </motion.div>
+              )
+            })}
+          </div>
+        )}
 
         {/* SECTION 3: FAQ ACCORDIONS */}
-        <div className="max-w-3xl mx-auto space-y-6 pt-8 border-t border-artisan-light/5">
-          <span className="text-[9px] font-mono font-bold text-artisan-light/30 uppercase tracking-widest block">Shipping FAQs</span>
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            className="space-y-4"
-          >
-            {shippingFaqs.map((faq, idx) => (
-              <AccordionItem
-                key={idx}
-                question={faq.q}
-                answer={faq.a}
-                isOpen={openIndex === idx}
-                onToggle={() => setOpenIndex(openIndex === idx ? null : idx)}
-              />
-            ))}
-          </motion.div>
-        </div>
+        {shippingFaqs.length > 0 && (
+          <div className="max-w-3xl mx-auto space-y-6 pt-8 border-t border-artisan-light/5">
+            <span className="text-[9px] font-mono font-bold text-artisan-light/30 uppercase tracking-widest block">Shipping FAQs</span>
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              className="space-y-4"
+            >
+              {shippingFaqs.map((faq, idx) => (
+                <AccordionItem
+                  key={idx}
+                  question={faq.q}
+                  answer={faq.a}
+                  isOpen={openIndex === idx}
+                  onToggle={() => setOpenIndex(openIndex === idx ? null : idx)}
+                />
+              ))}
+            </motion.div>
+          </div>
+        )}
 
       </div>
     </div>

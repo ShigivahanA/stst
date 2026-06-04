@@ -35,7 +35,11 @@ export default function LoginForm() {
         return
       }
 
-      navigate('/allproduct')
+      if (data?.user?.role === 'admin') {
+        navigate('/admin')
+      } else {
+        navigate('/allproduct')
+      }
     } catch (err) {
       // Error handled by useEffect and toast
     }
@@ -44,8 +48,12 @@ export default function LoginForm() {
   const handleVerify2FA = async (e) => {
     e.preventDefault()
     try {
-      await verify2FA(tempUserId, otp)
-      navigate('/allproduct')
+      const data = await verify2FA(tempUserId, otp)
+      if (data?.user?.role === 'admin') {
+        navigate('/admin')
+      } else {
+        navigate('/allproduct')
+      }
     } catch (err) {
       // Error handled by useEffect and toast
     }

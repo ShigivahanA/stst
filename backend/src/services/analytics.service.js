@@ -26,30 +26,43 @@ export const trackSessionStart = async (sessionData) => {
   return session;
 };
 
-export const recordHeartbeat = async ({ sessionId, path, durationSeconds }) => {
-  const session = await Session.findOne({ sessionId });
+export const recordHeartbeat = async ({ sessionId, path, durationSeconds, user }) => {
+  let session = await Session.findOne({ sessionId });
   
   if (!session) {
     // Session doesn't exist, create simple session placeholder
-    const newSession = await Session.create({
+    session = await Session.create({
       sessionId,
+      user: user || null,
       pagesVisited: [{ path, durationSeconds }],
       durationSeconds,
       lastActiveAt: new Date(),
     });
-    return newSession;
-  }
-
-  // Check if page path already visited
-  const pageIndex = session.pagesVisited.findIndex((p) => p.path === path);
-  if (pageIndex !== -1) {
-    session.pagesVisited[pageIndex].durationSeconds += durationSeconds;
   } else {
-    session.pagesVisited.push({ path, durationSeconds });
+    // Update user on session if authenticated and not already set
+    if (user && (!session.user || session.user.toString() !== user.toString())) {
+      session.user = user;
+    }
+    
+    // Check if page path already visited
+    const pageIndex = session.pagesVisited.findIndex((p) => p.path === path);
+    if (pageIndex !== -1) {
+      session.pagesVisited[pageIndex].durationSeconds += durationSeconds;
+    } else {
+      session.pagesVisited.push({ path, durationSeconds });
+    }
+
+    session.calculateTotalDuration();
+    await session.save();
   }
 
-  session.calculateTotalDuration();
-  await session.save();
+  // Update all events in this session to have the user ID
+  if (user) {
+    await AnalyticsEvent.updateMany(
+      { sessionId, user: { $ne: user } },
+      { $set: { user } }
+    );
+  }
 
   // Log a page view event if it hasn't been tracked recently
   await AnalyticsEvent.findOneAndUpdate(
@@ -57,6 +70,7 @@ export const recordHeartbeat = async ({ sessionId, path, durationSeconds }) => {
     {
       $setOnInsert: {
         sessionId,
+        user: user || null,
         eventName: 'page_view',
         properties: { path },
         referrer: session.referrer,
@@ -72,10 +86,11 @@ export const recordHeartbeat = async ({ sessionId, path, durationSeconds }) => {
 };
 
 export const trackEvent = async (eventData) => {
-  const { sessionId, eventName, properties, referrer, utmSource, utmMedium, utmCampaign } = eventData;
+  const { sessionId, eventName, properties, referrer, utmSource, utmMedium, utmCampaign, user } = eventData;
 
   const event = await AnalyticsEvent.create({
     sessionId,
+    user: user || null,
     eventName,
     properties,
     referrer,
@@ -84,13 +99,21 @@ export const trackEvent = async (eventData) => {
     utmCampaign,
   });
 
-  // If this is a cart addition, update session tracking optionally
-  if (eventName === 'add_to_cart') {
-    await Session.updateOne(
-      { sessionId },
-      { $set: { lastActiveAt: new Date() } }
+  const sessionUpdate = { lastActiveAt: new Date() };
+  if (user) {
+    sessionUpdate.user = user;
+    
+    // Retroactively update other events in this session
+    await AnalyticsEvent.updateMany(
+      { sessionId, user: { $ne: user } },
+      { $set: { user } }
     );
   }
+
+  await Session.updateOne(
+    { sessionId },
+    { $set: sessionUpdate }
+  );
 
   return event;
 };
@@ -217,7 +240,64 @@ export const getDashboardStats = async () => {
     { $limit: 10 },
   ]);
 
+  // 6. Traffic Trend (last 7 days)
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  sevenDaysAgo.setHours(0, 0, 0, 0);
+
+  const dailySessions = await Session.aggregate([
+    { $match: { createdAt: { $gte: sevenDaysAgo } } },
+    {
+      $group: {
+        _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+        count: { $sum: 1 },
+      },
+    },
+    { $sort: { _id: 1 } },
+  ]);
+
+  const trendMap = {};
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const dateStr = d.toISOString().split('T')[0];
+    trendMap[dateStr] = 0;
+  }
+
+  dailySessions.forEach(item => {
+    if (trendMap[item._id] !== undefined) {
+      trendMap[item._id] = item.count;
+    }
+  });
+
+  const trafficTrend = Object.keys(trendMap).map(date => ({
+    date,
+    count: trendMap[date]
+  }));
+
+  // 7. Device Type breakdown
+  const deviceBreakdown = await Session.aggregate([
+    {
+      $group: {
+        _id: '$deviceType',
+        count: { $sum: 1 },
+      },
+    },
+  ]);
+
+  const deviceMap = { desktop: 0, mobile: 0, tablet: 0 };
+  deviceBreakdown.forEach(item => {
+    const type = item._id || 'desktop';
+    deviceMap[type] = item.count;
+  });
+  const formattedDevice = Object.keys(deviceMap).map(type => ({
+    device: type,
+    count: deviceMap[type]
+  }));
+
   return {
+    trafficTrend,
+    deviceBreakdown: formattedDevice,
     sessions: {
       total: sessionSummary.totalSessions,
       averageDurationSeconds: Math.round(sessionSummary.averageDuration),

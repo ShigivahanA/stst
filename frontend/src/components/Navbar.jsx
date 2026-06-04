@@ -43,20 +43,20 @@ export default function Navbar() {
   }, [user])
 
   const cartCount = user?.cart?.reduce((acc, curr) => acc + curr.quantity, 0) || 0
-  const MENU_LINKS = [
-    { id: '01', title: 'Products', href: '/allproduct' },
-    { id: '02', title: 'Categories', href: '/#categories' },
-    ...(user ? [
-      ...(user.role === 'admin'
-        ? [{ id: '03', title: 'System Users', href: '/admin/users' }]
-        : [{ id: '03', title: 'My Wishlist', href: '/wishlist' }]
-      ),
-      ...(user.role === 'admin'
-        ? [{ id: '04', title: 'Admin Hub', href: '/admin' }]
-        : [{ id: '04', title: `My Cart${cartCount > 0 ? ` (${cartCount})` : ''}`, href: '/cart' }]
-      )
-    ] : [])
-  ]
+  const MENU_LINKS = user?.role === 'admin'
+    ? [
+      { id: '01', title: 'Manage Users', href: '/admin/users' },
+      { id: '02', title: 'Content', href: '/admin/content' },
+      { id: '03', title: 'Products', href: '/admin/products' },
+    ]
+    : [
+      { id: '01', title: 'Products', href: '/allproduct' },
+      { id: '02', title: 'Categories', href: '/categories' },
+      ...(user ? [
+        { id: '03', title: 'My Wishlist', href: '/wishlist' },
+        { id: '04', title: `My Cart${cartCount > 0 ? ` (${cartCount})` : ''}`, href: '/cart' },
+      ] : [])
+    ]
 
   // Track scroll direction to hide/show navbar
   useMotionValueEvent(scrollY, "change", (latest) => {
@@ -208,10 +208,14 @@ export default function Navbar() {
                     >
                       <motion.div variants={linkVariants} className="flex items-baseline gap-4 md:gap-6">
                         <span className="text-[10px] md:text-xs font-mono text-artisan-grey">{link.id}</span>
-                        <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-8xl font-display font-bold uppercase tracking-tight group-hover:text-outline transition-all duration-500 leading-[1.1]">
+                        <h2 className={`font-display font-bold uppercase tracking-tight group-hover:text-outline transition-all duration-500 leading-[1.1] ${user?.role === 'admin'
+                            ? 'text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl'
+                            : 'text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-8xl'
+                          }`}>
                           {link.title}
                         </h2>
-                        <ArrowUpRight className="w-5 h-5 md:w-8 md:h-8 lg:w-10 lg:h-10 text-artisan-light opacity-0 group-hover:opacity-100 -translate-x-4 group-hover:translate-x-0 transition-all duration-500" />
+                        <ArrowUpRight className={`text-artisan-light opacity-0 group-hover:opacity-100 -translate-x-4 group-hover:translate-x-0 transition-all duration-500 ${user?.role === 'admin' ? 'w-4 h-4 md:w-6 md:h-6' : 'w-5 h-5 md:w-8 md:h-8 lg:w-10 lg:h-10'
+                          }`} />
                       </motion.div>
                     </Link>
                   </div>
@@ -263,13 +267,14 @@ export default function Navbar() {
                             View Profile
                           </Link>
                         ) : (
-                          <div className="w-full py-4 px-6 border border-artisan-light/20 flex flex-col items-center justify-center gap-2">
-                            <div className="flex items-center gap-3">
-                              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                              <span className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-artisan-light">System Node: Active</span>
-                            </div>
-                            <span className="text-[8px] font-mono text-artisan-grey uppercase tracking-widest">Authority Level: {user.role}</span>
-                          </div>
+                          <Link
+                            to="/admin"
+                            onClick={() => setIsOpen(false)}
+                            className="w-full py-4 px-6 border border-artisan-light text-sm font-bold uppercase tracking-widest hover:bg-artisan-light hover:text-artisan-dark transition-all duration-300 text-center flex items-center justify-center gap-4"
+                          >
+                            <Activity className="w-4 h-4" />
+                            Admin Hub
+                          </Link>
                         )}
                         <button
                           onClick={handleLogout}

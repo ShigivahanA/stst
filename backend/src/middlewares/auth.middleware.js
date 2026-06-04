@@ -42,3 +42,28 @@ export const authorizeRoles = (...roles) => {
     next();
   };
 };
+
+export const verifyOptionalJWT = asyncHandler(async (req, res, next) => {
+  try {
+    const token =
+      req.cookies?.accessToken ||
+      req.header('Authorization')?.replace('Bearer ', '');
+
+    if (token) {
+      const decodedToken = jwt.verify(
+        token,
+        process.env.ACCESS_TOKEN_SECRET || 'access_secret_123'
+      );
+
+      const user = await User.findById(decodedToken?._id).select('-password -refreshTokens');
+
+      if (user) {
+        req.user = user;
+      }
+    }
+  } catch (error) {
+    // Ignore verification errors for optional authentication
+  }
+  next();
+});
+

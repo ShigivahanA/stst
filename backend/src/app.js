@@ -20,7 +20,15 @@ app.set('trust proxy', 1);
 app.use(helmet());
 
 // Enable CORS with dynamic settings
-const allowedOrigins = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : ['http://localhost:3000', 'http://localhost:5173'];
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
+  : ['http://localhost:3000', 'http://localhost:5173'];
+
+if (process.env.NODE_ENV === 'development') {
+  if (!allowedOrigins.includes('http://localhost:5173')) allowedOrigins.push('http://localhost:5173');
+  if (!allowedOrigins.includes('http://localhost:3000')) allowedOrigins.push('http://localhost:3000');
+}
+
 app.use(
   cors({
     origin: (origin, callback) => {
