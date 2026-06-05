@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion'
 import { Link, useNavigate } from 'react-router-dom'
-import { Activity, X, ArrowUpRight, Globe, MessageCircle, Camera, Mail, MapPin, Phone, LogOut, User as UserIcon } from 'lucide-react'
+import { Activity, X, ArrowUpRight, Globe, MessageCircle, Camera, Mail, MapPin, Phone, LogOut, User as UserIcon, Search } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 
 export default function Navbar() {
@@ -11,6 +11,15 @@ export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(scrollY.get() > 20)
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+
+  const [searchQuery, setSearchQuery] = useState('')
+  const [showMobileSearch, setShowMobileSearch] = useState(false)
+
+  useEffect(() => {
+    if (isOpen) {
+      setShowMobileSearch(false)
+    }
+  }, [isOpen])
 
   const [sessionDuration, setSessionDuration] = useState('00:00:00')
 
@@ -126,6 +135,14 @@ export default function Navbar() {
     }
   }
 
+  const handleSearchSubmit = (e) => {
+    e.preventDefault()
+    if (searchQuery.trim()) {
+      navigate(`/allproduct?search=${encodeURIComponent(searchQuery.trim())}`)
+      setShowMobileSearch(false)
+    }
+  }
+
   return (
     <>
       {/* --- Fixed Navigation Header --- */}
@@ -141,7 +158,10 @@ export default function Navbar() {
           <Link
             to="/"
             className="flex items-center gap-2 relative z-[110]"
-            onClick={() => setIsOpen(false)}
+            onClick={() => {
+              setIsOpen(false)
+              setShowMobileSearch(false)
+            }}
           >
             <motion.div
               whileHover={{ scale: 1.02 }}
@@ -151,35 +171,96 @@ export default function Navbar() {
               <Activity className="w-5 h-5 text-artisan-light" />
               <span className="text-lg font-display font-bold uppercase tracking-[0.2em]">
                 <span className="text-artisan-light">STAT</span>
-                <span className="text-artisan-grey ml-2">Surgical Supplies</span>
+                <span className="text-artisan-grey ml-2 hidden sm:inline">Surgical Supplies</span>
               </span>
             </motion.div>
           </Link>
 
-          {/* Menu Trigger */}
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="relative z-[110] flex items-center gap-4 group px-2 py-1"
+          {/* Desktop/Tablet Centered Search Bar */}
+          <form 
+            onSubmit={handleSearchSubmit}
+            className="hidden md:flex items-center relative z-[110] mx-4"
           >
-            <span className="text-xs font-mono uppercase tracking-[0.3em] hidden sm:block">
-              {isOpen ? 'Close' : 'Menu'}
-            </span>
-            <div className="flex flex-col gap-1.5 items-end">
-              <motion.span
-                animate={isOpen ? { rotate: 45, y: 7, backgroundColor: '#B90504' } : { rotate: 0, y: 0, backgroundColor: '#000000' }}
-                className="w-8 h-[1px] origin-center transition-all duration-300"
-              />
-              <motion.span
-                animate={isOpen ? { opacity: 0, x: 20 } : { opacity: 1, x: 0 }}
-                className="w-5 h-[1px] bg-artisan-light transition-all duration-300"
-              />
-              <motion.span
-                animate={isOpen ? { rotate: -45, y: -7, backgroundColor: '#B90504' } : { rotate: 0, y: 0, backgroundColor: '#000000' }}
-                className="w-8 h-[1px] origin-center transition-all duration-300"
+            <div className="relative flex items-center border border-artisan-light/10 focus-within:border-artisan-grey transition-all duration-300 bg-white/40 backdrop-blur-sm px-3 py-1.5 rounded-sm">
+              <Search className="w-3.5 h-3.5 text-artisan-grey/60" />
+              <input
+                type="text"
+                placeholder="Search products..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-40 lg:w-56 focus:w-52 lg:focus:w-72 transition-all duration-300 bg-transparent pl-2 outline-none font-mono text-[9px] uppercase tracking-widest text-artisan-light placeholder:text-artisan-light/30"
               />
             </div>
-          </button>
+          </form>
+
+          {/* Header Action Controls */}
+          <div className="flex items-center gap-3 relative z-[110]">
+            {/* Mobile Search Toggle */}
+            <button
+              onClick={() => setShowMobileSearch(!showMobileSearch)}
+              className="md:hidden p-2 text-artisan-light hover:text-artisan-grey transition-colors"
+              aria-label="Toggle search"
+            >
+              {showMobileSearch ? <X className="w-4 h-4" /> : <Search className="w-4 h-4" />}
+            </button>
+
+            {/* Menu Trigger */}
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="flex items-center gap-4 group px-2 py-1"
+            >
+              <span className="text-xs font-mono uppercase tracking-[0.3em] hidden sm:block">
+                {isOpen ? 'Close' : 'Menu'}
+              </span>
+              <div className="flex flex-col gap-1.5 items-end">
+                <motion.span
+                  animate={isOpen ? { rotate: 45, y: 7, backgroundColor: '#B90504' } : { rotate: 0, y: 0, backgroundColor: '#000000' }}
+                  className="w-8 h-[1px] origin-center transition-all duration-300"
+                />
+                <motion.span
+                  animate={isOpen ? { opacity: 0, x: 20 } : { opacity: 1, x: 0 }}
+                  className="w-5 h-[1px] bg-artisan-light transition-all duration-300"
+                />
+                <motion.span
+                  animate={isOpen ? { rotate: -45, y: -7, backgroundColor: '#B90504' } : { rotate: 0, y: 0, backgroundColor: '#000000' }}
+                  className="w-8 h-[1px] origin-center transition-all duration-300"
+                />
+              </div>
+            </button>
+          </div>
         </div>
+
+        {/* --- Mobile Search Panel --- */}
+        <AnimatePresence>
+          {showMobileSearch && !isOpen && (
+            <motion.div
+              initial={{ y: -20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -20, opacity: 0 }}
+              transition={{ duration: 0.3, ease: [0.33, 1, 0.68, 1] }}
+              className="absolute top-full left-0 w-full bg-artisan-dark/95 backdrop-blur-md border-b border-artisan-light/5 p-4 z-[99]"
+            >
+              <form onSubmit={handleSearchSubmit} className="w-full">
+                <div className="relative flex items-center border border-artisan-light/15 bg-white px-4 py-3 shadow-inner">
+                  <Search className="w-4 h-4 text-artisan-grey/60 mr-2" />
+                  <input
+                    type="text"
+                    placeholder="Search surgical products..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full bg-transparent outline-none font-mono text-[10px] uppercase tracking-widest text-artisan-light placeholder:text-artisan-light/30"
+                  />
+                  <button
+                    type="submit"
+                    className="ml-2 px-3 py-1.5 bg-artisan-grey text-white font-display font-extrabold uppercase tracking-widest text-[8px]"
+                  >
+                    Go
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.header>
 
       {/* --- Full-Screen Menu Overlay --- */}
