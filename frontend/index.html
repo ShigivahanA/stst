@@ -9,12 +9,12 @@
     (function() {
       // Check if we are on a touch device but browser is spoofing a desktop User Agent (Request Desktop Site)
       var isTouchDevice = navigator.maxTouchPoints > 0 || 'ontouchstart' in window;
-      var isDesktopUA = /Macintosh|Windows|Linux x86_64|X11/.test(navigator.userAgent) && !/Mobi|Android|iPhone|iPad|iPod/.test(navigator.userAgent);
+      var isDesktopUA = /Macintosh|Windows|Linux|CrOS|X11/.test(navigator.userAgent) && !/Mobi|Android|iPhone|iPad|iPod/.test(navigator.userAgent);
       
       if (isTouchDevice && isDesktopUA) {
         var viewport = document.getElementById('viewport');
         if (viewport) {
-          viewport.setAttribute('content', 'width=1200, shrink-to-fit=no');
+          viewport.setAttribute('content', 'width=1280, shrink-to-fit=no');
         }
         document.documentElement.classList.add('mobile-desktop-mode');
       }

@@ -30,13 +30,13 @@ export default function Footer() {
 
             {/* Social / Contact Shortcut Icons */}
             <div className="flex gap-4 mt-2">
-              <a href="https://wa.me/918608678828" target="_blank" rel="noopener noreferrer" className="p-2 border border-artisan-dark/10 hover:border-artisan-dark hover:bg-artisan-dark hover:text-artisan-light transition-all rounded-none text-artisan-dark/60">
+              <a href="https://wa.me/918608678828" target="_blank" rel="noopener noreferrer" className="p-2 border border-artisan-dark/10 hover:border-artisan-dark hover:bg-artisan-dark hover:text-artisan-light transition-all rounded-full text-artisan-dark/60">
                 <MessageCircle className="w-4 h-4" />
               </a>
-              <a href="tel:+918608678828" className="p-2 border border-artisan-dark/10 hover:border-artisan-dark hover:bg-artisan-dark hover:text-artisan-light transition-all rounded-none text-artisan-dark/60">
+              <a href="tel:+918608678828" className="p-2 border border-artisan-dark/10 hover:border-artisan-dark hover:bg-artisan-dark hover:text-artisan-light transition-all rounded-full text-artisan-dark/60">
                 <Phone className="w-4 h-4" />
               </a>
-              <a href="mailto:statsurgicalsupplies@gmail.com" className="p-2 border border-artisan-dark/10 hover:border-artisan-dark hover:bg-artisan-dark hover:text-artisan-light transition-all rounded-none text-artisan-dark/60">
+              <a href="mailto:statsurgicalsupplies@gmail.com" className="p-2 border border-artisan-dark/10 hover:border-artisan-dark hover:bg-artisan-dark hover:text-artisan-light transition-all rounded-full text-artisan-dark/60">
                 <Mail className="w-4 h-4" />
               </a>
             </div>
@@ -147,7 +147,7 @@ export default function Footer() {
               className="group flex items-center gap-3 text-[10px] font-mono font-bold text-artisan-grey uppercase tracking-[0.3em] hover:text-artisan-dark transition-colors"
             >
               BACK TO TOP
-              <div className="w-8 h-8 border-2 border-artisan-grey flex items-center justify-center group-hover:bg-artisan-grey group-hover:text-artisan-dark transition-all">
+              <div className="w-8 h-8 border-2 border-artisan-grey flex items-center justify-center rounded-full group-hover:bg-artisan-grey group-hover:text-artisan-dark transition-all">
                 <ArrowUp className="w-3.5 h-3.5" />
               </div>
             </button>
