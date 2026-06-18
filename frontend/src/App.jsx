@@ -7,6 +7,8 @@ import Footer from './components/Footer'
 import ProtectedRoute from './components/ProtectedRoute'
 import ScrollToTop from './components/ScrollToTop'
 import AnalyticsTracker from './components/AnalyticsTracker'
+import WhatsAppFloatingButton from './components/WhatsAppFloatingButton'
+import CookieConsent from './components/CookieConsent'
 
 import { useAuth } from './context/AuthContext'
 import ConsentModal from './components/auth/ConsentModal'
@@ -56,7 +58,7 @@ const Sitemap = lazy(() => import('./pages/Sitemap'))
 const Verification = lazy(() => import('./pages/Verification'))
 
 function App() {
-  const { user, setUser, toggleWishlist } = useAuth()
+  const { user, setUser, toggleWishlist, updateConsents } = useAuth()
   const { addToast } = useToast()
   const location = useLocation()
 
@@ -95,10 +97,24 @@ function App() {
           localStorage.removeItem('pending_wishlist_action')
         }
       }
+
+      // Sync cookie consent from localStorage to user profile if not already set
+      const localConsent = localStorage.getItem('cookies_accepted')
+      if (localConsent !== null) {
+        if (!user.consents || user.consents.cookiesAccepted === undefined) {
+          try {
+            await updateConsents({
+              cookiesAccepted: localConsent === 'true'
+            })
+          } catch (err) {
+            console.error('Failed to sync cookie consent:', err)
+          }
+        }
+      }
     }
 
     syncPendingActions()
-  }, [user, setUser, toggleWishlist, addToast])
+  }, [user, setUser, toggleWishlist, updateConsents, addToast])
 
   const isAuthPage = ['/login', '/signup', '/forgot-password'].includes(location.pathname) ||
     location.pathname.startsWith('/resetpassword/') ||
@@ -112,7 +128,9 @@ function App() {
     <div className="min-h-screen bg-artisan-dark">
       <ScrollToTop />
       <AnalyticsTracker />
+      <CookieConsent />
       {!isAuthPage && <Navbar />}
+      {!isAuthPage && <WhatsAppFloatingButton />}
       <main className="relative">
         <AnimatePresence mode="wait" initial={false}>
           <motion.div

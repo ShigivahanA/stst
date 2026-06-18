@@ -281,3 +281,35 @@ export const getWishlist = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, activeItems, 'Wishlist fetched successfully'));
 });
 
+// Update user's consents (cookies and/or terms)
+export const updateConsents = asyncHandler(async (req, res) => {
+  const { cookiesAccepted, termsAccepted } = req.body;
+
+  const user = await User.findById(req.user._id);
+  if (!user) {
+    throw new ApiError(404, 'User not found');
+  }
+
+  if (!user.consents) {
+    user.consents = {};
+  }
+
+  if (cookiesAccepted !== undefined) {
+    user.consents.cookiesAccepted = cookiesAccepted;
+  }
+  if (termsAccepted !== undefined) {
+    user.consents.termsAccepted = termsAccepted;
+  }
+
+  await user.save({ validateBeforeSave: false });
+
+  const userResponse = user.toObject();
+  delete userResponse.password;
+  delete userResponse.refreshTokens;
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, userResponse, 'Consents updated successfully'));
+});
+
+

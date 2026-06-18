@@ -108,6 +108,13 @@ export default function Cart() {
   const [razorpayOrderInfo, setRazorpayOrderInfo] = useState(null)
   const [completedOrder, setCompletedOrder] = useState(null)
 
+  useEffect(() => {
+    if (completedOrder) {
+      sessionStorage.setItem('wa_conversion_happened', 'true')
+      localStorage.setItem('wa_conversion_happened', 'true')
+    }
+  }, [completedOrder])
+
   // COUPON STATES
   const [couponCodeInput, setCouponCodeInput] = useState('')
   const [appliedCoupon, setAppliedCoupon] = useState(null)

@@ -11,6 +11,7 @@ import {
   deleteAvatar,
   toggleWishlist,
   getWishlist,
+  updateConsents,
 } from '../controllers/user.controller.js';
 
 const router = express.Router();
@@ -28,5 +29,6 @@ router.put('/avatar', uploadAvatar);
 router.delete('/avatar', deleteAvatar);
 router.post('/wishlist/:productId', toggleWishlist);
 router.get('/wishlist', getWishlist);
+router.put('/consents', updateConsents);
 
 export default router;
