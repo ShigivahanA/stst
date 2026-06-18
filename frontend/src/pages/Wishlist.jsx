@@ -81,12 +81,12 @@ export default function Wishlist() {
 
             <div className="flex items-center gap-12 border-t md:border-t-0 border-artisan-light/5 pt-8 md:pt-0">
               <div className="flex flex-col items-start md:items-end gap-1">
-                <span className="text-[8px] font-mono text-artisan-light/30 uppercase tracking-widest">Saved Items</span>
+                <span className="text-[8px] font-mono text-artisan-light/50 uppercase tracking-widest">Saved Items</span>
                 <span className="text-2xl font-display font-black text-artisan-light">{items.length}</span>
               </div>
               <div className="w-px h-12 bg-artisan-light/10" />
               <div className="flex flex-col items-start md:items-end gap-1">
-                <span className="text-[8px] font-mono text-artisan-light/30 uppercase tracking-widest">Total Value</span>
+                <span className="text-[8px] font-mono text-artisan-light/50 uppercase tracking-widest">Total Value</span>
                 <span className="text-2xl font-display font-black text-artisan-grey">₹{items.reduce((acc, curr) => acc + (curr.price || 0), 0).toLocaleString()}</span>
               </div>
             </div>
@@ -150,7 +150,7 @@ export default function Wishlist() {
 
                         <div className="pt-6 border-t border-artisan-light/5 flex items-center justify-between">
                           <div className="flex flex-col">
-                            <span className="text-[8px] font-mono text-artisan-light/30 uppercase tracking-widest">Price</span>
+                            <span className="text-[8px] font-mono text-artisan-light/50 uppercase tracking-widest">Price</span>
                             <span className="text-xl font-display font-black text-artisan-light tracking-tight">₹{item.price?.toLocaleString()}</span>
                           </div>
 
@@ -180,7 +180,7 @@ export default function Wishlist() {
                       No saved <br />
                       <span className="text-outline">Items.</span>
                     </h2>
-                    <p className="text-xs font-mono font-bold text-artisan-light/30 uppercase tracking-[0.4em]">
+                    <p className="text-xs font-mono font-bold text-artisan-light/50 uppercase tracking-[0.4em]">
                       {user ? 'Tap the heart icon on any product to save it here' : 'Log in to save your favorite products'}
                     </p>
                   </div>

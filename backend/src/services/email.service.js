@@ -2,15 +2,27 @@ import nodemailer from 'nodemailer';
 import logger from '../config/logger.js';
 import * as templates from '../utils/emailTemplates.js';
 
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-  port: parseInt(process.env.EMAIL_PORT || '465'),
-  secure: process.env.EMAIL_SECURE !== 'false', // Default to true unless explicitly 'false'
-  auth: {
-    user: process.env.EMAIL_USER || 'shigivahan@gmail.com',
-    pass: process.env.EMAIL_PASS || 'ttrw ypgy jvuy ztjf',
-  },
-});
+const user = process.env.EMAIL_USER;
+const pass = process.env.EMAIL_PASS;
+
+let transporter;
+
+if (!user || !pass) {
+  logger.warn('EMAIL_USER or EMAIL_PASS environment variables are missing. Using mock email transporter.');
+  transporter = {
+    sendMail: async (mailOptions) => {
+      logger.info(`[MOCK EMAIL SENT] To: ${mailOptions.to} | Subject: ${mailOptions.subject}`);
+      return { messageId: `mock-id-${Date.now()}` };
+    }
+  };
+} else {
+  transporter = nodemailer.createTransport({
+    host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+    port: parseInt(process.env.EMAIL_PORT || '465'),
+    secure: process.env.EMAIL_SECURE !== 'false', // Default to true unless explicitly 'false'
+    auth: { user, pass },
+  });
+}
 
 export const sendEmail = async (to, subject, html) => {
   try {
@@ -81,4 +93,27 @@ export const sendShippingUpdateEmail = async (to, name, orderId, shippingStatus,
   const html = templates.getShippingUpdateTemplate(name, orderId, shippingStatus, description);
   return await sendEmail(to, `Shipping Update: Order #${orderId.slice(-8).toUpperCase()} is now ${shippingStatus.toUpperCase()}`, html);
 };
+
+export const sendBulkEnquiryEmail = async (name, email, phone, organization, productName, quantity, requirements, budget, timeline) => {
+  const html = templates.getBulkEnquiryTemplate(name, email, phone, organization, productName, quantity, requirements, budget, timeline);
+  const adminEmail = process.env.ADMIN_EMAIL || 'statsurgicalsupplies@gmail.com';
+  return await sendEmail(adminEmail, `New Bulk Order Enquiry - ${productName || 'General'}`, html);
+};
+
+export const sendBulkEnquiryReceiptEmail = async (to, name, productName, quantity) => {
+  const html = templates.getBulkEnquiryReceiptTemplate(name, productName, quantity);
+  return await sendEmail(to, 'Acknowledgement: Bulk Procurement Request Received', html);
+};
+
+export const sendBookingAdminNotificationEmail = async ({ name, email, phone, productName, date, timeSlot, notes, demoType, videoLink }) => {
+  const html = templates.getBookingAdminTemplate(name, email, phone, productName, date, timeSlot, notes, demoType, videoLink);
+  const adminEmail = process.env.ADMIN_EMAIL || 'statsurgicalsupplies@gmail.com';
+  return await sendEmail(adminEmail, `New Trial Booking - ${name} (${productName})`, html);
+};
+
+export const sendBookingConfirmationEmail = async (to, { name, productName, date, timeSlot, demoType, videoLink }) => {
+  const html = templates.getBookingCustomerTemplate(name, productName, date, timeSlot, demoType, videoLink);
+  return await sendEmail(to, 'Demo Appointment Confirmation - STAT Surgical', html);
+};
+
 

@@ -20,6 +20,8 @@ const checkout = {
       .required(),
     sessionId: Joi.string().required(),
     conversionSource: Joi.string().allow('').default('direct'),
+    couponCode: Joi.string().allow('').trim().uppercase().optional(),
+    addressId: Joi.string().custom(objectId).required(),
   }),
 };
 

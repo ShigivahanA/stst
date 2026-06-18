@@ -55,6 +55,11 @@ const orderSchema = new mongoose.Schema(
       enum: ['pending', 'paid', 'failed', 'refunded'],
       default: 'pending',
     },
+    paymentMethod: {
+      type: String,
+      enum: ['razorpay', 'cod'],
+      default: 'razorpay',
+    },
     shippingStatus: {
       type: String,
       enum: ['pending', 'shipped', 'in_transit', 'out_for_delivery', 'delivered', 'failed'],
@@ -96,6 +101,28 @@ const orderSchema = new mongoose.Schema(
       type: String,
       default: 'direct', // e.g., 'google', 'newsletter_may', etc.
     },
+    couponApplied: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Coupon',
+    },
+    couponCode: {
+      type: String,
+      default: '',
+    },
+    discountAmount: {
+      type: Number,
+      default: 0,
+      min: [0, 'Discount amount cannot be negative'],
+    },
+    shippingAddress: {
+      tag: { type: String, default: '' },
+      doorNumber: { type: String, default: '' },
+      secondLine: { type: String, default: '' },
+      landmark: { type: String, default: '' },
+      city: { type: String, default: '' },
+      state: { type: String, default: '' },
+      pincode: { type: String, default: '' },
+    },
   },
   {
     timestamps: true,
@@ -103,6 +130,9 @@ const orderSchema = new mongoose.Schema(
     toObject: { virtuals: true },
   }
 );
+
+orderSchema.index({ user: 1, createdAt: -1 });
+orderSchema.index({ orderStatus: 1 });
 
 // Virtual for Profit Margin
 orderSchema.virtual('profit').get(function () {

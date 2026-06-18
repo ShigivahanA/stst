@@ -163,7 +163,7 @@ export default function About() {
 
             {/* FEATURES GRID */}
             <div className="mb-24 space-y-6">
-               <span className="text-[9px] font-mono font-bold text-artisan-light/30 uppercase tracking-widest block">Core Commitments</span>
+               <span className="text-[9px] font-mono font-bold text-artisan-light/50 uppercase tracking-widest block">Core Commitments</span>
                <motion.div
                   variants={containerVariants}
                   initial="hidden"
@@ -199,7 +199,7 @@ export default function About() {
 
             {/* METRICS DASHBOARD */}
             <div className="mb-24 space-y-6">
-               <span className="text-[9px] font-mono font-bold text-artisan-light/30 uppercase tracking-widest block">Operational Metrics</span>
+               <span className="text-[9px] font-mono font-bold text-artisan-light/50 uppercase tracking-widest block">Operational Metrics</span>
                <motion.div
                   initial={{ opacity: 0, y: 15 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -213,7 +213,7 @@ export default function About() {
                         whileHover={{ backgroundColor: "rgba(92, 62, 148, 0.03)" }}
                         className="bg-artisan-dark p-6 md:p-8 text-center space-y-2 relative group"
                      >
-                        <span className="text-[9px] font-mono text-artisan-light/30 uppercase tracking-[0.3em] block">{stat.label}</span>
+                        <span className="text-[9px] font-mono text-artisan-light/50 uppercase tracking-[0.3em] block">{stat.label}</span>
                         <p className="text-2xl md:text-3xl font-display font-black text-artisan-light tracking-tighter group-hover:text-artisan-grey transition-colors duration-300">{stat.value}</p>
 
                         {/* Visual crosshair markers */}

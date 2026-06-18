@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
-import { MessageCircle, ShoppingBag, Clock } from 'lucide-react'
+import { MessageCircle, ShoppingBag, Clock, Calendar } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 export default function CTA() {
@@ -8,7 +8,7 @@ export default function CTA() {
   const isInView = useInView(ref, { once: true, margin: '-100px' })
 
   return (
-    <section ref={ref} className="bg-artisan-grey bg-noise min-h-screen flex flex-col justify-center overflow-hidden relative border-b-2 border-artisan-light">
+    <section ref={ref} className="bg-artisan-grey/90 backdrop-blur-md bg-noise min-h-screen flex flex-col justify-center overflow-hidden relative border-b-2 border-artisan-light">
       {/* Decorative Elements */}
       <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none select-none">
         <ShoppingBag className="w-64 h-64 text-artisan-dark" />
@@ -50,40 +50,40 @@ export default function CTA() {
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="w-full px-10 py-5 bg-artisan-dark text-artisan-light font-display font-extrabold uppercase tracking-widest text-xs hover:bg-artisan-light hover:text-artisan-dark transition-all duration-500 shadow-2xl flex items-center justify-center gap-3"
+                className="w-full px-10 py-5 bg-artisan-dark text-artisan-light font-display font-extrabold uppercase tracking-widest text-xs hover:bg-artisan-light hover:text-artisan-dark transition-all duration-500 shadow-2xl flex items-center justify-center gap-3 rounded-xl"
               >
                 <MessageCircle className="w-4 h-4" />
                 WhatsApp Us
               </motion.button>
             </a>
 
-            <Link to="/allproduct" className="w-full sm:w-auto">
+            <Link to="/book-demo" className="w-full sm:w-auto">
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="w-full px-10 py-5 border-2 border-artisan-dark text-artisan-dark font-display font-extrabold uppercase tracking-widest text-xs hover:bg-artisan-dark hover:text-artisan-light transition-all duration-500 flex items-center justify-center gap-3"
+                className="w-full px-10 py-5 border-2 border-artisan-dark text-artisan-dark font-display font-extrabold uppercase tracking-widest text-xs hover:bg-artisan-dark hover:text-artisan-light transition-all duration-500 flex items-center justify-center gap-3 rounded-full"
               >
-                <ShoppingBag className="w-4 h-4" />
-                Browse Products
+                <Calendar className="w-4 h-4" />
+                Book Trial Demo
               </motion.button>
             </Link>
           </motion.div>
 
           {/* Business Hours */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={isInView ? { opacity: 1 } : {}}
             transition={{ delay: 0.6 }}
             className="mt-12 pt-6 border-t border-artisan-dark/10 flex flex-wrap gap-x-8 gap-y-3"
           >
-             <div className="flex items-center gap-2 text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-artisan-dark/60">
-               <Clock className="w-3.5 h-3.5" />
-               <span>Mon–Sat: 9:00 AM – 9:00 PM</span>
-             </div>
-             <div className="flex items-center gap-2 text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-artisan-dark/60">
-               <Clock className="w-3.5 h-3.5" />
-               <span>Sun: 10:00 AM – 2:00 PM</span>
-             </div>
+            <div className="flex items-center gap-2 text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-artisan-dark/60">
+              <Clock className="w-3.5 h-3.5" />
+              <span>Mon–Sat: 9:00 AM – 9:00 PM</span>
+            </div>
+            <div className="flex items-center gap-2 text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-artisan-dark/60">
+              <Clock className="w-3.5 h-3.5" />
+              <span>Sun: 10:00 AM – 2:00 PM</span>
+            </div>
           </motion.div>
         </div>
       </div>

@@ -82,6 +82,27 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const googleLogin = async (idToken) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await api.post('/auth/google-login', { idToken });
+      
+      localStorage.setItem('token', res.data.data.accessToken);
+
+      const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      sessionStorage.setItem(`login_time_${res.data.data.user._id}`, timeStr);
+
+      setUser(res.data.data.user);
+      return res.data.data;
+    } catch (err) {
+      setError(err.response?.data?.message || 'Google login failed');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const verify2FA = async (userId, otp) => {
     try {
       setLoading(true);
@@ -259,7 +280,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider value={{ 
-      user, setUser, loading, error, signup, login, verify2FA, logout, 
+      user, setUser, loading, error, signup, login, googleLogin, verify2FA, logout, 
       forgotPassword, resetPassword, completeOnboarding, 
       clearError, updateProfile, verifyAadharOTP, 
       confirmAadharVerification, uploadAvatar, deleteAvatar,

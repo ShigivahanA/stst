@@ -6,20 +6,44 @@ import Product from '../models/product.model.js';
 import Session from '../models/session.model.js';
 import AnalyticsEvent from '../models/analytics.model.js';
 import User from '../models/user.model.js';
+import Coupon from '../models/coupon.model.js';
 import ApiError from '../utils/ApiError.js';
 import logger from '../config/logger.js';
 import { sendOrderSuccessEmail, sendOrderFailureEmail, sendShippingUpdateEmail } from './email.service.js';
 
-export const createCheckoutOrder = async ({ userId, items, sessionId, conversionSource }) => {
+export const createCheckoutOrder = async ({ userId, items, sessionId, conversionSource, couponCode, addressId }) => {
   const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
-    let totalAmount = 0;
+    let subtotal = 0;
     let totalCost = 0;
     const orderItems = [];
 
-    // Verify stock and calculate totals
+    // Find User and their addresses
+    const user = await User.findById(userId).session(session);
+    if (!user) {
+      throw new ApiError(404, 'User not found');
+    }
+
+    const matchedAddress = user.addresses.find(
+      (addr) => addr._id.toString() === addressId
+    );
+    if (!matchedAddress) {
+      throw new ApiError(404, 'Selected shipping address not found');
+    }
+
+    const shippingAddress = {
+      tag: matchedAddress.tag,
+      doorNumber: matchedAddress.doorNumber,
+      secondLine: matchedAddress.secondLine,
+      landmark: matchedAddress.landmark,
+      city: matchedAddress.city,
+      state: matchedAddress.state,
+      pincode: matchedAddress.pincode,
+    };
+
+    // Verify stock, reserve inventory, and calculate totals
     for (const item of items) {
       const product = await Product.findById(item.productId).session(session);
       
@@ -31,14 +55,25 @@ export const createCheckoutOrder = async ({ userId, items, sessionId, conversion
         throw new ApiError(400, `Product ${product.name} is no longer available`);
       }
 
-      if (product.quantity < item.quantity) {
-        throw new ApiError(400, `Insufficient stock for product: ${product.name}. Available: ${product.quantity}`);
+      // Atomically reserve/decrement stock
+      const stockUpdateResult = await Product.updateOne(
+        {
+          _id: product._id,
+          quantity: { $gte: item.quantity },
+        },
+        {
+          $inc: { quantity: -item.quantity },
+        }
+      ).session(session);
+
+      if (stockUpdateResult.matchedCount === 0) {
+        throw new ApiError(400, `Insufficient stock for product: ${product.name}`);
       }
 
       const priceAtPurchase = product.price;
       const costAtPurchase = product.price * 0.7; // Estimated cost price since costPrice was removed from schema
 
-      totalAmount += priceAtPurchase * item.quantity;
+      subtotal += priceAtPurchase * item.quantity;
       totalCost += costAtPurchase * item.quantity;
 
       orderItems.push({
@@ -49,9 +84,53 @@ export const createCheckoutOrder = async ({ userId, items, sessionId, conversion
       });
     }
 
+    // Process coupon code if passed
+    let discountAmount = 0;
+    let couponAppliedId = null;
+    let finalCouponCode = '';
+
+    if (couponCode) {
+      const coupon = await Coupon.findOne({ code: couponCode.toUpperCase() }).session(session);
+      if (!coupon || !coupon.isActive) {
+        throw new ApiError(404, 'Invalid coupon code');
+      }
+
+      const currentDate = new Date();
+      if (currentDate > new Date(coupon.validUntil)) {
+        throw new ApiError(400, 'Coupon code has expired');
+      }
+
+      if (coupon.usageLimit !== null && coupon.usageCount >= coupon.usageLimit) {
+        throw new ApiError(400, 'Coupon usage limit has been reached');
+      }
+
+      if (subtotal < coupon.minCartAmount) {
+        throw new ApiError(400, `Minimum order amount of ₹${coupon.minCartAmount.toLocaleString()} is required for this coupon`);
+      }
+
+      if (coupon.discountType === 'percentage') {
+        discountAmount = Math.round(subtotal * (coupon.discountValue / 100));
+        if (coupon.maxDiscountAmount !== null && discountAmount > coupon.maxDiscountAmount) {
+          discountAmount = coupon.maxDiscountAmount;
+        }
+      } else if (coupon.discountType === 'flat') {
+        discountAmount = coupon.discountValue;
+      }
+
+      // Cap discount at the subtotal
+      discountAmount = Math.min(discountAmount, subtotal);
+      couponAppliedId = coupon._id;
+      finalCouponCode = coupon.code;
+    }
+
+    const discountedSubtotal = Math.max(0, subtotal - discountAmount);
+    const serviceFee = Math.round(discountedSubtotal * 0.05); // 5% GST/Service fee
+    const shippingFee = discountedSubtotal > 5000 || discountedSubtotal === 0 ? 0 : 150;
+    const finalTotalAmount = discountedSubtotal + serviceFee + shippingFee;
+
     // Create Razorpay order
     // Razorpay amount is in paise (1 INR = 100 paise)
-    const amountInPaise = Math.round(totalAmount * 100);
+    const amountInPaise = Math.round(finalTotalAmount * 100);
     const razorpayOptions = {
       amount: amountInPaise,
       currency: 'INR',
@@ -70,12 +149,16 @@ export const createCheckoutOrder = async ({ userId, items, sessionId, conversion
           user: userId,
           sessionId,
           items: orderItems,
-          totalAmount,
+          totalAmount: finalTotalAmount,
           totalCost,
+          couponApplied: couponAppliedId,
+          couponCode: finalCouponCode,
+          discountAmount,
           razorpayOrderId: razorpayOrder.id,
           conversionSource: conversionSource || 'direct',
           orderStatus: 'pending',
           paymentStatus: 'pending',
+          shippingAddress,
         },
       ],
       { session }
@@ -90,7 +173,7 @@ export const createCheckoutOrder = async ({ userId, items, sessionId, conversion
           eventName: 'initiate_checkout',
           properties: {
             razorpayOrderId: razorpayOrder.id,
-            totalAmount,
+            totalAmount: finalTotalAmount,
             itemsCount: items.length,
           },
           referrer: 'checkout',
@@ -149,7 +232,7 @@ export const verifyRazorpayPayment = async ({
       // Payment already processed, idempotent return
       await session.commitTransaction();
       session.endSession();
-      return order;
+      return await Order.findById(order._id).populate('items.product').populate('user', 'name email');
     }
 
     // Update order payments logs
@@ -168,26 +251,12 @@ export const verifyRazorpayPayment = async ({
     order.razorpaySignature = razorpaySignature;
     await order.save({ session });
 
-    // Decrement inventory stock atomically using $inc and check quantity
-    for (const item of order.items) {
-      const result = await Product.updateOne(
-        {
-          _id: item.product,
-          quantity: { $gte: item.quantity }, // Ensure we don't sell below 0 (double safety)
-        },
-        {
-          $inc: { quantity: -item.quantity },
-        }
+    // Increment coupon usage count if applied
+    if (order.couponCode) {
+      await Coupon.updateOne(
+        { code: order.couponCode },
+        { $inc: { usageCount: 1 } }
       ).session(session);
-
-      if (result.matchedCount === 0) {
-        // High concurrency stock depleted before payment verification
-        logger.error(`Stock depletion error for product ID: ${item.product} in Order: ${order._id}`);
-        throw new ApiError(
-          400,
-          `Oversold items detected. Stock depleted during transaction. Contact support for Order SKU.`
-        );
-      }
     }
 
     // Mark session as converted and log conversion event
@@ -226,10 +295,6 @@ export const verifyRazorpayPayment = async ({
     await session.commitTransaction();
     session.endSession();
 
-    // Trigger simulated shipping progression updates in background
-    simulateShippingUpdates(order._id).catch((err) => {
-      logger.error(`Failed to start shipping simulation for Order ${order._id}: ${err.message}`);
-    });
 
     // Send order confirmation email asynchronously
     if (order.user) {
@@ -252,7 +317,7 @@ export const verifyRazorpayPayment = async ({
         });
     }
 
-    return order;
+    return await Order.findById(order._id).populate('items.product').populate('user', 'name email');
   } catch (error) {
     await session.abortTransaction();
     session.endSession();
@@ -331,7 +396,7 @@ export const getOrderHistory = async (userId) => {
 
 export const getOrderDetail = async (orderId, user) => {
   const order = await Order.findById(orderId)
-    .populate('user', 'name email role')
+    .populate('user', 'name email role addresses')
     .populate('items.product');
 
   if (!order) {
@@ -346,50 +411,155 @@ export const getOrderDetail = async (orderId, user) => {
   return order;
 };
 
-export const simulateShippingUpdates = async (orderId) => {
-  const intervals = [
-    { delay: 15000, status: 'shipped', desc: 'Order sterilized, packaged and handed over to courier partner.' },
-    { delay: 30000, status: 'in_transit', desc: 'Order in transit through regional courier facility.' },
-    { delay: 45000, status: 'out_for_delivery', desc: 'Order out for delivery with local surgical delivery agent.' },
-    { delay: 60000, status: 'delivered', desc: 'Order delivered successfully to shipping address.' }
-  ];
 
-  for (const step of intervals) {
-    setTimeout(async () => {
-      try {
-        const order = await Order.findById(orderId).populate('user');
-        if (!order || order.orderStatus === 'cancelled' || order.orderStatus === 'refunded') {
-          // Stop simulation if order is cancelled or refunded
-          return;
-        }
+export const confirmCodOrder = async ({ razorpayOrderId, codFee = 50 }) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
 
-        order.shippingStatus = step.status;
-        order.shippingHistory.push({
-          status: step.status,
-          description: step.desc,
-          timestamp: new Date()
-        });
+  try {
+    const order = await Order.findOne({ razorpayOrderId }).session(session);
+    if (!order) {
+      throw new ApiError(404, 'Order matching this payment not found');
+    }
 
-        if (step.status === 'delivered') {
-          order.orderStatus = 'completed';
-        }
+    if (order.orderStatus === 'processing' || order.orderStatus === 'completed') {
+      await session.commitTransaction();
+      session.endSession();
+      return await Order.findById(order._id).populate('items.product').populate('user', 'name email');
+    }
 
-        await order.save();
-
-        if (order.user) {
-          await sendShippingUpdateEmail(
-            order.user.email,
-            order.user.name,
-            order._id.toString(),
-            step.status,
-            step.desc
-          );
-        }
-        
-        logger.info(`Shipping simulation: Order ${orderId} updated to ${step.status}`);
-      } catch (err) {
-        logger.error(`Error in shipping simulation for Order ${orderId}: ${err.message}`);
+    // Add COD fee to the total amount
+    order.totalAmount += codFee;
+    order.paymentMethod = 'cod';
+    order.paymentStatus = 'pending';
+    order.orderStatus = 'processing';
+    order.shippingStatus = 'pending';
+    order.shippingTrackingNumber = `TRK${Math.floor(1000000000 + Math.random() * 9000000000)}`;
+    order.shippingHistory = [
+      {
+        status: 'pending',
+        description: 'Order confirmed with Cash on Delivery. Undergoing sterilization and quality verification.',
+        timestamp: new Date(),
       }
-    }, step.delay);
+    ];
+    await order.save({ session });
+
+    // Increment coupon usage count if applied
+    if (order.couponCode) {
+      await Coupon.updateOne(
+        { code: order.couponCode },
+        { $inc: { usageCount: 1 } }
+      ).session(session);
+    }
+
+    // Mark session as converted and log conversion event
+    if (order.sessionId) {
+      await Session.updateOne(
+        { sessionId: order.sessionId },
+        { $set: { conversionRecorded: true } }
+      ).session(session);
+
+      await AnalyticsEvent.create(
+        [
+          {
+            sessionId: order.sessionId,
+            user: order.user,
+            eventName: 'conversion_purchase',
+            properties: {
+              orderId: order._id,
+              totalAmount: order.totalAmount,
+              paymentMethod: 'cod'
+            },
+            referrer: 'payment_cod',
+          },
+        ],
+        { session }
+      );
+    }
+
+    // Clear user's cart in DB upon successful order completion
+    if (order.user) {
+      const user = await User.findById(order.user).session(session);
+      if (user) {
+        user.cart = [];
+        await user.save({ session, validateBeforeSave: false });
+      }
+    }
+
+    await session.commitTransaction();
+    session.endSession();
+
+
+    // Send order confirmation email asynchronously
+    if (order.user) {
+      User.findById(order.user)
+        .then(async (user) => {
+          if (user) {
+            const populatedOrder = await Order.findById(order._id).populate('items.product');
+            sendOrderSuccessEmail(
+              user.email,
+              user.name,
+              order.razorpayOrderId || order._id.toString(),
+              populatedOrder.items,
+              order.totalAmount
+            );
+          }
+        })
+        .catch((err) => {
+          logger.error(`Error sending checkout success email: ${err.message}`);
+        });
+    }
+
+    return await Order.findById(order._id).populate('items.product').populate('user', 'name email');
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    throw error;
   }
 };
+
+export const releaseExpiredOrdersStock = async () => {
+  // Find all orders that have been pending and unpaid for more than 20 minutes
+  const expirationThreshold = new Date(Date.now() - 20 * 60 * 1000);
+  
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  
+  try {
+    const expiredOrders = await Order.find({
+      orderStatus: 'pending',
+      paymentStatus: 'pending',
+      createdAt: { $lt: expirationThreshold }
+    }).session(session);
+    
+    if (expiredOrders.length === 0) {
+      await session.commitTransaction();
+      session.endSession();
+      return;
+    }
+    
+    logger.info(`Found ${expiredOrders.length} expired pending orders. Releasing stock...`);
+    
+    for (const order of expiredOrders) {
+      for (const item of order.items) {
+        await Product.updateOne(
+          { _id: item.product },
+          { $inc: { quantity: item.quantity } }
+        ).session(session);
+        logger.info(`Released stock for product: ${item.product} (Qty: ${item.quantity}) from Order: ${order._id}`);
+      }
+      
+      order.orderStatus = 'cancelled';
+      order.paymentStatus = 'failed';
+      await order.save({ session });
+    }
+    
+    await session.commitTransaction();
+    session.endSession();
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    logger.error(`Error in releaseExpiredOrdersStock: ${error.message}`);
+  }
+};
+

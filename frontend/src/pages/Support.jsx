@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Mail, MessageSquare, Phone, MapPin, Clock, ArrowRight } from 'lucide-react'
+import { Mail, MessageSquare, Phone, MapPin, Clock, ArrowRight, Navigation } from 'lucide-react'
 import { useToast } from '../context/ToastContext'
 
 const containerVariants = {
@@ -180,7 +180,7 @@ export default function Support() {
                     <MapPin className="w-5 h-5" />
                   </motion.div>
                   <div className="space-y-1">
-                    <span className="text-[9px] font-mono text-artisan-light/30 uppercase tracking-widest block font-bold font-bold">Our Location</span>
+                    <span className="text-[9px] font-mono text-artisan-light/50 uppercase tracking-widest block font-bold font-bold">Our Location</span>
                     <p className="text-xs font-mono text-artisan-light/70 uppercase leading-relaxed tracking-wider">
                       No 85, Nalla Thambi Road, Pammal, Chennai-600 075, Tamil Nadu.
                     </p>
@@ -200,7 +200,7 @@ export default function Support() {
                     <MessageSquare className="w-5 h-5" />
                   </motion.div>
                   <div className="space-y-1">
-                    <span className="text-[9px] font-mono text-artisan-light/30 uppercase tracking-widest block font-bold font-bold">WhatsApp</span>
+                    <span className="text-[9px] font-mono text-artisan-light/50 uppercase tracking-widest block font-bold font-bold">WhatsApp</span>
                     <a href="https://wa.me/918608678828" target="_blank" rel="noopener noreferrer" className="text-base font-display font-bold uppercase text-artisan-light hover:text-artisan-grey transition-colors tracking-tight block">
                       +91 86086 78828
                     </a>
@@ -220,7 +220,7 @@ export default function Support() {
                     <Phone className="w-5 h-5" />
                   </motion.div>
                   <div className="space-y-1">
-                    <span className="text-[9px] font-mono text-artisan-light/30 uppercase tracking-widest block font-bold font-bold">Call Us</span>
+                    <span className="text-[9px] font-mono text-artisan-light/50 uppercase tracking-widest block font-bold font-bold">Call Us</span>
                     <a href="tel:+918608678828" className="text-base font-display font-bold uppercase text-artisan-light hover:text-artisan-grey transition-colors tracking-tight block">
                       (+91) 86086 78828
                     </a>
@@ -240,7 +240,7 @@ export default function Support() {
                     <Mail className="w-5 h-5" />
                   </motion.div>
                   <div className="space-y-1">
-                    <span className="text-[9px] font-mono text-artisan-light/30 uppercase tracking-widest block font-bold font-bold">Email Support</span>
+                    <span className="text-[9px] font-mono text-artisan-light/50 uppercase tracking-widest block font-bold font-bold">Email Support</span>
                     <a href="mailto:statsurgicalsupplies@gmail.com" className="text-xs font-mono text-artisan-light hover:text-artisan-grey transition-colors tracking-wider block">
                       statsurgicalsupplies@gmail.com
                     </a>
@@ -293,7 +293,7 @@ export default function Support() {
           >
             <motion.div variants={formItemVariants} className="space-y-2">
               <h2 className="text-2xl font-display font-black uppercase text-artisan-light tracking-tight">Send Message</h2>
-              <p className="text-[10px] font-mono text-artisan-light/30 uppercase tracking-widest leading-relaxed">
+              <p className="text-[10px] font-mono text-artisan-light/50 uppercase tracking-widest leading-relaxed">
                 Fill out the form below, and we will get back to you within 24 hours.
               </p>
             </motion.div>
@@ -301,7 +301,7 @@ export default function Support() {
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Full Name */}
               <motion.div variants={formItemVariants} className="group relative pb-2">
-                <label className="block text-[9px] font-mono font-bold text-artisan-light/30 uppercase tracking-[0.3em] mb-1 group-focus-within:text-artisan-grey group-focus-within:tracking-[0.4em] transition-all duration-300">
+                <label className="block text-[9px] font-mono font-bold text-artisan-light/50 uppercase tracking-[0.3em] mb-1 group-focus-within:text-artisan-grey group-focus-within:tracking-[0.4em] transition-all duration-300">
                   Full Name
                 </label>
                 <input
@@ -318,7 +318,7 @@ export default function Support() {
 
               {/* Email Address */}
               <motion.div variants={formItemVariants} className="group relative pb-2">
-                <label className="block text-[9px] font-mono font-bold text-artisan-light/30 uppercase tracking-[0.3em] mb-1 group-focus-within:text-artisan-grey group-focus-within:tracking-[0.4em] transition-all duration-300">
+                <label className="block text-[9px] font-mono font-bold text-artisan-light/50 uppercase tracking-[0.3em] mb-1 group-focus-within:text-artisan-grey group-focus-within:tracking-[0.4em] transition-all duration-300">
                   Email Address
                 </label>
                 <input
@@ -335,7 +335,7 @@ export default function Support() {
 
               {/* Subject */}
               <motion.div variants={formItemVariants} className="group relative pb-2">
-                <label className="block text-[9px] font-mono font-bold text-artisan-light/30 uppercase tracking-[0.3em] mb-1 group-focus-within:text-artisan-grey group-focus-within:tracking-[0.4em] transition-all duration-300">
+                <label className="block text-[9px] font-mono font-bold text-artisan-light/50 uppercase tracking-[0.3em] mb-1 group-focus-within:text-artisan-grey group-focus-within:tracking-[0.4em] transition-all duration-300">
                   Subject
                 </label>
                 <input
@@ -352,7 +352,7 @@ export default function Support() {
 
               {/* Message */}
               <motion.div variants={formItemVariants} className="group relative pb-2">
-                <label className="block text-[9px] font-mono font-bold text-artisan-light/30 uppercase tracking-[0.3em] mb-2 group-focus-within:text-artisan-grey group-focus-within:tracking-[0.4em] transition-all duration-300">
+                <label className="block text-[9px] font-mono font-bold text-artisan-light/50 uppercase tracking-[0.3em] mb-2 group-focus-within:text-artisan-grey group-focus-within:tracking-[0.4em] transition-all duration-300">
                   Message
                 </label>
                 <textarea
@@ -490,6 +490,48 @@ export default function Support() {
           </motion.div>
 
         </div>
+
+        {/* STORE LOCATION MAP */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.5 }}
+          className="mt-20 md:mt-28 space-y-6"
+        >
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="space-y-2">
+              <h2 className="text-xs font-mono font-bold text-artisan-grey uppercase tracking-[0.4em] pb-1">Our Store</h2>
+              <p className="text-sm font-mono text-artisan-light/40 uppercase tracking-wider">
+                No 85, Nalla Thambi Road, Pammal, Chennai - 600 075
+              </p>
+            </div>
+            <a
+              href="https://www.google.com/maps/dir/?api=1&destination=No+85+Nalla+Thambi+Road+Pammal+Chennai+600075"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 px-6 py-3 bg-artisan-grey text-artisan-dark text-[10px] font-display font-extrabold uppercase tracking-widest hover:bg-artisan-light transition-all duration-300 group"
+            >
+              <Navigation className="w-4 h-4 group-hover:rotate-360 transition-transform duration-300" />
+              Get Directions
+            </a>
+          </div>
+
+          <div className="relative w-full border border-artisan-light/10 overflow-hidden" style={{ aspectRatio: '16/6' }}>
+            {/* Dark-themed map overlay tint */}
+            <div className="absolute inset-0 pointer-events-none z-10 mix-blend-multiply bg-artisan-dark/20" />
+            <iframe
+              title="STAT Surgical Supplies Store Location"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3888.4!2d80.1375!3d12.9475!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTLCsDU2JzUxLjAiTiA4MMKwMDgnMTUuMCJF!5e0!3m2!1sen!2sin!4v1700000000000&q=No+85+Nalla+Thambi+Road+Pammal+Chennai+600075"
+              width="100%"
+              height="100%"
+              style={{ border: 0 }}
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              className="w-full h-full"
+            />
+          </div>
+        </motion.div>
 
       </div>
     </div>

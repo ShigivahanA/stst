@@ -64,27 +64,30 @@ export default function Categories() {
         </div>
 
         {/* Asymmetric Category Grid */}
-        <div ref={ref} className="grid grid-cols-1 md:grid-cols-6 lg:grid-cols-12 border-t-2 border-l-2 border-artisan-light">
+        <div ref={ref} className="grid grid-cols-1 md:grid-cols-6 lg:grid-cols-12 gap-4 lg:gap-6">
           {STATIC_CATEGORIES.map((cat, i) => (
             <motion.button
               key={cat.name}
               onClick={() => handleCategoryClick(cat.name)}
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={isInView ? { opacity: 1, scale: 1 } : {}}
+              initial={{ opacity: 0, y: 20 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              whileHover={{ y: -6, scale: 1.01 }}
               whileTap={{ scale: 0.98 }}
-              transition={{ duration: 0.6, delay: i * 0.05 }}
-              className={`group relative p-4 md:p-5 lg:p-6 border-r-2 border-b-2 border-artisan-light flex flex-col items-start text-left overflow-hidden transition-[background-color] duration-500 hover:bg-artisan-light col-span-1 md:col-span-3 ${cat.size}`}
+              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1], delay: i * 0.05 }}
+              className={`group relative p-6 md:p-8 bg-white border border-artisan-light/10 rounded-2xl md:rounded-3xl flex flex-col items-start text-left overflow-hidden transition-all duration-300 shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:shadow-xl hover:bg-artisan-light col-span-1 md:col-span-3 ${cat.size}`}
             >
-              <div className="w-full flex justify-between items-start mb-3 md:mb-4 relative z-10">
-                <span className="text-[10px] font-mono font-bold text-artisan-grey uppercase tracking-widest">Available — {counts[cat.name] || 0}</span>
+              <div className="w-full flex justify-between items-start mb-4 relative z-10">
+                <span className="text-[10px] font-mono font-bold text-artisan-grey uppercase tracking-widest bg-slate-50 px-2 py-0.5 rounded border border-slate-100 group-hover:bg-white/10 group-hover:border-white/10 group-hover:text-white transition-all duration-300">
+                  Available — {counts[cat.name] || 0}
+                </span>
                 <ArrowUpRight className="w-5 h-5 md:w-6 md:h-6 text-artisan-light group-hover:text-artisan-dark group-hover:translate-x-1 group-hover:-translate-y-1 transition-[color,transform] duration-500" />
               </div>
 
-              <div className="relative z-10 w-full">
-                <h3 className="text-base sm:text-lg lg:text-xl font-display font-extrabold uppercase text-artisan-light group-hover:text-artisan-dark transition-colors duration-500 mb-1 leading-tight break-keep hyphens-none">
+              <div className="relative z-10 w-full mt-2">
+                <h3 className="text-base sm:text-lg lg:text-xl font-display font-extrabold uppercase text-artisan-light group-hover:text-artisan-dark transition-colors duration-500 mb-1.5 leading-tight break-keep hyphens-none">
                   {cat.name}
                 </h3>
-                <p className="text-[9px] md:text-[10px] font-mono font-bold text-artisan-light/40 group-hover:text-artisan-dark/60 uppercase tracking-widest transition-colors duration-500">
+                <p className="text-[10px] font-mono font-bold text-artisan-light/45 group-hover:text-artisan-dark/60 uppercase tracking-widest transition-colors duration-500">
                   {cat.desc}
                 </p>
               </div>

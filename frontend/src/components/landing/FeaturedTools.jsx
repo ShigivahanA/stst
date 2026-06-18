@@ -43,8 +43,11 @@ export default function FeaturedTools() {
   }, [activeCategory])
 
   return (
-    <section id="featured-tools" className="bg-artisan-dark bg-noise border-b-2 border-artisan-light min-h-screen flex flex-col">
-      <div className="container-custom py-12 lg:py-16 flex flex-col flex-1 justify-between w-full">
+    <section
+      id="featured-tools"
+      className="bg-transparent bg-noise border-b-2 border-artisan-light min-h-screen py-20 lg:py-28 flex flex-col justify-center relative overflow-hidden"
+    >
+      <div className="container-custom w-full relative z-10">
 
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-6 lg:mb-8">
@@ -74,9 +77,9 @@ export default function FeaturedTools() {
                 onClick={() => setActiveCategory(cat)}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className={`px-4 py-2 border-2 text-[10px] font-mono font-bold uppercase tracking-widest transition-colors duration-300 ${activeCategory === cat
-                    ? 'bg-artisan-grey text-artisan-dark border-artisan-grey'
-                    : 'text-artisan-light border-artisan-light hover:bg-artisan-light hover:text-artisan-dark'
+                className={`px-4 py-2 border text-[10px] font-mono font-bold uppercase tracking-widest transition-colors duration-300 rounded-full ${activeCategory === cat
+                  ? 'bg-artisan-grey text-artisan-dark border-artisan-grey'
+                  : 'border-artisan-light/10 bg-artisan-dark/40 backdrop-blur-sm text-artisan-light hover:bg-artisan-grey hover:text-artisan-dark hover:border-artisan-grey'
                   }`}
               >
                 {cat}
@@ -114,10 +117,10 @@ export default function FeaturedTools() {
           className="mt-6 flex justify-center"
         >
           <Link to="/allproduct">
-            <motion.button 
+            <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="px-10 py-4 bg-artisan-light text-artisan-dark font-display font-extrabold uppercase tracking-widest text-[10px] hover:bg-artisan-grey hover:text-artisan-dark transition-all duration-500"
+              className="px-10 py-4 bg-artisan-light text-artisan-dark font-display font-extrabold uppercase tracking-widest text-[10px] hover:bg-artisan-grey hover:text-artisan-dark transition-all duration-500 rounded-full"
             >
               View All Products
             </motion.button>

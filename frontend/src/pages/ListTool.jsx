@@ -138,7 +138,7 @@ export default function ListTool() {
                   {/* SKU & Name */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="group relative border-b-2 border-artisan-light/10 focus-within:border-artisan-grey transition-all pb-4">
-                      <label className="block text-[10px] font-mono font-bold text-artisan-light/30 uppercase tracking-[0.3em] mb-4 group-focus-within:text-artisan-grey transition-colors">SKU Code</label>
+                      <label className="block text-[10px] font-mono font-bold text-artisan-light/50 uppercase tracking-[0.3em] mb-4 group-focus-within:text-artisan-grey transition-colors">SKU Code</label>
                       <input 
                         type="text" 
                         required
@@ -149,7 +149,7 @@ export default function ListTool() {
                       />
                     </div>
                     <div className="group relative border-b-2 border-artisan-light/10 focus-within:border-artisan-grey transition-all pb-4">
-                      <label className="block text-[10px] font-mono font-bold text-artisan-light/30 uppercase tracking-[0.3em] mb-4 group-focus-within:text-artisan-grey transition-colors">Product Name</label>
+                      <label className="block text-[10px] font-mono font-bold text-artisan-light/50 uppercase tracking-[0.3em] mb-4 group-focus-within:text-artisan-grey transition-colors">Product Name</label>
                       <input 
                         type="text" 
                         required
@@ -164,7 +164,7 @@ export default function ListTool() {
                   {/* Category & Quantity */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                      <div className="space-y-4">
-                        <label className="block text-[10px] font-mono font-bold text-artisan-light/30 uppercase tracking-[0.3em]">Category</label>
+                        <label className="block text-[10px] font-mono font-bold text-artisan-light/50 uppercase tracking-[0.3em]">Category</label>
                         <select 
                           value={formData.category}
                           onChange={(e) => setFormData({...formData, category: e.target.value})}
@@ -174,7 +174,7 @@ export default function ListTool() {
                         </select>
                      </div>
                      <div className="group relative border-b-2 border-artisan-light/10 focus-within:border-artisan-grey transition-all pb-4">
-                       <label className="block text-[10px] font-mono font-bold text-artisan-light/30 uppercase tracking-[0.3em] mb-4 group-focus-within:text-artisan-grey transition-colors">Initial Quantity</label>
+                       <label className="block text-[10px] font-mono font-bold text-artisan-light/50 uppercase tracking-[0.3em] mb-4 group-focus-within:text-artisan-grey transition-colors">Initial Quantity</label>
                        <input 
                          type="number" 
                          required
@@ -200,7 +200,7 @@ export default function ListTool() {
                   {/* Pricing & Threshold */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="group relative border-b-2 border-artisan-light/10 focus-within:border-artisan-grey transition-all pb-4">
-                      <label className="block text-[10px] font-mono font-bold text-artisan-light/30 uppercase tracking-[0.3em] mb-4 group-focus-within:text-artisan-grey transition-colors">Daily Rent (₹)</label>
+                      <label className="block text-[10px] font-mono font-bold text-artisan-light/50 uppercase tracking-[0.3em] mb-4 group-focus-within:text-artisan-grey transition-colors">Daily Rent (₹)</label>
                       <div className="flex items-center gap-3">
                         <IndianRupee className="w-4 h-4 text-artisan-light/20 group-focus-within:text-artisan-grey transition-colors" />
                         <input 
@@ -214,7 +214,7 @@ export default function ListTool() {
                       </div>
                     </div>
                     <div className="group relative border-b-2 border-artisan-light/10 focus-within:border-artisan-grey transition-all pb-4">
-                      <label className="block text-[10px] font-mono font-bold text-artisan-light/30 uppercase tracking-[0.3em] mb-4 group-focus-within:text-artisan-grey transition-colors">Low Stock Threshold</label>
+                      <label className="block text-[10px] font-mono font-bold text-artisan-light/50 uppercase tracking-[0.3em] mb-4 group-focus-within:text-artisan-grey transition-colors">Low Stock Threshold</label>
                       <input 
                         type="number" 
                         required
@@ -228,7 +228,7 @@ export default function ListTool() {
 
                   {/* Description */}
                   <div className="group relative border-b-2 border-artisan-light/10 focus-within:border-artisan-grey transition-all pb-4">
-                    <label className="block text-[10px] font-mono font-bold text-artisan-light/30 uppercase tracking-[0.3em] mb-4 group-focus-within:text-artisan-grey transition-colors">Description</label>
+                    <label className="block text-[10px] font-mono font-bold text-artisan-light/50 uppercase tracking-[0.3em] mb-4 group-focus-within:text-artisan-grey transition-colors">Description</label>
                     <textarea 
                       required
                       value={formData.desc}
@@ -251,7 +251,7 @@ export default function ListTool() {
                    {/* Product Photo */}
                    <div className="space-y-6">
                       <div className="flex items-center justify-between">
-                         <label className="block text-[10px] font-mono font-bold text-artisan-light/30 uppercase tracking-[0.3em]">Product Photo</label>
+                         <label className="block text-[10px] font-mono font-bold text-artisan-light/50 uppercase tracking-[0.3em]">Product Photo</label>
                          <span className="text-[10px] font-mono text-artisan-grey">{formData.image ? '1/1 Image' : '0/1 Image'}</span>
                       </div>
                       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -275,7 +275,7 @@ export default function ListTool() {
 
                    {/* Active Status */}
                    <div className="space-y-4 pt-6 border-t border-artisan-light/5">
-                      <label className="block text-[10px] font-mono font-bold text-artisan-light/30 uppercase tracking-[0.3em]">Listing Status</label>
+                      <label className="block text-[10px] font-mono font-bold text-artisan-light/50 uppercase tracking-[0.3em]">Listing Status</label>
                       <label className="flex items-center gap-3 cursor-pointer group">
                          <input 
                            type="checkbox" 
@@ -306,7 +306,7 @@ export default function ListTool() {
               <button 
                 onClick={() => setStep(prev => Math.max(1, prev - 1))}
                 disabled={step === 1}
-                className="flex items-center gap-3 text-[10px] font-mono font-bold text-artisan-light/30 uppercase tracking-widest hover:text-artisan-light disabled:opacity-0 transition-all"
+                className="flex items-center gap-3 text-[10px] font-mono font-bold text-artisan-light/50 uppercase tracking-widest hover:text-artisan-light disabled:opacity-0 transition-all"
               >
                 <ChevronLeft className="w-4 h-4" /> Back
               </button>
@@ -340,11 +340,11 @@ export default function ListTool() {
                   <div className="space-y-4">
                      <div className="space-y-1">
                         <p className="text-[9px] font-mono font-bold text-artisan-grey uppercase tracking-widest">Unique SKU Code</p>
-                        <p className="text-[10px] font-mono text-artisan-light/30 uppercase leading-relaxed">Assign a unique stock keeping unit (SKU) to track inventory levels easily.</p>
+                        <p className="text-[10px] font-mono text-artisan-light/50 uppercase leading-relaxed">Assign a unique stock keeping unit (SKU) to track inventory levels easily.</p>
                      </div>
                      <div className="space-y-1">
                         <p className="text-[9px] font-mono font-bold text-artisan-grey uppercase tracking-widest">Low Stock Alert</p>
-                        <p className="text-[10px] font-mono text-artisan-light/30 uppercase leading-relaxed">Set a custom threshold. You will receive notifications when inventory falls below this limit.</p>
+                        <p className="text-[10px] font-mono text-artisan-light/50 uppercase leading-relaxed">Set a custom threshold. You will receive notifications when inventory falls below this limit.</p>
                      </div>
                   </div>
                </div>

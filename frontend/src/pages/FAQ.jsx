@@ -241,11 +241,11 @@ export default function FAQ() {
           <div className="absolute inset-0 bg-artisan-grey/5 blur-xl rounded-full opacity-0 group-focus-within:opacity-100 transition-opacity duration-700 pointer-events-none" />
 
           <div className="relative border-b border-artisan-light/10 focus-within:border-artisan-grey transition-all duration-500 pb-2">
-            <label className="block text-[9px] font-mono font-bold text-artisan-light/30 uppercase tracking-[0.3em] mb-1 group-focus-within:text-artisan-grey group-focus-within:tracking-[0.4em] transition-all duration-300">
+            <label className="block text-[9px] font-mono font-bold text-artisan-light/50 uppercase tracking-[0.3em] mb-1 group-focus-within:text-artisan-grey group-focus-within:tracking-[0.4em] transition-all duration-300">
               Search FAQs
             </label>
             <div className="flex items-center gap-3">
-              <Search className="w-4 h-4 text-artisan-light/30 group-focus-within:text-artisan-grey transition-colors" />
+              <Search className="w-4 h-4 text-artisan-light/50 group-focus-within:text-artisan-grey transition-colors" />
               <input
                 type="text"
                 value={searchQuery}
@@ -265,7 +265,7 @@ export default function FAQ() {
           {/* Left panel: Category selector */}
           {!searchQuery.trim() && faqData.length > 0 && (
             <div className="lg:col-span-4 space-y-3">
-              <span className="text-[9px] font-mono font-bold text-artisan-light/30 uppercase tracking-widest block mb-4">FAQ Categories</span>
+              <span className="text-[9px] font-mono font-bold text-artisan-light/50 uppercase tracking-widest block mb-4">FAQ Categories</span>
               <div className="flex flex-col gap-2 border-l border-artisan-light/5 pl-0">
                 {faqData.map((cat) => {
                   const Icon = cat.icon
@@ -305,7 +305,7 @@ export default function FAQ() {
           {/* Right panel: Accordion list */}
           <div className={`${searchQuery.trim() || faqData.length === 0 ? 'lg:col-span-12' : 'lg:col-span-8'} space-y-6`}>
             {searchQuery.trim() && (
-              <span className="text-[9px] font-mono font-bold text-artisan-light/30 uppercase tracking-widest block">
+              <span className="text-[9px] font-mono font-bold text-artisan-light/50 uppercase tracking-widest block">
                 Search Results ({displayQuestions.length})
               </span>
             )}

@@ -1,17 +1,20 @@
 @import "tailwindcss";
 
 /* ═══════════════════════════════════════════════════════════════
-   ForgeShare — Swiss Industrial Palette (High Contrast)
-   Colors: #F6F6F6 (Grey), #000000 (Black), #5C3E94 (Violet)
+   STAT Surgical — Warm Industrial Palette (Light)
+   #fffcf2 (Cream) · #252422 (Obsidian) · #eb5e28 (Flame)
+   #403d39 (Charcoal) · #ccc5b9 (Taupe)
    ═══════════════════════════════════════════════════════════════ */
 
 @theme {
-  --color-artisan-dark: #F6F6F6;
-  --color-artisan-grey: #001A70;
-  --color-artisan-light: #000000;
+  --color-artisan-dark: #fffcf2;
+  --color-artisan-grey: #eb5e28;
+  --color-artisan-light: #252422;
+  --color-artisan-blue: #403d39;
+  --color-artisan-teal: #ccc5b9;
 
-  --font-display: 'Syne', system-ui, sans-serif;
-  --font-body: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-display: 'Unbounded', system-ui, sans-serif;
+  --font-body: 'Space Mono', monospace;
 }
 
 @layer base {
@@ -30,11 +33,24 @@
   }
 
   .text-outline {
-    -webkit-text-stroke: 1.5px var(--color-artisan-light);
-    color: transparent;
+    color: inherit;
+    -webkit-text-stroke: 0px;
   }
 
   .bg-noise {
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
   }
+
+  /* Scale down large Unbounded headers to prevent overflow */
+  .font-display {
+    letter-spacing: -0.02em;
+  }
+
+  .font-display.text-\[15rem\] { font-size: clamp(5rem, 12vw, 9rem) !important; }
+  .font-display.text-\[10rem\] { font-size: clamp(4rem, 10vw, 7rem) !important; }
+  .font-display.text-9xl { font-size: clamp(3.5rem, 8vw, 6rem) !important; }
+  .font-display.text-8xl { font-size: clamp(3rem, 7vw, 5rem) !important; }
+  .font-display.text-7xl { font-size: clamp(2.5rem, 6vw, 4rem) !important; }
+  .font-display.text-6xl { font-size: clamp(2.25rem, 5vw, 3.5rem) !important; }
+  .font-display.text-5xl { font-size: clamp(2rem, 4vw, 2.75rem) !important; }
 }

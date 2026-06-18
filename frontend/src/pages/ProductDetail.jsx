@@ -18,12 +18,22 @@ import {
    Heart,
    Loader2,
    ShoppingCart,
-   Phone
+   Phone,
+   Truck,
+   Check
 } from 'lucide-react'
 import api from '../services/api'
 import { useToast } from '../context/ToastContext'
 import { useAuth } from '../context/AuthContext'
 
+const getYouTubeEmbedUrl = (url) => {
+   if (!url) return '';
+   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+   const match = url.match(regExp);
+   return (match && match[2].length === 11)
+      ? `https://www.youtube.com/embed/${match[2]}`
+      : url;
+};
 
 export default function ProductDetail() {
    const { id } = useParams()
@@ -36,6 +46,102 @@ export default function ProductDetail() {
    const [quantity, setQuantity] = useState(1)
    const [similarGear, setSimilarGear] = useState([])
    const [isWishlisted, setIsWishlisted] = useState(false)
+   const [reviews, setReviews] = useState([])
+   const [canReview, setCanReview] = useState(false)
+   const [submittingReview, setSubmittingReview] = useState(false)
+   const [rating, setRating] = useState(5)
+   const [reviewText, setReviewText] = useState('')
+   const [reviewImages, setReviewImages] = useState([])
+   const [improvementReason, setImprovementReason] = useState('')
+
+   // Pincode check states
+   const [pincodeInput, setPincodeInput] = useState(() => localStorage.getItem('checked_pincode') || '')
+   const [checkingPincode, setCheckingPincode] = useState(false)
+   const [pincodeResult, setPincodeResult] = useState(null)
+   const [pincodeError, setPincodeError] = useState('')
+
+   const checkPincodeServiceability = async (pinCodeToVerify) => {
+      const pin = (pinCodeToVerify || '').trim()
+      if (!pin) return
+
+      if (!/^\d{6}$/.test(pin)) {
+         setPincodeError('Pincode must be exactly 6 digits')
+         setPincodeResult(null)
+         return
+      }
+
+      setCheckingPincode(true)
+      setPincodeError('')
+
+      try {
+         const response = await fetch(`https://api.postalpincode.in/pincode/${pin}`)
+         if (!response.ok) throw new Error('API request failed')
+         const data = await response.json()
+
+         if (data && data[0] && data[0].Status === 'Success' && data[0].PostOffice && data[0].PostOffice.length > 0) {
+            const postOffice = data[0].PostOffice[0]
+            const city = postOffice.District || ''
+            const state = postOffice.State || ''
+
+            const isLocal = state.toLowerCase().includes('tamil nadu')
+            const isMetropolitan = ['maharashtra', 'karnataka', 'delhi', 'telangana', 'west bengal', 'gujarat'].some(
+               s => state.toLowerCase().includes(s)
+            )
+
+            const days = isLocal ? 2 : (isMetropolitan ? 3 : 5)
+            const deliveryDate = new Date()
+            deliveryDate.setDate(deliveryDate.getDate() + days)
+
+            const formattedDate = deliveryDate.toLocaleDateString('en-IN', {
+               weekday: 'long',
+               month: 'short',
+               day: 'numeric'
+            })
+
+            const result = {
+               city,
+               state,
+               deliveryDays: days,
+               deliveryDate: formattedDate,
+               isCodAvailable: true,
+               freeShippingEligible: true
+            }
+
+            setPincodeResult(result)
+            localStorage.setItem('checked_pincode', pin)
+         } else {
+            setPincodeError('Invalid or unserviceable pincode')
+            setPincodeResult(null)
+         }
+      } catch (err) {
+         console.error('Pincode verification error:', err)
+         const deliveryDate = new Date()
+         deliveryDate.setDate(deliveryDate.getDate() + 4)
+         const formattedDate = deliveryDate.toLocaleDateString('en-IN', {
+            weekday: 'long',
+            month: 'short',
+            day: 'numeric'
+         })
+         setPincodeResult({
+            city: 'Your Location',
+            state: '',
+            deliveryDays: 4,
+            deliveryDate: formattedDate,
+            isCodAvailable: true,
+            freeShippingEligible: true
+         })
+         localStorage.setItem('checked_pincode', pin)
+      } finally {
+         setCheckingPincode(false)
+      }
+   }
+
+   useEffect(() => {
+      const savedPin = localStorage.getItem('checked_pincode')
+      if (savedPin && /^\d{6}$/.test(savedPin)) {
+         checkPincodeServiceability(savedPin)
+      }
+   }, [])
 
    useEffect(() => {
       const fetchToolDetails = async () => {
@@ -48,6 +154,24 @@ export default function ProductDetail() {
             // Check if tool is in user's wishlist
             if (user && user.wishlist) {
                setIsWishlisted(user.wishlist.includes(id))
+            }
+
+            // Fetch product reviews
+            try {
+               const reviewsRes = await api.get(`/listings/${id}/reviews`)
+               setReviews(reviewsRes.data.data || [])
+            } catch (err) {
+               console.error('Failed to fetch product reviews', err)
+            }
+
+            // Check review eligibility
+            if (user) {
+               try {
+                  const eligibilityRes = await api.get(`/listings/${id}/can-review`)
+                  setCanReview(eligibilityRes.data.data?.canReview || false)
+               } catch (err) {
+                  console.error('Failed to check review eligibility', err)
+               }
             }
 
             // Fetch similar products in the same category
@@ -78,6 +202,8 @@ export default function ProductDetail() {
    const toggleWishlist = async () => {
       if (!user) {
          addToast('Please login to save items', 'info')
+         localStorage.setItem('pending_wishlist_action', JSON.stringify({ productId: id }))
+         localStorage.setItem('auth_redirect', `/product/${id}`)
          navigate('/login')
          return
       }
@@ -91,10 +217,18 @@ export default function ProductDetail() {
    }
 
    const handleAddToCart = async () => {
+      if (!user) {
+         addToast('Please login to add items to cart', 'info')
+         localStorage.setItem('pending_cart_action', JSON.stringify({ productId: tool._id, quantity }))
+         localStorage.setItem('auth_redirect', `/product/${tool._id}`)
+         navigate('/login')
+         return
+      }
+
       const sessionId = sessionStorage.getItem('analytics_session_id') || `sess_${Date.now()}`;
       const itemPrice = tool.price !== undefined ? tool.price : tool.pricePerDay;
       try {
-         if (!user || user.role !== 'admin') {
+         if (user.role !== 'admin') {
             await api.post('/analytics/event', {
                sessionId,
                eventName: 'add_to_cart',
@@ -110,18 +244,66 @@ export default function ProductDetail() {
          console.error('Failed to log add_to_cart event', err);
       }
 
-      if (user) {
-         try {
-            const res = await api.post('/auth/cart', { productId: tool._id, quantity })
-            setUser(prev => ({
-               ...prev,
-               cart: res.data.data
-            }))
-         } catch (err) {
-            console.error("Failed to sync cart to database", err)
-         }
+      try {
+         const res = await api.post('/auth/cart', { productId: tool._id, quantity })
+         setUser(prev => ({
+            ...prev,
+            cart: res.data.data
+         }))
+         addToast(`Added ${quantity} x ${tool.name || tool.title} to cart`, 'success')
+      } catch (err) {
+         console.error("Failed to sync cart to database", err)
+         addToast('Failed to add item to cart', 'error')
       }
-      addToast(`Added ${quantity} x ${tool.name || tool.title} to cart`, 'success')
+   }
+
+   const handleImageChange = (e) => {
+      const files = Array.from(e.target.files)
+      files.forEach(file => {
+         const reader = new FileReader()
+         reader.onloadend = () => {
+            setReviewImages(prev => [...prev, reader.result])
+         }
+         reader.readAsDataURL(file)
+      })
+   }
+
+   const removeReviewImage = (index) => {
+      setReviewImages(prev => prev.filter((_, i) => i !== index))
+   }
+
+   const handleReviewSubmit = async (e) => {
+      e.preventDefault()
+      if (reviewText.length > 500) {
+         addToast('Review cannot exceed 500 characters', 'error')
+         return
+      }
+      try {
+         setSubmittingReview(true)
+         await api.post(`/listings/${id}/reviews`, {
+            rating,
+            text: reviewText,
+            images: reviewImages,
+            improvementReason: rating < 5 ? improvementReason : undefined
+         })
+         addToast('Review submitted successfully!', 'success')
+         setReviewText('')
+         setRating(5)
+         setReviewImages([])
+         setImprovementReason('')
+         setCanReview(false)
+
+         // Refresh lists and details
+         const reviewsRes = await api.get(`/listings/${id}/reviews`)
+         setReviews(reviewsRes.data.data || [])
+
+         const detailsRes = await api.get(`/listings/${id}`)
+         setTool(detailsRes.data.data)
+      } catch (err) {
+         addToast(err.response?.data?.message || 'Failed to submit review', 'error')
+      } finally {
+         setSubmittingReview(false)
+      }
    }
 
    if (loading) return (
@@ -143,6 +325,14 @@ export default function ProductDetail() {
       { label: 'Category', value: tool.category },
    ]
 
+   if (Array.isArray(tool.specifications)) {
+      tool.specifications.forEach(spec => {
+         if (spec.type === 'key_value' && spec.label && spec.value) {
+            specs.push({ label: spec.label, value: spec.value })
+         }
+      })
+   }
+
    return (
       <div className="min-h-screen bg-artisan-dark text-artisan-light font-body bg-noise selection:bg-artisan-grey selection:text-artisan-dark pt-28 pb-20">
          <div className="container-custom max-w-5xl mx-auto space-y-10">
@@ -153,7 +343,7 @@ export default function ProductDetail() {
                   <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
                   Back to Catalog
                </Link>
-               <span className="text-[10px] font-mono text-artisan-light/30 uppercase tracking-widest">
+               <span className="text-[10px] font-mono text-artisan-light/50 uppercase tracking-widest">
                   Product ID: {tool._id ? tool._id.slice(-6).toUpperCase() : 'N/A'}
                </span>
             </div>
@@ -162,53 +352,101 @@ export default function ProductDetail() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-16 items-start">
 
                {/* Column 1: Gallery */}
-               <div className="space-y-4">
-                  <div className="relative aspect-[4/3] bg-white border border-artisan-light/10 overflow-hidden flex items-center justify-center">
-                     <AnimatePresence mode="wait">
-                        <motion.img
-                           key={activeImage}
-                           initial={{ opacity: 0 }}
-                           animate={{ opacity: 1 }}
-                           exit={{ opacity: 0 }}
-                           transition={{ duration: 0.2 }}
-                           src={displayImages[activeImage] || 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=1200'}
-                           className="w-full h-full object-contain p-4"
-                        />
-                     </AnimatePresence>
+               <div className={displayImages.length > 1 ? "flex flex-col-reverse md:grid md:grid-cols-[92px_1fr] gap-4" : "space-y-4"}>
+                  {/* Thumbnail Selector (on the left for desktop, bottom for mobile) */}
+                  {displayImages.length > 1 && (
+                     <div className="flex md:flex-col gap-3 overflow-x-auto md:overflow-y-auto max-h-[350px] md:max-h-[400px] scrollbar-hide justify-start py-1 px-1">
+                        {displayImages.map((img, i) => (
+                           <button
+                              key={i}
+                              onClick={() => setActiveImage(i)}
+                              className={`relative w-16 h-16 md:w-20 md:h-20 shrink-0 p-1 bg-artisan-dark/40 border transition-all duration-300 group overflow-hidden ${activeImage === i
+                                 ? 'border-artisan-grey ring-2 ring-artisan-grey/30 bg-artisan-grey/10'
+                                 : 'border-artisan-light/10 hover:border-artisan-light/30 hover:bg-artisan-dark/65'
+                                 }`}
+                           >
+                              {/* Glowing bottom border indicator */}
+                              <div className={`absolute bottom-0 left-0 w-full h-[2px] transition-all duration-300 ${activeImage === i ? 'bg-artisan-grey scale-x-100' : 'bg-transparent scale-x-0 group-hover:scale-x-50 group-hover:bg-artisan-light/30'
+                                 }`} />
+
+                              {/* Inner Container for white-backed images */}
+                              <div className="w-full h-full bg-white p-1 flex items-center justify-center relative overflow-hidden transition-all duration-300 group-hover:scale-[0.98]">
+                                 <img
+                                    src={img}
+                                    className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110"
+                                    alt={`Thumbnail ${i + 1}`}
+                                 />
+                              </div>
+
+                              {/* Corner Badge */}
+                              <div className="absolute top-1 right-1 px-[3px] py-[1px] bg-artisan-dark/80 border border-artisan-light/10 text-[8px] font-mono text-artisan-light/60 scale-75 group-hover:text-artisan-light transition-colors pointer-events-none">
+                                 0{i + 1}
+                              </div>
+                           </button>
+                        ))}
+                     </div>
+                  )}
+
+                  {/* Main Image View */}
+                  <div className="relative aspect-[4/3] bg-artisan-dark/30 border border-artisan-light/10 p-2 overflow-hidden flex items-center justify-center group/main">
+                     {/* High-Tech Technical Grid / Blueprint Background */}
+                     <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:16px_16px] pointer-events-none" />
+
+                     {/* Blueprint crosshair in the center */}
+                     <div className="absolute w-6 h-6 border-t border-b border-artisan-light/5 pointer-events-none" />
+                     <div className="absolute w-6 h-6 border-l border-r border-artisan-light/5 pointer-events-none" />
+
+                     {/* High-Tech Corner Crosshairs */}
+                     <div className="absolute top-3 left-3 w-4 h-4 border-t-2 border-l-2 border-artisan-grey/40 pointer-events-none group-hover/main:border-artisan-grey transition-colors duration-500" />
+                     <div className="absolute top-3 right-3 w-4 h-4 border-t-2 border-r-2 border-artisan-grey/40 pointer-events-none group-hover/main:border-artisan-grey transition-colors duration-500" />
+                     <div className="absolute bottom-3 left-3 w-4 h-4 border-b-2 border-l-2 border-artisan-grey/40 pointer-events-none group-hover/main:border-artisan-grey transition-colors duration-500" />
+                     <div className="absolute bottom-3 right-3 w-4 h-4 border-b-2 border-r-2 border-artisan-grey/40 pointer-events-none group-hover/main:border-artisan-grey transition-colors duration-500" />
+
+                     {/* Technical HUD Overlay text */}
+                     <div className="absolute top-3 left-1/2 -translate-x-1/2 text-[9px] font-mono text-artisan-light/20 tracking-[0.25em] pointer-events-none uppercase">
+                        [ VIEWPORT // 0{activeImage + 1} / 0{displayImages.length} ]
+                     </div>
+                     <div className="absolute bottom-3 left-6 text-[8px] font-mono text-artisan-light/20 tracking-wider pointer-events-none uppercase hidden sm:block">
+                        SYS STATUS: ACTIVE
+                     </div>
+                     <div className="absolute bottom-3 right-6 text-[8px] font-mono text-artisan-light/20 tracking-wider pointer-events-none uppercase hidden sm:block">
+                        ZOOM: 100%
+                     </div>
+
+                     {/* Inner Image Frame */}
+                     <div className="w-full h-full bg-white border border-artisan-light/5 p-4 flex items-center justify-center relative shadow-2xl shadow-black/50 overflow-hidden">
+                        <AnimatePresence mode="wait">
+                           <motion.img
+                              key={activeImage}
+                              initial={{ opacity: 0, scale: 0.95 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              exit={{ opacity: 0, scale: 1.05 }}
+                              transition={{ duration: 0.25, ease: 'easeInOut' }}
+                              src={displayImages[activeImage] || 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=1200'}
+                              className="max-w-full max-h-full object-contain"
+                              alt={displayTitle}
+                           />
+                        </AnimatePresence>
+                     </div>
 
                      {/* Gallery Controls */}
                      {displayImages.length > 1 && (
                         <>
                            <button
                               onClick={() => setActiveImage(prev => (prev - 1 + displayImages.length) % displayImages.length)}
-                              className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-artisan-dark/80 backdrop-blur-md border border-artisan-light/10 flex items-center justify-center text-artisan-light hover:bg-artisan-grey hover:text-artisan-dark transition-all"
+                              className="absolute left-4 top-1/2 -translate-y-1/2 w-9 h-9 bg-artisan-dark/90 hover:bg-artisan-grey border border-artisan-light/10 hover:border-artisan-grey hover:text-artisan-dark flex items-center justify-center text-artisan-light hover:-translate-x-0.5 transition-all duration-300 z-10 shadow-lg"
                            >
-                              <ChevronLeft className="w-4 h-4" />
+                              <ChevronLeft className="w-5 h-5" />
                            </button>
                            <button
                               onClick={() => setActiveImage(prev => (prev + 1) % displayImages.length)}
-                              className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-artisan-dark/80 backdrop-blur-md border border-artisan-light/10 flex items-center justify-center text-artisan-light hover:bg-artisan-grey hover:text-artisan-dark transition-all"
+                              className="absolute right-4 top-1/2 -translate-y-1/2 w-9 h-9 bg-artisan-dark/90 hover:bg-artisan-grey border border-artisan-light/10 hover:border-artisan-grey hover:text-artisan-dark flex items-center justify-center text-artisan-light hover:translate-x-0.5 transition-all duration-300 z-10 shadow-lg"
                            >
-                              <ChevronRight className="w-4 h-4" />
+                              <ChevronRight className="w-5 h-5" />
                            </button>
                         </>
                      )}
                   </div>
-
-                  {/* Thumbnail Selector */}
-                  {displayImages.length > 1 && (
-                     <div className="flex gap-2 justify-center">
-                        {displayImages.map((img, i) => (
-                           <button
-                              key={i}
-                              onClick={() => setActiveImage(i)}
-                              className={`w-12 h-12 border p-1 bg-white transition-all ${activeImage === i ? 'border-artisan-grey' : 'border-artisan-light/10 opacity-60 hover:opacity-100'}`}
-                           >
-                              <img src={img} className="w-full h-full object-cover" />
-                           </button>
-                        ))}
-                     </div>
-                  )}
                </div>
 
                {/* Column 2: Information & Actions */}
@@ -230,9 +468,6 @@ export default function ProductDetail() {
                      <div className="flex items-baseline gap-2">
                         <span className="text-2xl font-display font-black text-artisan-light">
                            ₹{displayPrice?.toLocaleString()}
-                        </span>
-                        <span className="text-[10px] font-mono text-artisan-light/40 uppercase tracking-widest">
-                           Estimated Rate
                         </span>
                      </div>
                   </div>
@@ -289,20 +524,453 @@ export default function ProductDetail() {
                      </div>
                   </div>
 
-                  {/* Specs Accordion/List */}
-                  <div className="border-t border-artisan-light/10 pt-6 space-y-4">
-                     <h3 className="text-xs font-mono font-bold uppercase tracking-widest text-artisan-grey">Specifications</h3>
-                     <div className="grid grid-cols-2 gap-y-3 gap-x-6 text-[11px]">
-                        {specs.map((spec, i) => (
-                           <div key={i} className="flex justify-between border-b border-artisan-light/5 pb-2">
-                              <span className="text-artisan-light/40 font-mono uppercase tracking-wider">{spec.label}</span>
-                              <span className="font-bold uppercase text-artisan-light">{spec.value}</span>
-                           </div>
-                        ))}
+                 </div>
+            </div>
+
+            {/* Quality Certifications Badges Row */}
+            <div className="border border-artisan-light/10 bg-artisan-light/[0.01] p-6 rounded-xl">
+               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="flex items-center gap-3 p-3 bg-artisan-light/[0.005] border border-artisan-light/5 rounded-xl">
+                     <ShieldCheck className="w-5 h-5 text-green-500 shrink-0" />
+                     <div>
+                        <span className="text-[8px] font-mono text-artisan-light/35 uppercase block tracking-wider">ISO 13485</span>
+                        <span className="text-[9px] font-mono font-bold text-artisan-light uppercase">QUALITY CERTIFIED</span>
                      </div>
                   </div>
-
+                  <div className="flex items-center gap-3 p-3 bg-artisan-light/[0.005] border border-artisan-light/5 rounded-xl">
+                     <Award className="w-5 h-5 text-green-500 shrink-0" />
+                     <div>
+                        <span className="text-[8px] font-mono text-artisan-light/35 uppercase block tracking-wider">CE Standard</span>
+                        <span className="text-[9px] font-mono font-bold text-artisan-light uppercase">EU COMPLIANT</span>
+                     </div>
+                  </div>
+                  <div className="flex items-center gap-3 p-3 bg-artisan-light/[0.005] border border-artisan-light/5 rounded-xl">
+                     <Info className="w-5 h-5 text-green-500 shrink-0" />
+                     <div>
+                        <span className="text-[8px] font-mono text-artisan-light/35 uppercase block tracking-wider">FDA / CDSCO</span>
+                        <span className="text-[9px] font-mono font-bold text-artisan-light uppercase">REGISTERED DEV</span>
+                     </div>
+                  </div>
+                  <div className="flex items-center gap-3 p-3 bg-artisan-light/[0.005] border border-artisan-light/5 rounded-xl">
+                     <Check className="w-5 h-5 text-green-500 shrink-0" />
+                     <div>
+                        <span className="text-[8px] font-mono text-artisan-light/35 uppercase block tracking-wider">EO Sterile</span>
+                        <span className="text-[9px] font-mono font-bold text-artisan-light uppercase">100% DECONTAMINATED</span>
+                     </div>
+                  </div>
                </div>
+            </div>
+
+            {/* PINCODE SERVICEABILITY CHECKER ROW */}
+            <div className="border border-artisan-light/10 bg-artisan-light/[0.01] p-6 rounded-xl space-y-4">
+               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                     <h3 className="text-xs font-mono font-bold uppercase tracking-widest text-artisan-grey flex items-center gap-2">
+                        <MapPin className="w-4 h-4 text-artisan-grey" />
+                        Delivery Estimation
+                     </h3>
+                     <p className="text-[10px] font-mono text-artisan-light/50 uppercase tracking-widest">
+                        Enter your pincode to check the date of delivery & service availability
+                     </p>
+                  </div>
+                  <div className="flex items-center gap-2 max-w-xs w-full sm:w-auto">
+                     <input
+                        type="text"
+                        maxLength={6}
+                        placeholder="ENTER PINCODE"
+                        value={pincodeInput}
+                        onChange={(e) => {
+                           const val = e.target.value.replace(/\D/g, '')
+                           setPincodeInput(val)
+                           if (val.length === 6) {
+                              checkPincodeServiceability(val)
+                           }
+                        }}
+                        className="flex-1 sm:w-36 bg-artisan-light/5 border border-artisan-light/10 px-4 py-2 text-xs font-mono text-artisan-light uppercase tracking-widest outline-none focus:border-artisan-grey transition-colors placeholder:text-artisan-light/20 rounded-xl"
+                     />
+                     <button
+                        onClick={() => checkPincodeServiceability(pincodeInput)}
+                        disabled={checkingPincode}
+                        className="px-5 py-2 bg-artisan-light text-artisan-dark hover:bg-artisan-grey text-[9px] font-mono font-bold uppercase tracking-widest transition-all rounded-full flex items-center gap-2 shrink-0 disabled:opacity-50"
+                     >
+                        {checkingPincode ? (
+                           <>
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                              CHECKING
+                           </>
+                        ) : (
+                           'CHECK'
+                        )}
+                     </button>
+                  </div>
+               </div>
+
+               {pincodeError && (
+                  <p className="text-[10px] font-mono text-red-500 uppercase tracking-wider">
+                     {pincodeError}
+                  </p>
+               )}
+
+               <AnimatePresence mode="wait">
+                  {pincodeResult && (
+                     <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="pt-4 border-t border-artisan-light/5 grid grid-cols-1 sm:grid-cols-3 gap-4 font-mono text-[10px]"
+                     >
+                        <div className="flex items-center gap-3 p-3 bg-artisan-light/[0.005] border border-artisan-light/5 rounded-xl">
+                           <div className="w-7 h-7 bg-green-500/10 text-green-500 rounded-full flex items-center justify-center border border-green-500/20 shrink-0">
+                              <Truck className="w-3.5 h-3.5 text-green-500" />
+                           </div>
+                           <div>
+                              <span className="text-artisan-light/50 uppercase block text-[8px] tracking-wider">Estimated Delivery</span>
+                              <span className="font-bold text-artisan-light uppercase">{pincodeResult.deliveryDate}</span>
+                           </div>
+                        </div>
+
+                        <div className="flex items-center gap-3 p-3 bg-artisan-light/[0.005] border border-artisan-light/5 rounded-xl">
+                           <div className="w-7 h-7 bg-green-500/10 text-green-500 rounded-full flex items-center justify-center border border-green-500/20 shrink-0">
+                              <UserCheck className="w-3.5 h-3.5 text-green-500" />
+                           </div>
+                           <div>
+                              <span className="text-artisan-light/50 uppercase block text-[8px] tracking-wider">Payment Method</span>
+                              <span className="font-bold text-artisan-light uppercase">COD AVAILABLE</span>
+                           </div>
+                        </div>
+
+                        <div className="flex items-center gap-3 p-3 bg-artisan-light/[0.005] border border-artisan-light/5 rounded-xl">
+                           <div className="w-7 h-7 bg-green-500/10 text-green-500 rounded-full flex items-center justify-center border border-green-500/20 shrink-0">
+                              <MapPin className="w-3.5 h-3.5 text-green-500" />
+                           </div>
+                           <div>
+                              <span className="text-artisan-light/50 uppercase block text-[8px] tracking-wider">Region Checked</span>
+                              <span className="font-bold text-artisan-light uppercase">{pincodeResult.city}{pincodeResult.state ? `, ${pincodeResult.state}` : ''}</span>
+                           </div>
+                        </div>
+                     </motion.div>
+                  )}
+               </AnimatePresence>
+            </div>
+
+            {/* Basic Specifications Row */}
+            {specs.length > 0 && (
+               <div className="border-t border-artisan-light/10 pt-12 space-y-6">
+                  <div className="max-w-xl space-y-2">
+                     <h2 className="text-xs font-mono font-bold uppercase tracking-[0.4em] text-artisan-grey">Specifications</h2>
+                     <p className="text-[10px] font-mono text-artisan-light/50 uppercase tracking-widest leading-relaxed">
+                        Technical measurements, standards, and product data.
+                     </p>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                     {specs.map((spec, i) => (
+                        <div key={i} className="border border-artisan-light/10 bg-artisan-light/[0.01] p-4 flex flex-col justify-between space-y-1">
+                           <span className="text-[9px] font-mono text-artisan-light/40 uppercase tracking-wider">{spec.label}</span>
+                           <span className="font-mono font-bold uppercase text-artisan-light text-[11px] break-words">{spec.value}</span>
+                        </div>
+                     ))}
+                  </div>
+               </div>
+            )}
+
+            {/* Clinical Product Dossier (Rich Specifications) */}
+            {Array.isArray(tool.specifications) && tool.specifications.some(s => s.type !== 'key_value') && (
+               <div className="border-t border-artisan-light/10 pt-12 space-y-8">
+                  <div className="max-w-xl space-y-2">
+                     <h2 className="text-xs font-mono font-bold uppercase tracking-[0.4em] text-artisan-grey">Clinical Product Dossier</h2>
+                     <p className="text-[10px] font-mono text-artisan-light/50 uppercase tracking-widest leading-relaxed">
+                        Certified clinical specifications, documentation, and operational resources.
+                     </p>
+                  </div>
+
+                  <div className="space-y-8 max-w-3xl">
+                     {tool.specifications.map((spec, idx) => {
+                        if (spec.type === 'title_para' && (spec.label || spec.value)) {
+                           return (
+                              <div key={idx} className="space-y-2 border-l border-artisan-grey/20 pl-4 py-1">
+                                 {spec.label && (
+                                    <h4 className="text-sm font-mono font-bold uppercase tracking-wider text-artisan-light">{spec.label}</h4>
+                                 )}
+                                 {spec.value && (
+                                    <p className="text-xs font-mono text-artisan-light/60 uppercase tracking-wide leading-relaxed whitespace-pre-line">{spec.value}</p>
+                                 )}
+                              </div>
+                           )
+                        }
+                        if (spec.type === 'image' && spec.value) {
+                           let specImages = [];
+                           if (spec.value.startsWith('[')) {
+                              try {
+                                 specImages = JSON.parse(spec.value);
+                              } catch (e) {
+                                 specImages = [spec.value];
+                              }
+                           } else {
+                              specImages = spec.value.split(',').map(s => s.trim()).filter(Boolean);
+                           }
+
+                           return (
+                              <div key={idx} className="border border-artisan-light/10 bg-artisan-light/[0.01] p-4 space-y-3 max-w-2xl">
+                                 <div className={`grid gap-3 ${specImages.length > 1 ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'}`}>
+                                    {specImages.map((url, i) => (
+                                       <div key={i} className="aspect-[16/9] bg-white overflow-hidden flex items-center justify-center p-2 border border-artisan-light/5">
+                                          <img src={url} alt={`${spec.label || "Product spec detail"} ${i + 1}`} className="max-h-full max-w-full object-contain grayscale hover:grayscale-0 transition-all duration-300" />
+                                       </div>
+                                    ))}
+                                 </div>
+                                 {spec.label && (
+                                    <p className="text-[9px] font-mono text-artisan-light/40 uppercase tracking-widest">{spec.label}</p>
+                                 )}
+                              </div>
+                           )
+                        }
+                        if (spec.type === 'video' && spec.value) {
+                           const embedUrl = getYouTubeEmbedUrl(spec.value);
+                           const isYoutube = embedUrl.includes('youtube.com/embed');
+                           return (
+                              <div key={idx} className="border border-artisan-light/10 bg-artisan-light/[0.01] p-4 space-y-3 max-w-xl">
+                                 {isYoutube ? (
+                                    <div className="aspect-[16/9] bg-black">
+                                       <iframe
+                                          src={embedUrl}
+                                          title={spec.label || "Operational Video Guide"}
+                                          className="w-full h-full border-0 grayscale hover:grayscale-0 transition-all duration-500"
+                                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                          allowFullScreen
+                                       />
+                                    </div>
+                                 ) : (
+                                    <div className="p-6 bg-artisan-light/5 border border-artisan-light/10 text-center space-y-3">
+                                       <span className="text-[9px] font-mono text-artisan-light/40 uppercase tracking-widest block">Operational Video Training</span>
+                                       <a href={spec.value} target="_blank" rel="noopener noreferrer" className="inline-block px-4 py-2 border border-artisan-light/10 hover:border-artisan-grey hover:bg-artisan-light/5 text-[10px] font-mono text-artisan-grey hover:text-artisan-light transition-all uppercase tracking-wider">
+                                          Launch Training Video Link
+                                       </a>
+                                    </div>
+                                 )}
+                                 {spec.label && (
+                                    <p className="text-[9px] font-mono text-artisan-light/40 uppercase tracking-widest">{spec.label}</p>
+                                 )}
+                              </div>
+                           )
+                        }
+                        if (spec.type === 'custom' && (spec.label || spec.value)) {
+                           return (
+                              <div key={idx} className="border border-dashed border-artisan-light/10 p-4 space-y-2 max-w-xl font-mono text-xs">
+                                 <div className="flex justify-between border-b border-artisan-light/5 pb-2 text-[10px] uppercase font-bold text-artisan-grey">
+                                    <span>{spec.label || 'Custom Specification'}</span>
+                                 </div>
+                                 <span className="text-artisan-light/60 uppercase tracking-wide leading-relaxed block">{spec.value}</span>
+                              </div>
+                           )
+                        }
+                     })}
+                  </div>
+               </div>
+            )}
+
+            {/* Reviews & Ratings Section */}
+            <div className="border-t border-artisan-light/10 pt-12 space-y-8">
+
+               {/* Rating Breakdown / Summary (Row 1) */}
+               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border border-artisan-light/10 bg-artisan-light/[0.01] p-8">
+                  <div className="space-y-2">
+                     <h2 className="text-xs font-mono font-bold uppercase tracking-[0.4em] text-artisan-grey">Ratings & Reviews</h2>
+                     <p className="text-[10px] font-mono text-artisan-light/50 uppercase tracking-widest leading-relaxed">
+                        Feedback from certified medical professionals and facilities.
+                     </p>
+                  </div>
+
+                  <div className="flex items-center gap-6">
+                     <div className="flex items-baseline gap-2">
+                        <span className="text-5xl font-display font-black text-artisan-light">
+                           {tool.averageRating || '0.0'}
+                        </span>
+                        <span className="text-xs font-mono text-artisan-light/40 uppercase tracking-widest">/ 5.0</span>
+                     </div>
+
+                     <div className="space-y-1">
+                        <div className="flex items-center gap-1">
+                           {[1, 2, 3, 4, 5].map((star) => {
+                              const ratingVal = parseFloat(tool.averageRating || 0)
+                              return (
+                                 <Star
+                                    key={star}
+                                    className={`w-5 h-5 ${star <= ratingVal ? 'fill-artisan-grey text-artisan-grey' : 'text-artisan-light/10'}`}
+                                 />
+                              )
+                           })}
+                        </div>
+                        <span className="text-[10px] font-mono text-artisan-light/50 uppercase tracking-widest block">
+                           ({tool.numOfReviews || 0} reviews)
+                        </span>
+                     </div>
+                  </div>
+               </div>
+
+               {/* Reviews List (Row 2) */}
+               <div className="space-y-6">
+                  <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 scrollbar-thin">
+                     {reviews.length === 0 ? (
+                        <div className="border border-dashed border-artisan-light/10 p-8 text-center space-y-2">
+                           <MessageSquare className="w-8 h-8 text-artisan-light/10 mx-auto" />
+                           <span className="text-[10px] font-mono text-artisan-light/50 uppercase tracking-widest block">No reviews yet for this product</span>
+                        </div>
+                     ) : (
+                        reviews.map((rev) => (
+                           <div key={rev._id} className="border border-artisan-light/10 p-5 space-y-4 bg-artisan-light/[0.01]">
+                              <div className="flex justify-between items-start">
+                                 <div className="space-y-1">
+                                    <span className="text-[10px] font-mono font-bold uppercase text-artisan-light">{rev.userName}</span>
+                                    <div className="flex items-center gap-0.5">
+                                       {[1, 2, 3, 4, 5].map((star) => (
+                                          <Star
+                                             key={star}
+                                             className={`w-3 h-3 ${star <= rev.rating ? 'fill-artisan-grey text-artisan-grey' : 'text-artisan-light/10'}`}
+                                          />
+                                       ))}
+                                    </div>
+                                 </div>
+                                 <span className="text-[8px] font-mono text-artisan-light/25 uppercase">
+                                    {new Date(rev.createdAt).toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' })}
+                                 </span>
+                              </div>
+
+                              <p className="text-xs font-mono text-artisan-light/75 uppercase leading-relaxed">{rev.text}</p>
+
+                              {/* Optional Improvement Suggestions */}
+                              {rev.improvementReason && (
+                                 <div className="border-l-2 border-red-500/20 pl-3 py-1 space-y-1">
+                                    <span className="text-[8px] font-mono text-artisan-grey uppercase tracking-widest block">Suggestions for Improvement</span>
+                                    <p className="text-[10px] font-mono text-artisan-light/50 uppercase leading-relaxed">{rev.improvementReason}</p>
+                                 </div>
+                              )}
+
+                              {/* Review Images */}
+                              {rev.images && rev.images.length > 0 && (
+                                 <div className="flex flex-wrap gap-2 pt-2">
+                                    {rev.images.map((img, i) => (
+                                       <a
+                                          key={i}
+                                          href={img.url}
+                                          target="_blank"
+                                          rel="noreferrer"
+                                          className="w-16 h-16 bg-white border border-artisan-light/10 p-1 overflow-hidden flex items-center justify-center cursor-zoom-in"
+                                       >
+                                          <img src={img.url} className="max-h-full max-w-full object-contain" alt="Customer uploaded review" />
+                                       </a>
+                                    ))}
+                                 </div>
+                              )}
+                           </div>
+                        ))
+                     )}
+                  </div>
+               </div>
+
+               {/* Dynamic Review Submission Form (Row 3) */}
+               {canReview && (
+                  <div className="pt-4">
+                     <form onSubmit={handleReviewSubmit} className="border border-artisan-light/10 p-6 space-y-6 bg-artisan-light/[0.02] relative">
+                        <div className="space-y-2 border-b border-artisan-light/5 pb-4">
+                           <h3 className="text-xs font-mono font-bold uppercase tracking-[0.2em] text-artisan-grey">Write a Product Review</h3>
+                           <p className="text-[8px] font-mono text-artisan-light/50 uppercase tracking-widest">Share your clinical experience using this product.</p>
+                        </div>
+
+                        {/* Star Rating Selector */}
+                        <div className="space-y-2">
+                           <span className="text-[9px] font-mono font-bold text-artisan-light/40 uppercase tracking-[0.3em] block">Rating</span>
+                           <div className="flex items-center gap-1.5">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                 <button
+                                    key={star}
+                                    type="button"
+                                    onClick={() => setRating(star)}
+                                    className="text-artisan-light/20 hover:text-artisan-grey transition-colors p-0.5"
+                                 >
+                                    <Star className={`w-6 h-6 ${star <= rating ? 'fill-artisan-grey text-artisan-grey' : 'text-artisan-light/10'}`} />
+                                 </button>
+                              ))}
+                           </div>
+                        </div>
+
+                        {/* Character limited Comment */}
+                        <div className="space-y-2">
+                           <div className="flex justify-between items-baseline">
+                              <span className="text-[9px] font-mono font-bold text-artisan-light/40 uppercase tracking-[0.3em]">Review comment</span>
+                              <span className={`text-[8px] font-mono ${reviewText.length > 450 ? 'text-red-500' : 'text-artisan-light/20'}`}>
+                                 {500 - reviewText.length} characters left
+                              </span>
+                           </div>
+                           <textarea
+                              value={reviewText}
+                              onChange={(e) => setReviewText(e.target.value.slice(0, 500))}
+                              placeholder="TYPE YOUR GENERAL CLINICAL EXPERIENCES AND OBSERVATIONS HERE..."
+                              required
+                              rows={4}
+                              className="w-full bg-artisan-light/5 border border-artisan-light/10 p-4 text-xs font-mono text-artisan-light uppercase outline-none focus:border-artisan-grey transition-colors placeholder:text-artisan-light/5 resize-none"
+                           />
+                        </div>
+
+                        {/* Optional Improvement text box (for < 5 stars) */}
+                        {rating < 5 && (
+                           <div className="space-y-2 border-l-2 border-red-500/20 pl-4 py-1">
+                              <span className="text-[9px] font-mono font-bold text-red-500/60 uppercase tracking-[0.3em] block">Help us improve</span>
+                              <textarea
+                                 value={improvementReason}
+                                 onChange={(e) => setImprovementReason(e.target.value.slice(0, 500))}
+                                 placeholder="WHAT COULD WE HAVE DONE BETTER OR IMPROVED WITH THIS PRODUCT? (OPTIONAL)"
+                                 rows={2}
+                                 className="w-full bg-artisan-light/5 border border-artisan-light/10 p-4 text-xs font-mono text-artisan-light uppercase outline-none focus:border-artisan-grey transition-colors placeholder:text-artisan-light/5 resize-none"
+                              />
+                           </div>
+                        )}
+
+                        {/* Image uploader */}
+                        <div className="space-y-3">
+                           <span className="text-[9px] font-mono font-bold text-artisan-light/40 uppercase tracking-[0.3em] block">Add Photos</span>
+                           <div className="flex flex-wrap items-center gap-4">
+                              <label className="px-4 py-3 border border-artisan-light/15 hover:border-artisan-grey text-[9px] font-mono font-bold text-artisan-light uppercase tracking-widest cursor-pointer hover:bg-artisan-light/5 transition-all">
+                                 Upload Image
+                                 <input
+                                    type="file"
+                                    multiple
+                                    accept="image/*"
+                                    onChange={handleImageChange}
+                                    className="hidden"
+                                 />
+                              </label>
+                              <span className="text-[8px] font-mono text-artisan-light/20 uppercase tracking-widest">Attach photos showing your product.</span>
+                           </div>
+
+                           {reviewImages.length > 0 && (
+                              <div className="grid grid-cols-4 sm:grid-cols-6 gap-3 pt-2">
+                                 {reviewImages.map((imgBase64, idx) => (
+                                    <div key={idx} className="relative aspect-square border border-artisan-light/10 p-1 bg-white overflow-hidden group">
+                                       <img src={imgBase64} className="w-full h-full object-contain" alt="Preview" />
+                                       <button
+                                          type="button"
+                                          onClick={() => removeReviewImage(idx)}
+                                          className="absolute inset-0 bg-artisan-dark/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-[8px] font-mono font-bold text-red-500 uppercase tracking-widest"
+                                       >
+                                          Remove
+                                       </button>
+                                    </div>
+                                 ))}
+                              </div>
+                           )}
+                        </div>
+
+                        <button
+                           type="submit"
+                           disabled={submittingReview}
+                           className="w-full py-4 bg-artisan-grey text-artisan-dark font-display font-extrabold uppercase tracking-widest text-[10px] hover:bg-artisan-light transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                        >
+                           {submittingReview ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Submit Review'}
+                        </button>
+                     </form>
+                  </div>
+               )}
             </div>
 
             {/* Similar Products Section */}
@@ -325,6 +993,29 @@ export default function ProductDetail() {
                   </div>
                </div>
             )}
+
+            {/* Bulk Order Enquiry Banner */}
+            <div className="border border-artisan-light/10 bg-artisan-light/[0.01] p-8 sm:p-12 text-center space-y-6 relative overflow-hidden mt-16">
+               <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-artisan-grey to-transparent" />
+
+               <div className="max-w-2xl mx-auto space-y-4">
+                  <h2 className="text-2xl sm:text-3xl font-display font-black uppercase tracking-tight text-artisan-light">
+                     Need a Custom Procurement Solution?
+                  </h2>
+                  <p className="text-xs font-mono text-artisan-light/50 uppercase tracking-widest leading-relaxed">
+                     We offer competitive wholesale pricing, institutional credits, and customized logistics support for hospitals, clinics, and bulk purchase requirements.
+                  </p>
+               </div>
+
+               <div className="pt-2">
+                  <Link
+                     to={`/bulk-enquiry?productId=${tool._id}`}
+                     className="inline-flex items-center gap-2 px-8 py-4 bg-artisan-grey text-artisan-dark font-mono text-xs font-bold uppercase tracking-widest hover:bg-artisan-light hover:text-artisan-dark transition-all duration-300 border border-artisan-grey hover:border-artisan-light cursor-pointer"
+                  >
+                     Bulk Order Enquiry
+                  </Link>
+               </div>
+            </div>
 
          </div>
       </div>

@@ -11,6 +11,7 @@ const createProduct = {
   body: Joi.object().keys({
     sku: Joi.string().required().trim().uppercase(),
     name: Joi.string().required().trim(),
+    brand: Joi.string().allow('').optional().trim(),
     desc: Joi.string().allow('').trim(),
     price: Joi.number().required().min(0),
     quantity: Joi.number().integer().min(0).default(0),
@@ -25,6 +26,14 @@ const createProduct = {
         publicId: Joi.string().required(),
       })
     ).max(6).default([]),
+    specifications: Joi.array().items(
+      Joi.object().keys({
+        type: Joi.string().valid('key_value', 'title_para', 'image', 'video', 'custom').required(),
+        label: Joi.string().allow('').trim(),
+        value: Joi.string().allow('').trim(),
+        extra: Joi.any()
+      })
+    ).default([]),
   }),
 };
 
@@ -35,6 +44,7 @@ const updateProduct = {
   body: Joi.object().keys({
     sku: Joi.string().trim().uppercase(),
     name: Joi.string().trim(),
+    brand: Joi.string().allow('').optional().trim(),
     desc: Joi.string().allow('').trim(),
     price: Joi.number().min(0),
     quantity: Joi.number().integer().min(0),
@@ -49,6 +59,14 @@ const updateProduct = {
         publicId: Joi.string().required(),
       })
     ).max(6),
+    specifications: Joi.array().items(
+      Joi.object().keys({
+        type: Joi.string().valid('key_value', 'title_para', 'image', 'video', 'custom').required(),
+        label: Joi.string().allow('').trim(),
+        value: Joi.string().allow('').trim(),
+        extra: Joi.any()
+      })
+    ),
   }).min(1),
 };
 

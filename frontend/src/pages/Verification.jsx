@@ -78,7 +78,7 @@ export default function Verification() {
                 className="space-y-8"
               >
                 <div className="group relative border-b border-artisan-light/10 focus-within:border-artisan-grey transition-all duration-500 pb-2">
-                  <label className="block text-[9px] font-mono font-bold text-artisan-light/30 uppercase tracking-[0.3em] mb-1 group-focus-within:text-artisan-grey transition-colors">
+                  <label className="block text-[9px] font-mono font-bold text-artisan-light/50 uppercase tracking-[0.3em] mb-1 group-focus-within:text-artisan-grey transition-colors">
                     Aadhar Number
                   </label>
                   <div className="flex items-center gap-4">
@@ -115,7 +115,7 @@ export default function Verification() {
                 className="space-y-8"
               >
                 <div className="group relative border-b border-artisan-light/10 focus-within:border-artisan-grey transition-all duration-500 pb-2">
-                  <label className="block text-[9px] font-mono font-bold text-artisan-light/30 uppercase tracking-[0.3em] mb-1 group-focus-within:text-artisan-grey transition-colors">
+                  <label className="block text-[9px] font-mono font-bold text-artisan-light/50 uppercase tracking-[0.3em] mb-1 group-focus-within:text-artisan-grey transition-colors">
                     Verification Code
                   </label>
                   <div className="flex items-center gap-4">
@@ -143,7 +143,7 @@ export default function Verification() {
                 <button 
                   type="button" 
                   onClick={() => setStep(1)}
-                  className="w-full text-[9px] font-mono text-artisan-light/30 uppercase tracking-widest hover:text-artisan-light transition-colors"
+                  className="w-full text-[9px] font-mono text-artisan-light/50 uppercase tracking-widest hover:text-artisan-light transition-colors"
                 >
                   Wrong Number? Change Aadhar
                 </button>

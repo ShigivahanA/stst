@@ -49,6 +49,8 @@ export default function Footer() {
               {[
                 { label: 'All Products', href: '/rent' },
                 { label: 'Categories', href: '/categories' },
+                { label: 'Book In-Store Demo', href: '/book-demo' },
+                { label: 'Bulk Order Enquiry', href: '/bulk-enquiry' },
                 { label: 'About Us', href: '/about' },
                 { label: 'Contact', href: '/support' },
                 { label: 'FAQ', href: '/faq' },

@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import compression from 'compression';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import mongoSanitize from 'express-mongo-sanitize';
@@ -12,6 +13,9 @@ import ApiError from './utils/ApiError.js';
 import connectDB from './config/db.js';
 
 const app = express();
+
+// Enable Gzip/Brotli compression for payload optimization
+app.use(compression());
 
 // Trust proxy (required for secure cookies behind reverse proxies like Vercel)
 app.set('trust proxy', 1);
@@ -33,7 +37,11 @@ app.use(
   cors({
     origin: (origin, callback) => {
       // Allow requests with no origin (like mobile apps, curl, or local tests)
-      if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      if (
+        !origin ||
+        allowedOrigins.indexOf(origin) !== -1 ||
+        (process.env.NODE_ENV !== 'production' && origin.startsWith('http://localhost:'))
+      ) {
         callback(null, true);
       } else {
         callback(new Error('Not allowed by CORS'));

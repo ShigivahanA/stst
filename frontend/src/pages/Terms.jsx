@@ -203,7 +203,7 @@ export default function Terms() {
           <aside className="lg:col-span-3 hidden lg:block sticky top-32 h-fit">
             <div className="space-y-8">
               <div className="space-y-2">
-                <span className="text-[10px] font-mono font-bold text-artisan-light/30 uppercase tracking-widest block">Document Sections</span>
+                <span className="text-[10px] font-mono font-bold text-artisan-light/50 uppercase tracking-widest block">Document Sections</span>
                 <div className="h-0.5 bg-artisan-light/10 w-12" />
               </div>
               <motion.nav

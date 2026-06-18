@@ -44,5 +44,8 @@ const analyticsEventSchema = new mongoose.Schema(
   }
 );
 
+analyticsEventSchema.index({ user: 1 });
+analyticsEventSchema.index({ eventName: 1, timestamp: -1 });
+
 const AnalyticsEvent = mongoose.model('AnalyticsEvent', analyticsEventSchema);
 export default AnalyticsEvent;

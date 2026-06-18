@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Link, useNavigate } from 'react-router-dom'
 import {
@@ -17,11 +17,13 @@ import {
   ArrowLeft,
   Check,
   Truck,
-  FileText
+  FileText,
+  Download
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import api from '../services/api'
+import { downloadOrderReceipt } from '../utils/orderReceipt'
 
 export default function Cart() {
   const { user, setUser } = useAuth()
@@ -52,10 +54,86 @@ export default function Cart() {
     pincode: ''
   })
   const [addressErrors, setAddressErrors] = useState({})
+  const [isFetchingPincode, setIsFetchingPincode] = useState(false)
+  const lastFetchedPincodeRef = useRef('')
+
+  // Fetch city and state automatically from pincode API
+  useEffect(() => {
+    const fetchAddressDetails = async () => {
+      const pin = addressForm.pincode.trim()
+      if (pin.length === 6 && pin !== lastFetchedPincodeRef.current) {
+        try {
+          setIsFetchingPincode(true)
+          const response = await fetch(`https://api.postalpincode.in/pincode/${pin}`)
+          if (!response.ok) throw new Error('API request failed')
+          const data = await response.json()
+
+          if (data && data[0] && data[0].Status === 'Success' && data[0].PostOffice && data[0].PostOffice.length > 0) {
+            const postOffice = data[0].PostOffice[0]
+            const fetchedCity = postOffice.District || ''
+            const fetchedState = postOffice.State || ''
+
+            setAddressForm(prev => ({
+              ...prev,
+              city: fetchedCity,
+              state: fetchedState
+            }))
+            // Clear pincode, city, state errors if any
+            setAddressErrors(prev => {
+              const next = { ...prev }
+              delete next.pincode
+              delete next.city
+              delete next.state
+              return next
+            })
+            addToast('City and State fetched successfully', 'success')
+          } else {
+            addToast('Invalid Pincode. Please check and try again.', 'error')
+          }
+        } catch (err) {
+          console.error('Pincode fetch error:', err)
+          addToast('Could not fetch address details. Please fill manually.', 'warning')
+        } finally {
+          setIsFetchingPincode(false)
+          lastFetchedPincodeRef.current = pin
+        }
+      }
+    }
+
+    fetchAddressDetails()
+  }, [addressForm.pincode, addToast])
 
   // ORDER SUCCESS STATES
   const [orderId, setOrderId] = useState('')
   const [razorpayOrderInfo, setRazorpayOrderInfo] = useState(null)
+  const [completedOrder, setCompletedOrder] = useState(null)
+
+  // COUPON STATES
+  const [couponCodeInput, setCouponCodeInput] = useState('')
+  const [appliedCoupon, setAppliedCoupon] = useState(null)
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false)
+
+  // Cart pricing calculation
+  const itemsSubtotal = cartItems.reduce((acc, curr) => {
+    const price = curr.product?.price || 0
+    return acc + (price * curr.quantity)
+  }, 0)
+
+  const discountAmount = appliedCoupon ? appliedCoupon.discountAmount : 0
+  const discountedSubtotal = Math.max(0, itemsSubtotal - discountAmount)
+
+  const serviceFee = Math.round(discountedSubtotal * 0.05) // 5% service/GST fee
+  const shippingFee = discountedSubtotal > 5000 || discountedSubtotal === 0 ? 0 : 150 // Free shipping above ₹5,000
+
+  const [paymentMethod, setPaymentMethod] = useState('online') // 'online' or 'cod'
+  const codFee = 50
+  const orderTotal = discountedSubtotal + serviceFee + shippingFee + (paymentMethod === 'cod' ? codFee : 0)
+
+  // Real-time Stock Integrity Check
+  const stockErrors = cartItems.filter(item => {
+    return !item.product.active || item.product.quantity < item.quantity
+  })
+  const hasStockErrors = stockErrors.length > 0
 
   // Fetch cart details
   const fetchCart = async () => {
@@ -82,6 +160,45 @@ export default function Cart() {
       setLoading(false)
     }
   }, [user])
+
+  // Remove coupon if subtotal falls below threshold
+  useEffect(() => {
+    if (appliedCoupon && itemsSubtotal < appliedCoupon.minCartAmount) {
+      setAppliedCoupon(null)
+      setCouponCodeInput('')
+      addToast(`Promo code removed: subtotal is below minimum threshold (₹${appliedCoupon.minCartAmount.toLocaleString()})`, 'info')
+    }
+  }, [itemsSubtotal, appliedCoupon, addToast])
+
+  // Apply Coupon Handler
+  const handleApplyCoupon = async (e) => {
+    e.preventDefault()
+    if (!couponCodeInput.trim()) {
+      addToast('Please enter a promocode', 'error')
+      return
+    }
+    try {
+      setIsApplyingCoupon(true)
+      const res = await api.post('/coupons/validate', {
+        code: couponCodeInput.trim().toUpperCase(),
+        cartSubtotal: itemsSubtotal
+      })
+      setAppliedCoupon(res.data.data)
+      addToast(`Promo code "${res.data.data.code}" applied!`, 'success')
+    } catch (err) {
+      console.error(err)
+      addToast(err.response?.data?.message || 'Invalid promo code', 'error')
+    } finally {
+      setIsApplyingCoupon(false)
+    }
+  }
+
+  // Remove Coupon Handler
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null)
+    setCouponCodeInput('')
+    addToast('Promo code removed', 'info')
+  }
 
   // Custom step transition helper
   const changeStep = (targetStep) => {
@@ -209,6 +326,7 @@ export default function Cart() {
         state: '',
         pincode: ''
       })
+      lastFetchedPincodeRef.current = ''
       setAddressErrors({})
     } catch (err) {
       console.error('Failed to save address', err)
@@ -229,25 +347,11 @@ export default function Cart() {
       state: addr.state,
       pincode: addr.pincode
     })
+    lastFetchedPincodeRef.current = addr.pincode
     setAddressErrors({})
     setIsAddingAddress(true)
   }
 
-  // Cart pricing calculation
-  const itemsSubtotal = cartItems.reduce((acc, curr) => {
-    const price = curr.product?.price || 0
-    return acc + (price * curr.quantity)
-  }, 0)
-
-  const serviceFee = Math.round(itemsSubtotal * 0.05) // 5% service/GST fee
-  const shippingFee = itemsSubtotal > 5000 || itemsSubtotal === 0 ? 0 : 150 // Free shipping above ₹5,000
-  const orderTotal = itemsSubtotal + serviceFee + shippingFee
-
-  // Real-time Stock Integrity Check
-  const stockErrors = cartItems.filter(item => {
-    return !item.product.active || item.product.quantity < item.quantity
-  })
-  const hasStockErrors = stockErrors.length > 0
 
   // Initiate checkout
   const handleInitiateCheckout = async () => {
@@ -274,7 +378,9 @@ export default function Cart() {
       const res = await api.post('/orders/checkout', {
         items,
         sessionId,
-        conversionSource: 'cart_checkout'
+        conversionSource: 'cart_checkout',
+        couponCode: appliedCoupon ? appliedCoupon.code : undefined,
+        addressId: selectedAddressId
       })
 
       setRazorpayOrderInfo(res.data.data)
@@ -341,6 +447,7 @@ export default function Cart() {
             razorpaySignature: response.razorpay_signature
           })
 
+          setCompletedOrder(verifyRes.data.data)
           setOrderId(verifyRes.data.data._id.substring(verifyRes.data.data._id.length - 8).toUpperCase())
 
           setUser(prev => ({
@@ -365,7 +472,7 @@ export default function Cart() {
         shipping_address: addressStr
       },
       theme: {
-        color: '#B90504'
+        color: '#e63946'
       },
       modal: {
         ondismiss: function () {
@@ -401,6 +508,7 @@ export default function Cart() {
         isSimulated: true
       })
 
+      setCompletedOrder(verifyRes.data.data)
       setOrderId(verifyRes.data.data._id.substring(verifyRes.data.data._id.length - 8).toUpperCase())
 
       setUser(prev => ({
@@ -413,6 +521,35 @@ export default function Cart() {
     } catch (err) {
       console.error('Simulated verification failed', err)
       addToast('Simulation transaction verification failed.', 'error')
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  const handleConfirmCod = async () => {
+    if (!razorpayOrderInfo) return
+
+    try {
+      setIsProcessing(true)
+      const { razorpayOrder } = razorpayOrderInfo
+
+      const verifyRes = await api.post('/orders/confirm-cod', {
+        razorpayOrderId: razorpayOrder.id
+      })
+
+      setCompletedOrder(verifyRes.data.data)
+      setOrderId(verifyRes.data.data._id.substring(verifyRes.data.data._id.length - 8).toUpperCase())
+
+      setUser(prev => ({
+        ...prev,
+        cart: []
+      }))
+
+      setCheckoutStep(4) // Success step
+      addToast('Order placed successfully with Cash on Delivery!', 'success')
+    } catch (err) {
+      console.error('COD confirmation failed', err)
+      addToast(err.response?.data?.message || 'Failed to place COD order.', 'error')
     } finally {
       setIsProcessing(false)
     }
@@ -497,19 +634,31 @@ export default function Cart() {
               <p className="text-xs text-artisan-light/40 font-mono uppercase tracking-widest max-w-sm pt-6 leading-relaxed">
                 Your medical supplies order has been verified. Packets will be prepared and shipped shortly.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 w-full pt-8 px-4">
-                <Link
-                  to="/history"
-                  className="flex-1 py-4 border border-artisan-light/20 text-[9px] font-mono font-bold uppercase tracking-widest hover:bg-artisan-light hover:text-artisan-dark hover:border-artisan-light transition-all text-center flex items-center justify-center gap-2"
-                >
-                  View Orders
-                </Link>
-                <Link
-                  to="/allproduct"
-                  className="flex-1 py-4 bg-artisan-grey text-artisan-dark text-[9px] font-mono font-bold uppercase tracking-widest hover:bg-artisan-light transition-all text-center flex items-center justify-center gap-2"
-                >
-                  Back to Shop
-                </Link>
+              <div className="flex flex-col gap-3 w-full pt-8 px-4 max-w-sm">
+                {completedOrder && (
+                  <button
+                    onClick={() => downloadOrderReceipt(completedOrder)}
+                    className="w-full py-4 bg-artisan-light text-artisan-dark text-[9px] font-mono font-bold uppercase tracking-widest hover:bg-artisan-grey hover:text-artisan-dark transition-all flex items-center justify-center gap-2 rounded-full cursor-pointer"
+                  >
+                    <Download className="w-4 h-4 text-artisan-dark" />
+                    Download Invoice Receipt
+                  </button>
+                )}
+                
+                <div className="grid grid-cols-2 gap-3 w-full">
+                  <Link
+                    to="/history"
+                    className="py-4 border border-artisan-light/20 text-[9px] font-mono font-bold uppercase tracking-widest hover:bg-artisan-light hover:text-artisan-dark hover:border-artisan-light transition-all text-center flex items-center justify-center gap-2 rounded-full"
+                  >
+                    View Orders
+                  </Link>
+                  <Link
+                    to="/allproduct"
+                    className="py-4 bg-artisan-grey text-artisan-dark text-[9px] font-mono font-bold uppercase tracking-widest hover:bg-artisan-light transition-all text-center flex items-center justify-center gap-2 rounded-full"
+                  >
+                    Back to Shop
+                  </Link>
+                </div>
               </div>
             </motion.div>
           ) : (
@@ -598,7 +747,7 @@ export default function Cart() {
                               </div>
                               <Link
                                 to="/allproduct"
-                                className="inline-flex items-center gap-3 px-8 py-4 bg-artisan-light text-artisan-dark text-[9px] font-mono font-bold uppercase tracking-widest hover:bg-artisan-grey transition-all"
+                                className="inline-flex items-center gap-3 px-8 py-4 bg-artisan-light text-artisan-dark text-[9px] font-mono font-bold uppercase tracking-widest hover:bg-artisan-grey transition-all rounded-xl"
                               >
                                 Shop Products
                                 <ArrowRight className="w-4 h-4" />
@@ -614,14 +763,14 @@ export default function Cart() {
                                 return (
                                   <div
                                     key={item.product?._id || idx}
-                                    className={`group flex flex-col sm:flex-row sm:items-center justify-between border p-4 sm:p-5 gap-4 sm:gap-6 relative transition-all ${itemError
+                                    className={`group flex flex-col sm:flex-row sm:items-center justify-between border p-4 sm:p-5 gap-4 sm:gap-6 relative transition-all rounded-xl ${itemError
                                       ? 'bg-red-500/[0.01] border-red-500/20 hover:border-red-500/35'
                                       : 'bg-artisan-light/[0.005] border-artisan-light/5 hover:border-artisan-grey/25'
                                       }`}
                                   >
                                     <div className="flex items-center gap-4 sm:gap-6 flex-1 min-w-0">
                                       {/* Product Image */}
-                                      <div className="w-16 h-16 sm:w-20 sm:h-20 bg-artisan-dark border border-artisan-light/10 overflow-hidden shrink-0 flex items-center justify-center relative">
+                                      <div className="w-16 h-16 sm:w-20 sm:h-20 bg-artisan-dark border border-artisan-light/10 overflow-hidden shrink-0 flex items-center justify-center relative rounded-xl">
                                         {item.product?.image ? (
                                           <img
                                             src={item.product.image}
@@ -729,7 +878,7 @@ export default function Cart() {
 
                           {/* Inline Form Add / Edit */}
                           {isAddingAddress ? (
-                            <div className="border border-artisan-light/10 p-5 sm:p-8 bg-artisan-light/[0.005] space-y-6">
+                            <div className="border border-artisan-light/10 p-5 sm:p-8 bg-artisan-light/[0.005] space-y-6 rounded-xl">
                               <h3 className="text-xs font-mono font-bold uppercase tracking-[0.3em] text-artisan-grey">
                                 {editingAddressId ? 'Edit Shipping Address' : 'Add Shipping Address'}
                               </h3>
@@ -745,7 +894,7 @@ export default function Cart() {
                                           key={tag}
                                           type="button"
                                           onClick={() => setAddressForm({ ...addressForm, tag })}
-                                          className={`px-3 py-1.5 text-[9px] font-mono font-bold uppercase tracking-widest border transition-all ${addressForm.tag === tag
+                                          className={`px-3 py-1.5 text-[9px] font-mono font-bold uppercase tracking-widest border transition-all rounded-full ${addressForm.tag === tag
                                             ? 'bg-artisan-light border-artisan-light text-artisan-dark'
                                             : 'border-artisan-light/10 text-artisan-light hover:border-artisan-light/35'
                                             }`}
@@ -767,15 +916,20 @@ export default function Cart() {
                                   {/* Pincode Input */}
                                   <div className="space-y-2">
                                     <label className="text-[8px] font-mono font-bold text-artisan-light/40 uppercase tracking-widest">Pincode (6 digits) *</label>
-                                    <input
-                                      type="text"
-                                      placeholder="600001"
-                                      maxLength={6}
-                                      value={addressForm.pincode}
-                                      onChange={(e) => setAddressForm({ ...addressForm, pincode: e.target.value.replace(/\D/g, '') })}
-                                      className={`w-full bg-transparent border-b-2 outline-none text-sm font-mono pb-2 transition-colors ${addressErrors.pincode ? 'border-red-500/50 focus:border-red-500' : 'border-artisan-light/10 focus:border-artisan-light'
-                                        }`}
-                                    />
+                                    <div className="relative">
+                                      <input
+                                        type="text"
+                                        placeholder="600001"
+                                        maxLength={6}
+                                        value={addressForm.pincode}
+                                        onChange={(e) => setAddressForm({ ...addressForm, pincode: e.target.value.replace(/\D/g, '') })}
+                                        className={`w-full bg-transparent border-b-2 outline-none text-sm font-mono pb-2 transition-colors pr-8 ${addressErrors.pincode ? 'border-red-500/50 focus:border-red-500' : 'border-artisan-light/10 focus:border-artisan-light'
+                                          }`}
+                                      />
+                                      {isFetchingPincode && (
+                                        <Loader2 className="absolute right-2 bottom-2 w-3.5 h-3.5 animate-spin text-artisan-light/40" />
+                                      )}
+                                    </div>
                                     {addressErrors.pincode && <p className="text-[10px] font-mono text-red-500">{addressErrors.pincode}</p>}
                                   </div>
                                 </div>
@@ -828,7 +982,8 @@ export default function Cart() {
                                         placeholder="Chennai"
                                         value={addressForm.city}
                                         onChange={(e) => setAddressForm({ ...addressForm, city: e.target.value })}
-                                        className={`w-full bg-transparent border-b-2 outline-none text-sm font-mono pb-2 transition-colors ${addressErrors.city ? 'border-red-500/50 focus:border-red-500' : 'border-artisan-light/10 focus:border-artisan-light'
+                                        disabled
+                                        className={`w-full bg-transparent border-b-2 outline-none text-sm font-mono pb-2 transition-colors opacity-50 cursor-not-allowed ${addressErrors.city ? 'border-red-500/50 focus:border-red-500' : 'border-artisan-light/10 focus:border-artisan-light'
                                           }`}
                                       />
                                       {addressErrors.city && <p className="text-[10px] font-mono text-red-500">{addressErrors.city}</p>}
@@ -842,7 +997,8 @@ export default function Cart() {
                                         placeholder="Tamil Nadu"
                                         value={addressForm.state}
                                         onChange={(e) => setAddressForm({ ...addressForm, state: e.target.value })}
-                                        className={`w-full bg-transparent border-b-2 outline-none text-sm font-mono pb-2 transition-colors ${addressErrors.state ? 'border-red-500/50 focus:border-red-500' : 'border-artisan-light/10 focus:border-artisan-light'
+                                        disabled
+                                        className={`w-full bg-transparent border-b-2 outline-none text-sm font-mono pb-2 transition-colors opacity-50 cursor-not-allowed ${addressErrors.state ? 'border-red-500/50 focus:border-red-500' : 'border-artisan-light/10 focus:border-artisan-light'
                                           }`}
                                       />
                                       {addressErrors.state && <p className="text-[10px] font-mono text-red-500">{addressErrors.state}</p>}
@@ -854,7 +1010,7 @@ export default function Cart() {
                                   <button
                                     type="submit"
                                     disabled={isProcessing}
-                                    className="px-5 py-3 bg-artisan-light text-artisan-dark text-[10px] font-mono font-bold uppercase tracking-widest hover:bg-artisan-grey transition-all flex items-center gap-2"
+                                    className="px-5 py-3 bg-artisan-light text-artisan-dark text-[10px] font-mono font-bold uppercase tracking-widest hover:bg-artisan-grey transition-all flex items-center gap-2 rounded-full"
                                   >
                                     {isProcessing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Save Address'}
                                   </button>
@@ -863,9 +1019,10 @@ export default function Cart() {
                                     onClick={() => {
                                       setIsAddingAddress(false)
                                       setEditingAddressId(null)
+                                      lastFetchedPincodeRef.current = ''
                                       setAddressErrors({})
                                     }}
-                                    className="px-5 py-3 border border-artisan-light/10 text-[10px] font-mono font-bold uppercase tracking-widest text-artisan-light/60 hover:text-artisan-light transition-all"
+                                    className="px-5 py-3 border border-artisan-light/10 text-[10px] font-mono font-bold uppercase tracking-widest text-artisan-light/60 hover:text-artisan-light transition-all rounded-full"
                                   >
                                     Cancel
                                   </button>
@@ -881,14 +1038,14 @@ export default function Cart() {
                                     <div
                                       key={addr._id}
                                       onClick={() => setSelectedAddressId(addr._id)}
-                                      className={`group p-5 border cursor-pointer transition-all relative flex flex-col justify-between min-h-[160px] ${selectedAddressId === addr._id
+                                      className={`group p-5 border cursor-pointer transition-all relative flex flex-col justify-between min-h-[160px] rounded-xl ${selectedAddressId === addr._id
                                         ? 'bg-artisan-light/[0.02] border-artisan-grey'
                                         : 'bg-artisan-light/[0.003] border-artisan-light/5 hover:border-artisan-light/20'
                                         }`}
                                     >
                                       <div className="space-y-3">
                                         <div className="flex items-center justify-between">
-                                          <span className={`px-2 py-0.5 text-[8px] font-mono font-bold uppercase tracking-widest border ${selectedAddressId === addr._id
+                                          <span className={`px-2 py-0.5 text-[8px] font-mono font-bold uppercase tracking-widest border rounded-xl ${selectedAddressId === addr._id
                                             ? 'bg-artisan-grey text-artisan-dark border-artisan-grey'
                                             : 'border-artisan-light/15 text-artisan-grey'
                                             }`}>
@@ -913,7 +1070,7 @@ export default function Cart() {
                                             e.stopPropagation()
                                             handleStartEditAddress(addr)
                                           }}
-                                          className="text-[9px] font-mono font-bold uppercase tracking-widest text-artisan-grey hover:text-artisan-light inline-flex items-center gap-1.5"
+                                          className="text-[9px] font-mono font-bold uppercase tracking-widest text-artisan-grey hover:text-artisan-light inline-flex items-center gap-1.5 rounded-full"
                                         >
                                           <Edit2 className="w-3 h-3" />
                                           Edit Address
@@ -922,7 +1079,7 @@ export default function Cart() {
                                     </div>
                                   ))
                                 ) : (
-                                  <div className="col-span-1 sm:col-span-2 border border-artisan-light/5 p-12 text-center space-y-4">
+                                  <div className="col-span-1 sm:col-span-2 border border-artisan-light/5 p-12 text-center space-y-4 rounded-xl">
                                     <MapPin className="w-10 h-10 text-artisan-light/10 mx-auto" />
                                     <p className="text-xs font-mono uppercase tracking-widest text-artisan-light/40">No saved addresses found in profile.</p>
                                   </div>
@@ -942,10 +1099,11 @@ export default function Cart() {
                                       state: '',
                                       pincode: ''
                                     })
+                                    lastFetchedPincodeRef.current = ''
                                     setAddressErrors({})
                                     setIsAddingAddress(true)
                                   }}
-                                  className="w-full md:w-auto px-6 py-4 border border-dashed border-artisan-light/20 hover:border-artisan-grey hover:bg-artisan-light/[0.01] transition-all flex items-center justify-center gap-3 text-[9px] font-mono font-bold uppercase tracking-widest text-artisan-grey hover:text-artisan-light"
+                                  className="w-full md:w-auto px-6 py-4 border border-dashed border-artisan-light/20 hover:border-artisan-grey hover:bg-artisan-light/[0.01] transition-all flex items-center justify-center gap-3 text-[9px] font-mono font-bold uppercase tracking-widest text-artisan-grey hover:text-artisan-light rounded-full"
                                 >
                                   <PlusCircle className="w-4 h-4" />
                                   Add Shipping Address
@@ -970,12 +1128,12 @@ export default function Cart() {
                           <div className="space-y-6">
 
                             {/* Address Summary */}
-                            <div className="border border-artisan-light/5 p-6 bg-artisan-light/[0.003] space-y-4">
+                            <div className="border border-artisan-light/5 p-6 bg-artisan-light/[0.003] space-y-4 rounded-xl">
                               <div className="flex items-center justify-between border-b border-artisan-light/5 pb-3">
                                 <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-artisan-grey">Shipping Address</span>
                                 <button
                                   onClick={() => changeStep(1)}
-                                  className="text-[9px] font-mono font-bold uppercase tracking-widest text-artisan-light/40 hover:text-artisan-light"
+                                  className="text-[9px] font-mono font-bold uppercase tracking-widest text-artisan-light/40 hover:text-artisan-light rounded-full"
                                 >
                                   Change Address
                                 </button>
@@ -985,7 +1143,7 @@ export default function Cart() {
                                 if (!addr) return <p className="text-xs text-red-400">Please choose an address.</p>
                                 return (
                                   <div className="text-xs font-mono text-artisan-light/70 leading-relaxed">
-                                    <span className="px-2 py-0.5 bg-artisan-light/5 border border-artisan-light/10 text-[8px] font-bold uppercase tracking-widest text-artisan-grey mr-2 inline-block mb-2">
+                                    <span className="px-2 py-0.5 bg-artisan-light/5 border border-artisan-light/10 text-[8px] font-bold uppercase tracking-widest text-artisan-grey mr-2 inline-block mb-2 rounded-xl">
                                       {addr.tag}
                                     </span>
                                     <p className="font-bold text-artisan-light">{addr.doorNumber}</p>
@@ -997,7 +1155,7 @@ export default function Cart() {
                             </div>
 
                             {/* Items Summary list */}
-                            <div className="border border-artisan-light/5 p-6 bg-artisan-light/[0.003] space-y-4">
+                            <div className="border border-artisan-light/5 p-6 bg-artisan-light/[0.003] space-y-4 rounded-xl">
                               <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-artisan-grey block border-b border-artisan-light/5 pb-3">
                                 Items Summary ({cartItems.reduce((acc, curr) => acc + curr.quantity, 0)} Items)
                               </span>
@@ -1015,7 +1173,7 @@ export default function Cart() {
                             </div>
 
                             {/* Information notice */}
-                            <div className="flex items-center gap-4 p-5 bg-artisan-light/[0.01] border border-artisan-light/5">
+                            <div className="flex items-center gap-4 p-5 bg-artisan-light/[0.01] border border-artisan-light/5 rounded-xl">
                               <FileText className="w-5 h-5 text-artisan-grey shrink-0" />
                               <p className="text-[8px] font-mono text-artisan-grey uppercase tracking-widest leading-relaxed">
                                 "Please verify your shipping details and items before continuing. You cannot change your cart after starting payment."
@@ -1029,54 +1187,123 @@ export default function Cart() {
                       {checkoutStep === 3 && (
                         <div className="space-y-8">
                           <div className="space-y-3">
-                            <span className="text-xs font-mono font-bold text-artisan-grey uppercase tracking-[0.5em] block">Payment</span>
+                            <span className="text-xs font-mono font-bold text-artisan-grey uppercase tracking-[0.5em] block">Payment Method</span>
                             <h1 className="text-4xl md:text-5xl font-display font-extrabold uppercase tracking-tighter leading-none">
-                              SECURE <br />
+                              CHOOSE <br />
                               <span className="text-outline">PAYMENT.</span>
                             </h1>
                           </div>
 
-                          <div className="space-y-8 bg-artisan-light/[0.005] border border-artisan-light/10 p-8 md:p-12 text-center">
-                            <div className="max-w-md mx-auto space-y-6">
-                              <div className="w-14 h-14 bg-artisan-light/5 border border-artisan-light/10 flex items-center justify-center mx-auto text-artisan-light">
-                                <CreditCard className="w-6 h-6" />
-                              </div>
-                              <div className="space-y-2">
-                                <h3 className="text-base font-mono uppercase tracking-widest text-artisan-light">Pay Now</h3>
-                                <p className="text-[10px] text-artisan-light/30 font-mono uppercase tracking-widest">
-                                  Total to pay: <span className="text-artisan-light font-bold text-xs">₹{orderTotal.toLocaleString()}</span>
-                                </p>
-                              </div>
-
-                              {/* GATEWAY INVOCATION */}
-                              <div className="flex flex-col gap-4 pt-6">
-                                <button
-                                  onClick={handleRazorpayPayment}
-                                  disabled={isProcessing}
-                                  className="w-full py-4.5 bg-artisan-grey text-artisan-dark font-display font-black uppercase tracking-[0.3em] text-xs hover:bg-artisan-light transition-all flex items-center justify-center gap-3 relative"
-                                >
-                                  Pay with Razorpay
-                                  <ArrowRight className="w-4 h-4" />
-                                </button>
-
-                                {/* Simulation option */}
-                                <div className="relative flex py-2 items-center">
-                                  <div className="flex-grow border-t border-artisan-light/5"></div>
-                                  <span className="flex-shrink mx-4 text-[8px] font-mono text-artisan-light/20 uppercase tracking-[0.4em]">Or Simulate Payment</span>
-                                  <div className="flex-grow border-t border-artisan-light/5"></div>
+                          <div className="space-y-6 bg-artisan-light/[0.005] border border-artisan-light/10 p-6 md:p-10 rounded-xl">
+                            {/* Payment Method Selector Grid */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              {/* Option A: Pay Online */}
+                              <button
+                                type="button"
+                                onClick={() => setPaymentMethod('online')}
+                                className={`p-5 text-left border transition-all rounded-xl relative ${
+                                  paymentMethod === 'online'
+                                    ? 'bg-artisan-light/5 border-artisan-light'
+                                    : 'border-artisan-light/10 hover:border-artisan-light/30'
+                                }`}
+                              >
+                                <div className="flex items-center gap-3 mb-2">
+                                  <div className={`p-2 rounded-xl ${paymentMethod === 'online' ? 'bg-artisan-light text-artisan-dark' : 'bg-artisan-light/5 text-artisan-light/60'}`}>
+                                    <CreditCard className="w-5 h-5" />
+                                  </div>
+                                  <span className="text-xs font-mono font-bold uppercase tracking-wider text-artisan-light">Pay Online</span>
                                 </div>
+                                <p className="text-[9px] font-mono text-artisan-light/40 uppercase tracking-wider leading-relaxed">
+                                  Pay securely via cards, UPI, or netbanking using Razorpay.
+                                </p>
+                                {paymentMethod === 'online' && (
+                                  <div className="absolute top-4 right-4 w-3.5 h-3.5 bg-artisan-light rounded-full border-2 border-artisan-dark flex items-center justify-center">
+                                    <div className="w-1.5 h-1.5 bg-artisan-dark rounded-full" />
+                                  </div>
+                                )}
+                              </button>
 
-                                <button
-                                  onClick={handleSimulatePayment}
-                                  disabled={isProcessing}
-                                  className="w-full py-4 border border-dashed border-red-500/30 text-red-500 font-mono font-bold uppercase tracking-[0.2em] text-[9px] hover:bg-red-500/[0.01] hover:border-red-500 transition-all flex items-center justify-center gap-2"
-                                >
-                                  Simulate Payment (Dev Mode)
-                                </button>
+                              {/* Option B: Cash on Delivery */}
+                              <button
+                                type="button"
+                                onClick={() => setPaymentMethod('cod')}
+                                className={`p-5 text-left border transition-all rounded-xl relative ${
+                                  paymentMethod === 'cod'
+                                    ? 'bg-artisan-light/5 border-artisan-light'
+                                    : 'border-artisan-light/10 hover:border-artisan-light/30'
+                                }`}
+                              >
+                                <div className="flex items-center gap-3 mb-2">
+                                  <div className={`p-2 rounded-xl ${paymentMethod === 'cod' ? 'bg-artisan-light text-artisan-dark' : 'bg-artisan-light/5 text-artisan-light/60'}`}>
+                                    <Truck className="w-5 h-5" />
+                                  </div>
+                                  <span className="text-xs font-mono font-bold uppercase tracking-wider text-artisan-light">Cash on Delivery</span>
+                                </div>
+                                <p className="text-[9px] font-mono text-artisan-light/40 uppercase tracking-wider leading-relaxed">
+                                  Pay in cash upon delivery. COD fee of ₹50 applies.
+                                </p>
+                                {paymentMethod === 'cod' && (
+                                  <div className="absolute top-4 right-4 w-3.5 h-3.5 bg-artisan-light rounded-full border-2 border-artisan-dark flex items-center justify-center">
+                                    <div className="w-1.5 h-1.5 bg-artisan-dark rounded-full" />
+                                  </div>
+                                )}
+                              </button>
+                            </div>
+
+                            {/* Payment Summary & Dynamic Confirm Action Button */}
+                            <div className="max-w-md mx-auto pt-6 border-t border-artisan-light/5 text-center space-y-6">
+                              <div className="space-y-1">
+                                <span className="text-[10px] text-artisan-light/35 font-mono uppercase tracking-widest block">
+                                  {paymentMethod === 'cod' ? 'COD Billing Amount' : 'Online Billing Amount'}
+                                </span>
+                                <span className="text-3xl font-display font-extrabold text-artisan-light tracking-tighter">
+                                  ₹{orderTotal.toLocaleString()}
+                                </span>
                               </div>
 
-                              <p className="text-[7px] font-mono text-artisan-light/25 uppercase tracking-widest pt-4">
-                                🔒 Secure 256-bit encryption protocol. SSL Verified node.
+                              <div className="flex flex-col gap-4">
+                                {paymentMethod === 'online' ? (
+                                  <>
+                                    <button
+                                      type="button"
+                                      onClick={handleRazorpayPayment}
+                                      disabled={isProcessing}
+                                      className="w-full py-4.5 bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-[0.3em] text-xs hover:bg-artisan-grey hover:text-artisan-light transition-all flex items-center justify-center gap-3 relative rounded-full"
+                                    >
+                                      Pay with Razorpay
+                                      <ArrowRight className="w-4 h-4" />
+                                    </button>
+
+                                    <div className="relative flex py-2 items-center">
+                                      <div className="flex-grow border-t border-artisan-light/5"></div>
+                                      <span className="flex-shrink mx-4 text-[8px] font-mono text-artisan-light/20 uppercase tracking-[0.4em]">Or</span>
+                                      <div className="flex-grow border-t border-artisan-light/5"></div>
+                                    </div>
+
+                                    <button
+                                      type="button"
+                                      onClick={handleSimulatePayment}
+                                      disabled={isProcessing}
+                                      className="w-full py-4 border border-dashed border-red-500/35 text-red-500 font-mono font-bold uppercase tracking-[0.2em] text-[9px] hover:bg-red-500/[0.01] hover:border-red-500 transition-all flex items-center justify-center gap-2 rounded-full"
+                                    >
+                                      Simulate Online Payment (Dev Mode)
+                                    </button>
+                                  </>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={handleConfirmCod}
+                                    disabled={isProcessing}
+                                    className="w-full py-4.5 bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-[0.3em] text-xs hover:bg-artisan-grey hover:text-artisan-light transition-all flex items-center justify-center gap-3 relative rounded-full"
+                                  >
+                                    Confirm COD Order
+                                    <Check className="w-4 h-4" />
+                                  </button>
+                                )}
+                              </div>
+
+                              <p className="text-[8px] font-mono text-artisan-light/25 uppercase tracking-widest pt-2">
+                                🔒 Safe & Secure Checkout.
                               </p>
                             </div>
                           </div>
@@ -1109,7 +1336,7 @@ export default function Cart() {
                           }
                           changeStep(2)
                         }}
-                        className="w-full py-4 bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-[0.3em] text-xs hover:bg-artisan-grey transition-all flex items-center justify-center gap-3"
+                        className="w-full py-4 bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-[0.3em] text-xs hover:bg-artisan-grey transition-all flex items-center justify-center gap-3 rounded-full"
                       >
                         Next Step
                         <ArrowRight className="w-4 h-4" />
@@ -1119,7 +1346,7 @@ export default function Cart() {
                     {checkoutStep === 2 && (
                       <button
                         onClick={handleInitiateCheckout}
-                        className="w-full py-4 bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-[0.3em] text-xs hover:bg-artisan-grey transition-all flex items-center justify-center gap-3"
+                        className="w-full py-4 bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-[0.3em] text-xs hover:bg-artisan-grey transition-all flex items-center justify-center gap-3 rounded-full"
                       >
                         Confirm Details
                         <ArrowRight className="w-4 h-4" />
@@ -1132,7 +1359,7 @@ export default function Cart() {
 
               {/* RIGHT SIDEBAR: PRICE SUMMARY & STEP OPERATIONS (Sticky on Desktop) */}
               <aside className="lg:col-span-4 lg:sticky lg:top-36 space-y-6">
-                <div className="border border-artisan-light/10 bg-artisan-light/[0.003] p-6 md:p-8 space-y-6">
+                <div className="border border-artisan-light/10 bg-artisan-light/[0.003] p-6 md:p-8 space-y-6 rounded-xl">
 
                   <h3 className="text-xs font-mono font-bold text-artisan-light uppercase tracking-[0.4em]">Order Summary</h3>
 
@@ -1141,6 +1368,12 @@ export default function Cart() {
                       <span className="text-artisan-light/45">Subtotal</span>
                       <span className="text-artisan-light font-bold">₹{itemsSubtotal.toLocaleString()}</span>
                     </div>
+                    {appliedCoupon && (
+                      <div className="flex justify-between text-[9px] font-mono uppercase tracking-widest text-green-500 font-bold">
+                        <span>Discount ({appliedCoupon.code})</span>
+                        <span>-₹{discountAmount.toLocaleString()}</span>
+                      </div>
+                    )}
                     <div className="flex justify-between text-[9px] font-mono uppercase tracking-widest">
                       <span className="text-artisan-light/45">Tax & Service Fee (5%)</span>
                       <span className="text-artisan-light font-bold">₹{serviceFee.toLocaleString()}</span>
@@ -1155,11 +1388,59 @@ export default function Cart() {
                         )}
                       </span>
                     </div>
+                    {paymentMethod === 'cod' && (
+                      <div className="flex justify-between text-[9px] font-mono uppercase tracking-widest text-artisan-grey font-bold">
+                        <span>COD Handling Fee</span>
+                        <span>₹{codFee.toLocaleString()}</span>
+                      </div>
+                    )}
 
                     {shippingFee > 0 && itemsSubtotal > 0 && (
-                      <div className="flex items-center gap-2 text-[7px] font-mono text-artisan-light/30 uppercase bg-artisan-light/[0.02] p-2 border border-artisan-light/5">
+                      <div className="flex rounded-xl items-center gap-2 text-[7px] font-mono text-artisan-light/50 uppercase bg-artisan-light/[0.02] p-2 border border-artisan-light/5">
                         <Truck className="w-3.5 h-3.5 shrink-0" />
                         <span>Add ₹{(5000 - itemsSubtotal).toLocaleString()} more for free shipping</span>
+                      </div>
+                    )}
+
+                    {/* Promo Code section */}
+                    {itemsSubtotal > 0 && checkoutStep < 3 && (
+                      <div className="space-y-3 pt-2">
+                        <div className="h-px bg-artisan-light/5" />
+                        <span className="text-[8px] font-mono font-bold text-artisan-light/40 uppercase tracking-widest block">Promo Code</span>
+
+                        {appliedCoupon ? (
+                          <div className="flex items-center justify-between border border-green-500/20 bg-green-500/[0.02] p-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-mono font-bold text-green-500 uppercase tracking-widest">{appliedCoupon.code}</span>
+                              <span className="text-[8px] font-mono text-green-500/60 uppercase">Applied</span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={handleRemoveCoupon}
+                              className="text-[8px] font-mono font-bold uppercase tracking-widest text-red-500 hover:text-red-400 p-1 rounded-xl"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        ) : (
+                          <form onSubmit={handleApplyCoupon} className="flex gap-2">
+                            <input
+                              type="text"
+                              placeholder="ENTER CODE"
+                              value={couponCodeInput}
+                              onChange={(e) => setCouponCodeInput(e.target.value.toUpperCase())}
+                              className="flex-1 bg-transparent border rounded-xl border-artisan-light/10 focus:border-artisan-grey/50 px-3 py-1.5 outline-none font-mono text-[10px] uppercase tracking-widest text-artisan-light placeholder:text-artisan-light/25 rounded-none"
+                              disabled={isApplyingCoupon}
+                            />
+                            <button
+                              type="submit"
+                              disabled={isApplyingCoupon || !couponCodeInput.trim()}
+                              className="px-4 bg-artisan-light/5 rounded-xl border border-artisan-light/10 text-artisan-light hover:bg-artisan-light hover:text-artisan-dark hover:border-artisan-light disabled:opacity-30 disabled:pointer-events-none transition-all font-mono text-[9px] font-bold uppercase tracking-widest shrink-0"
+                            >
+                              {isApplyingCoupon ? '...' : 'Apply'}
+                            </button>
+                          </form>
+                        )}
                       </div>
                     )}
 
@@ -1180,7 +1461,7 @@ export default function Cart() {
                         <button
                           onClick={() => changeStep(1)}
                           disabled={hasStockErrors}
-                          className="w-full py-4.5 bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-[0.3em] text-xs hover:bg-artisan-grey transition-all flex items-center justify-center gap-3 disabled:opacity-30 disabled:pointer-events-none"
+                          className="w-full py-4.5 bg-artisan-light rounded-full text-artisan-dark font-display font-black uppercase tracking-[0.3em] text-xs hover:bg-artisan-grey transition-all flex items-center justify-center gap-3 disabled:opacity-30 disabled:pointer-events-none"
                         >
                           Proceed to Checkout
                           <ArrowRight className="w-4 h-4" />
@@ -1196,7 +1477,7 @@ export default function Cart() {
                             }
                             changeStep(2)
                           }}
-                          className="w-full py-4.5 bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-[0.3em] text-xs hover:bg-artisan-grey transition-all flex items-center justify-center gap-3"
+                          className="w-full py-4.5 rounded-full bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-[0.3em] text-xs hover:bg-artisan-grey transition-all flex items-center justify-center gap-3"
                         >
                           Next Step
                           <ArrowRight className="w-4 h-4" />
@@ -1206,7 +1487,7 @@ export default function Cart() {
                       {checkoutStep === 2 && (
                         <button
                           onClick={handleInitiateCheckout}
-                          className="w-full py-4.5 bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-[0.3em] text-xs hover:bg-artisan-grey transition-all flex items-center justify-center gap-3"
+                          className="w-full py-4.5 rounded-full bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-[0.3em] text-xs hover:bg-artisan-grey transition-all flex items-center justify-center gap-3"
                         >
                           Confirm Details
                           <ArrowRight className="w-4 h-4" />
@@ -1217,7 +1498,7 @@ export default function Cart() {
                 </div>
 
                 {/* TRUST / ASSURANCE NOTICE */}
-                <div className="border border-artisan-light/5 p-5 space-y-3 bg-artisan-light/[0.003]">
+                <div className="border rounded-xl border-artisan-light/5 p-5 space-y-3 bg-artisan-light/[0.003]">
                   <div className="flex items-center gap-3 text-[9px] font-mono text-artisan-grey font-bold uppercase tracking-widest">
                     <CheckCircle2 className="w-4 h-4 text-green-500" />
                     <span>Quality Guaranteed</span>

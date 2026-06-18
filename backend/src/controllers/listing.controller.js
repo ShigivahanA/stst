@@ -16,13 +16,19 @@ const transformProductToListing = (p) => {
     pricePerDay: p.price, // legacy fallback
     pricePerHour: Math.round(p.price / 10),
     securityDeposit: Math.round(p.price * 2),
-    averageRating: '4.8',
+    averageRating: p.rating ? p.rating.toFixed(1) : '0.0',
+    numOfReviews: p.numOfReviews || 0,
     condition: 'Excellent',
     type: 'Rental',
-    availability: `In Stock (${p.quantity})`,
+    availability: p.quantity > 0 ? `In Stock (${p.quantity})` : 'Out of Stock',
     category: p.category,
-    image: p.image || '',
-    images: p.image ? [p.image] : [], // legacy fallback
+    image: (p.images && p.images.length > 0)
+      ? (typeof p.images[0] === 'object' && p.images[0].url ? p.images[0].url : String(p.images[0]))
+      : '',
+    images: (Array.isArray(p.images) && p.images.length > 0)
+      ? p.images.map(img => (img && typeof img === 'object' && img.url) ? img.url : String(img))
+      : [],
+    specifications: p.specifications || [],
     location: {
       address: '9/330, Nethaji Street, Polichalur',
       city: 'Chennai',
@@ -43,7 +49,7 @@ const transformProductToListing = (p) => {
 };
 
 export const getListings = asyncHandler(async (req, res) => {
-  const { category, keyword, sort } = req.query;
+  const { category, keyword, sort, availability } = req.query;
   const filter = {};
 
   if (req.query.owner) {
@@ -56,10 +62,20 @@ export const getListings = asyncHandler(async (req, res) => {
     filter.category = category;
   }
 
+  if (availability) {
+    if (availability === 'inStock') {
+      filter.quantity = { $gt: 0 };
+    } else if (availability === 'outOfStock') {
+      filter.quantity = { $lte: 0 };
+    }
+  }
+
   if (keyword) {
     filter.$or = [
       { name: { $regex: keyword, $options: 'i' } },
-      { desc: { $regex: keyword, $options: 'i' } }
+      { desc: { $regex: keyword, $options: 'i' } },
+      { sku: { $regex: keyword, $options: 'i' } },
+      { brand: { $regex: keyword, $options: 'i' } }
     ];
   }
 
@@ -78,9 +94,24 @@ export const getListings = asyncHandler(async (req, res) => {
     else if (sort === 'priceDesc' || sort === '-price') sortOption = { price: -1 };
     else if (sort === '-pricePerDay') sortOption = { price: -1 };
     else if (sort === 'pricePerDay') sortOption = { price: 1 };
+    else if (sort === '-averageRating') sortOption = { rating: -1 };
+    else if (sort === 'averageRating') sortOption = { rating: 1 };
   }
 
-  const products = await Product.find(filter).sort(sortOption);
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 0;
+
+  const total = await Product.countDocuments(filter);
+  res.setHeader('X-Total-Count', total.toString());
+  res.setHeader('Access-Control-Expose-Headers', 'X-Total-Count');
+
+  let query = Product.find(filter).sort(sortOption);
+  if (limit > 0) {
+    const skip = (page - 1) * limit;
+    query = query.skip(skip).limit(limit);
+  }
+
+  const products = await query;
   const listings = products.map(transformProductToListing);
 
   return res.status(200).json(new ApiResponse(200, listings, 'Listings fetched successfully'));
@@ -113,7 +144,10 @@ export const getListing = asyncHandler(async (req, res) => {
 });
 
 export const createListing = asyncHandler(async (req, res) => {
-  const { sku, name, desc, price, quantity, category, lowstockthreshold, active, image, title, description, pricePerDay, images } = req.body;
+  const { sku, name, desc, price, quantity, category, lowstockthreshold, active, image, title, description, pricePerDay, images, specifications } = req.body;
+  const productImages = (images && images.length > 0)
+    ? images
+    : (image ? [{ url: image, publicId: 'legacy' }] : []);
   const newProduct = await Product.create({
     sku: sku || 'SKU-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
     name: name || title || 'Unnamed Product',
@@ -123,13 +157,14 @@ export const createListing = asyncHandler(async (req, res) => {
     quantity: quantity !== undefined ? quantity : 5,
     lowstockthreshold: lowstockthreshold !== undefined ? lowstockthreshold : 10,
     active: active !== undefined ? active : true,
-    image: image || (images && images.length > 0 ? images[0] : '')
+    images: productImages,
+    specifications: specifications || {}
   });
   return res.status(201).json(new ApiResponse(201, transformProductToListing(newProduct), 'Listing created successfully'));
 });
 
 export const updateListing = asyncHandler(async (req, res) => {
-  const { sku, name, desc, price, quantity, category, lowstockthreshold, active, image, isActive, title, description, pricePerDay, images } = req.body;
+  const { sku, name, desc, price, quantity, category, lowstockthreshold, active, image, isActive, title, description, pricePerDay, images, specifications } = req.body;
   const updateData = {};
   if (sku !== undefined) updateData.sku = sku;
   if (name !== undefined) updateData.name = name;
@@ -143,8 +178,14 @@ export const updateListing = asyncHandler(async (req, res) => {
   if (lowstockthreshold !== undefined) updateData.lowstockthreshold = lowstockthreshold;
   if (active !== undefined) updateData.active = active;
   if (isActive !== undefined && active === undefined) updateData.active = isActive;
-  if (image !== undefined) updateData.image = image;
-  if (images && images.length > 0 && image === undefined) updateData.image = images[0];
+  if (images !== undefined) {
+    updateData.images = images;
+  } else if (image !== undefined) {
+    updateData.images = [{ url: image, publicId: 'legacy' }];
+  }
+  if (specifications !== undefined) {
+    updateData.specifications = specifications;
+  }
 
   const updatedProduct = await Product.findByIdAndUpdate(req.params.id, updateData, { new: true });
   if (!updatedProduct) {

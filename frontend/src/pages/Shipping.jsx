@@ -187,7 +187,7 @@ export default function Shipping() {
         {shippingMethods.length > 0 && (
           <div className="mb-20 space-y-6">
             <div className="space-y-2">
-              <span className="text-[9px] font-mono font-bold text-artisan-light/30 uppercase tracking-widest block">Shipping Methods</span>
+              <span className="text-[9px] font-mono font-bold text-artisan-light/50 uppercase tracking-widest block">Shipping Methods</span>
               <p className="text-xs font-mono text-artisan-light/50 uppercase tracking-widest leading-relaxed max-w-2xl">
                 We offer various shipping methods to meet your needs:
               </p>
@@ -209,7 +209,7 @@ export default function Shipping() {
                     <span className="w-8 h-8 border border-artisan-light/15 flex items-center justify-center text-artisan-grey group-hover:bg-artisan-grey group-hover:text-artisan-dark transition-colors duration-300 shrink-0">
                       <Truck className="w-4 h-4" />
                     </span>
-                    <span className="text-[8px] font-mono text-artisan-light/30 uppercase tracking-widest block font-bold">
+                    <span className="text-[8px] font-mono text-artisan-light/50 uppercase tracking-widest block font-bold">
                       [ METHOD // 0{idx + 1} ]
                     </span>
                   </div>
@@ -256,7 +256,7 @@ export default function Shipping() {
         {/* SECTION 3: FAQ ACCORDIONS */}
         {shippingFaqs.length > 0 && (
           <div className="max-w-3xl mx-auto space-y-6 pt-8 border-t border-artisan-light/5">
-            <span className="text-[9px] font-mono font-bold text-artisan-light/30 uppercase tracking-widest block">Shipping FAQs</span>
+            <span className="text-[9px] font-mono font-bold text-artisan-light/50 uppercase tracking-widest block">Shipping FAQs</span>
             <motion.div
               variants={containerVariants}
               initial="hidden"

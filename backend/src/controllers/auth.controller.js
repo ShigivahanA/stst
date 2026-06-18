@@ -78,6 +78,70 @@ export const login = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, { user: userResponse, accessToken }, 'Login successful'));
 });
 
+export const googleLogin = asyncHandler(async (req, res) => {
+  const { idToken } = req.body;
+  if (!idToken) {
+    throw new ApiError(400, 'Google ID token is required');
+  }
+
+  // Verify ID token with Google tokeninfo endpoint
+  let payload;
+  try {
+    const googleRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${idToken}`);
+    if (!googleRes.ok) {
+      throw new Error('Failed to verify token with Google');
+    }
+    payload = await googleRes.json();
+  } catch (err) {
+    throw new ApiError(400, 'Invalid Google ID token');
+  }
+
+  const { email, name, aud, email_verified } = payload;
+  
+  if (email_verified !== 'true' && email_verified !== true) {
+    throw new ApiError(400, 'Google account email is not verified');
+  }
+
+  // Verify that the client ID matches
+  const expectedClientId = process.env.GOOGLE_CLIENT_ID;
+  if (expectedClientId && aud !== expectedClientId) {
+    throw new ApiError(400, 'Token audience mismatch (invalid client ID)');
+  }
+
+  const emailLookup = hashForLookup(email);
+  let user = await User.findOne({ emailHash: emailLookup });
+
+  if (!user) {
+    // Register the user
+    user = await User.create({
+      name: name || email.split('@')[0],
+      email: email,
+      emailHash: emailLookup,
+      role: 'customer',
+    });
+    // Send welcome email in background
+    sendWelcomeEmail(user.email, user.name);
+  }
+
+  // Generate tokens
+  const { accessToken, refreshToken } = await authService.generateAccessAndRefreshTokens(user._id);
+
+  // Send login email in background
+  const time = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
+  const ip = req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'Unknown IP';
+  const ua = req.headers['user-agent'] || 'Unknown Browser';
+  sendLoginEmail(user.email, user.name, time, ip, ua);
+
+  const userResponse = user.toObject();
+  delete userResponse.password;
+  delete userResponse.refreshTokens;
+
+  return res
+    .status(200)
+    .cookie('refreshToken', refreshToken, getCookieOptions())
+    .json(new ApiResponse(200, { user: userResponse, accessToken }, 'Login successful'));
+});
+
 export const verify2FA = asyncHandler(async (req, res) => {
   const { userId, otp } = req.body;
   if (!userId || !otp) {

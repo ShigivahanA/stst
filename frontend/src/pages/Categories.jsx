@@ -76,7 +76,7 @@ export default function Categories() {
         setLoading(true)
         const res = await api.get('/listings')
         const allProducts = res.data.data || []
-        
+
         // Group products by category
         const grouped = {}
         allProducts.forEach(p => {
@@ -145,7 +145,7 @@ export default function Categories() {
                     </Link>
                     <div className="space-y-2">
                       <span className="text-[9px] font-mono font-bold text-artisan-grey uppercase tracking-widest block">Available Products:</span>
-                      
+
                       {loading ? (
                         <div className="space-y-2 animate-pulse py-1">
                           <div className="h-3 bg-artisan-light/5 w-3/4" />
@@ -217,17 +217,17 @@ export default function Categories() {
               Need Help <br />
               <span className="text-outline text-artisan-grey">Finding Supplies?</span>
             </h2>
-            <p className="text-xs font-mono font-bold text-artisan-light/30 uppercase tracking-[0.4em] max-w-lg mx-auto leading-relaxed">
+            <p className="text-xs font-mono font-bold text-artisan-light/50 uppercase tracking-[0.4em] max-w-lg mx-auto leading-relaxed">
               Connect with our certified medical representatives to secure the exact equipment you need.
             </p>
           </div>
 
           <div className="relative z-10 flex flex-col sm:flex-row justify-center gap-6">
             <Link
-              to="/allproduct"
+              to="/bulk-enquiry"
               className="px-12 py-6 bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-widest hover:bg-artisan-grey transition-all"
             >
-              Browse Full Catalog
+              Bulk Orders ?
             </Link>
             <Link
               to="/support"

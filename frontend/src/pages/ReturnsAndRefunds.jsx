@@ -204,7 +204,7 @@ export default function ReturnsAndRefunds() {
         {returnSteps.length > 0 && (
           <div className="mb-20 space-y-6">
             <div className="space-y-2">
-              <span className="text-[9px] font-mono font-bold text-artisan-light/30 uppercase tracking-widest block">Return Instructions</span>
+              <span className="text-[9px] font-mono font-bold text-artisan-light/50 uppercase tracking-widest block">Return Instructions</span>
               <p className="text-xs font-mono text-artisan-light/50 uppercase tracking-widest leading-relaxed max-w-2xl">
                 To initiate a return, follow these simple steps:
               </p>
@@ -226,7 +226,7 @@ export default function ReturnsAndRefunds() {
                     <span className="w-8 h-8 border border-artisan-light/15 flex items-center justify-center text-artisan-grey group-hover:bg-artisan-grey group-hover:text-artisan-dark transition-colors duration-300 shrink-0">
                       <RotateCcw className="w-4 h-4" />
                     </span>
-                    <span className="text-[8px] font-mono text-artisan-light/30 uppercase tracking-widest block font-bold">
+                    <span className="text-[8px] font-mono text-artisan-light/50 uppercase tracking-widest block font-bold">
                       [ ACTION // 0{idx + 1} ]
                     </span>
                   </div>
@@ -280,7 +280,7 @@ export default function ReturnsAndRefunds() {
         {/* SECTION 3: FAQ ACCORDIONS */}
         {returnsFaqs.length > 0 && (
           <div className="max-w-3xl mx-auto space-y-6 pt-8 border-t border-artisan-light/5">
-            <span className="text-[9px] font-mono font-bold text-artisan-light/30 uppercase tracking-widest block">Returns FAQ</span>
+            <span className="text-[9px] font-mono font-bold text-artisan-light/50 uppercase tracking-widest block">Returns FAQ</span>
             <motion.div
               variants={containerVariants}
               initial="hidden"

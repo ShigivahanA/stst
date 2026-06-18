@@ -78,7 +78,7 @@ export default function AdminUsers() {
                   <div className="lg:w-1/2 flex flex-col gap-4 w-full">
                      <div className="relative overflow-hidden bg-artisan-light/[0.01] border border-artisan-light/10 focus-within:border-artisan-grey/30 focus-within:bg-artisan-light/[0.03] transition-all duration-300">
                         <div className="flex items-center">
-                           <div className="pl-6 shrink-0 text-artisan-light/30">
+                           <div className="pl-6 shrink-0 text-artisan-light/50">
                               <Search className="w-5 h-5" />
                            </div>
                            <input

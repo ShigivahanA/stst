@@ -73,6 +73,8 @@ const sessionSchema = new mongoose.Schema(
   }
 );
 
+sessionSchema.index({ user: 1 });
+
 // Update session total duration based on page visits
 sessionSchema.methods.calculateTotalDuration = function () {
   this.durationSeconds = this.pagesVisited.reduce((total, page) => total + page.durationSeconds, 0);

@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion'
-import { Link, useNavigate } from 'react-router-dom'
-import { Activity, X, ArrowUpRight, Globe, MessageCircle, Camera, Mail, MapPin, Phone, LogOut, User as UserIcon, Search } from 'lucide-react'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { Activity, X, ArrowUpRight, Globe, MessageCircle, Camera, Mail, MapPin, Phone, LogOut, User as UserIcon, Search, Heart, ShoppingBag } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import api from '../services/api'
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
@@ -12,8 +13,111 @@ export default function Navbar() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
 
+  const location = useLocation()
+  const isAllProductsPage = location.pathname === '/allproduct'
+
   const [searchQuery, setSearchQuery] = useState('')
   const [showMobileSearch, setShowMobileSearch] = useState(false)
+  const [recommendations, setRecommendations] = useState([])
+  const [placeholderText, setPlaceholderText] = useState('Search products...')
+  const [typewriterWords, setTypewriterWords] = useState([
+    "Search Stethoscope...",
+    "Search Nebulizer...",
+    "Search Wheelchair...",
+    "Search Oxygen Concentrator...",
+    "Search Nitrile Gloves...",
+    "Search Heating Pad...",
+    "Search TENS Stimulator..."
+  ])
+
+  // Load product names from backend for typewriter effect
+  useEffect(() => {
+    const fetchProductNames = async () => {
+      try {
+        const res = await api.get('/listings')
+        if (res.data && res.data.data && res.data.data.length > 0) {
+          const names = res.data.data.map(p => `Search ${p.name}...`)
+          setTypewriterWords(names)
+        }
+      } catch (err) {
+        console.error('Failed to fetch product names for typewriter:', err)
+      }
+    }
+    fetchProductNames()
+  }, [])
+
+  // Fetch search recommendations based on search input seamlessly
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setRecommendations([])
+      return
+    }
+
+    const delayDebounce = setTimeout(async () => {
+      try {
+        const res = await api.get(`/listings?keyword=${encodeURIComponent(searchQuery.trim())}`)
+        setRecommendations(res.data.data || [])
+      } catch (err) {
+        console.error('Error fetching search recommendations:', err)
+      }
+    }, 200)
+
+    return () => clearTimeout(delayDebounce)
+  }, [searchQuery])
+
+  // Click outside listener to dismiss recommendations dropdown
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      const desktopForm = document.getElementById('navbar-desktop-search')
+      const mobileForm = document.getElementById('navbar-mobile-search')
+      const clickedDesktop = desktopForm && desktopForm.contains(e.target)
+      const clickedMobile = mobileForm && mobileForm.contains(e.target)
+      if (!clickedDesktop && !clickedMobile) {
+        setRecommendations([])
+      }
+    }
+    document.addEventListener('click', handleOutsideClick)
+    return () => document.removeEventListener('click', handleOutsideClick)
+  }, [])
+
+  // Typewriter effect cycling through clinical products inside placeholder
+  useEffect(() => {
+    const words = typewriterWords
+    let wordIndex = 0
+    let charIndex = 0
+    let isDeleting = false
+    let typingSpeed = 100
+    let timer
+
+    const type = () => {
+      const currentWord = words[wordIndex]
+      if (!currentWord) return
+
+      if (isDeleting) {
+        setPlaceholderText(currentWord.substring(0, charIndex - 1))
+        charIndex--
+        typingSpeed = 50
+      } else {
+        setPlaceholderText(currentWord.substring(0, charIndex + 1))
+        charIndex++
+        typingSpeed = 100
+      }
+
+      if (!isDeleting && charIndex === currentWord.length) {
+        isDeleting = true
+        typingSpeed = 1500
+      } else if (isDeleting && charIndex === 0) {
+        isDeleting = false
+        wordIndex = (wordIndex + 1) % words.length
+        typingSpeed = 500
+      }
+
+      timer = setTimeout(type, typingSpeed)
+    }
+
+    timer = setTimeout(type, typingSpeed)
+    return () => clearTimeout(timer)
+  }, [typewriterWords])
 
   useEffect(() => {
     if (isOpen) {
@@ -52,11 +156,13 @@ export default function Navbar() {
   }, [user])
 
   const cartCount = user?.cart?.reduce((acc, curr) => acc + curr.quantity, 0) || 0
+  const wishlistCount = user?.wishlist?.length || 0
   const MENU_LINKS = user?.role === 'admin'
     ? [
       { id: '01', title: 'Manage Users', href: '/admin/users' },
       { id: '02', title: 'Content', href: '/admin/content' },
-      { id: '03', title: 'Products', href: '/admin/products' },
+      { id: '03', title: 'Promos & Enquiries', href: '/admin/marketing' },
+      { id: '04', title: 'Products', href: '/admin/products' },
     ]
     : [
       { id: '01', title: 'Products', href: '/allproduct' },
@@ -177,32 +283,108 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop/Tablet Centered Search Bar */}
-          <form 
-            onSubmit={handleSearchSubmit}
-            className="hidden md:flex items-center relative z-[110] mx-4"
-          >
-            <div className="relative flex items-center border border-artisan-light/10 focus-within:border-artisan-grey transition-all duration-300 bg-white/40 backdrop-blur-sm px-3 py-1.5 rounded-sm">
-              <Search className="w-3.5 h-3.5 text-artisan-grey/60" />
-              <input
-                type="text"
-                placeholder="Search products..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-40 lg:w-56 focus:w-52 lg:focus:w-72 transition-all duration-300 bg-transparent pl-2 outline-none font-mono text-[9px] uppercase tracking-widest text-artisan-light placeholder:text-artisan-light/30"
-              />
-            </div>
-          </form>
+          {!isAllProductsPage && (
+            <form 
+              onSubmit={handleSearchSubmit}
+              id="navbar-desktop-search"
+              className="hidden md:flex items-center relative z-[110] mx-4"
+            >
+              <div className="relative flex items-center border border-artisan-light/10 focus-within:border-artisan-grey transition-all duration-300 bg-white/40 backdrop-blur-sm px-3 py-1.5 rounded-sm">
+                <Search className="w-3.5 h-3.5 text-artisan-grey/60" />
+                <input
+                  type="text"
+                  placeholder={placeholderText}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-40 lg:w-56 focus:w-52 lg:focus:w-72 transition-all duration-300 bg-transparent pl-2 outline-none font-mono text-[9px] uppercase tracking-widest text-artisan-light placeholder:text-artisan-light/50"
+                />
+              </div>
+
+              {/* Recommendations Dropdown */}
+              <AnimatePresence>
+                {recommendations.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="absolute left-0 top-[110%] w-64 lg:w-80 bg-artisan-dark/95 border border-artisan-light/10 shadow-2xl z-[120] rounded-sm py-2 max-h-80 overflow-y-auto backdrop-blur-md"
+                  >
+                    <p className="px-3 py-1 text-[7px] font-mono text-artisan-grey uppercase tracking-widest border-b border-artisan-light/5 pb-2">Recommendations</p>
+                    {recommendations.slice(0, 5).map((prod) => (
+                      <button
+                        key={prod._id}
+                        type="button"
+                        onClick={() => {
+                          setSearchQuery('')
+                          setRecommendations([])
+                          navigate(`/product/${prod._id}`)
+                        }}
+                        className="w-full text-left px-3 py-2.5 hover:bg-artisan-light/[0.05] transition-colors border-b border-artisan-light/5 last:border-0 flex items-center gap-3"
+                      >
+                        {prod.images && prod.images[0] && (
+                          <img
+                            src={prod.images[0].url}
+                            alt={prod.name}
+                            className="w-6 h-6 object-cover border border-artisan-light/10"
+                          />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[10px] font-mono font-bold uppercase tracking-wider text-artisan-light truncate">{prod.name}</p>
+                          <p className="text-[8px] font-mono text-artisan-grey uppercase tracking-widest truncate">{prod.category} • ₹{prod.price}</p>
+                        </div>
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </form>
+          )}
 
           {/* Header Action Controls */}
           <div className="flex items-center gap-3 relative z-[110]">
             {/* Mobile Search Toggle */}
-            <button
-              onClick={() => setShowMobileSearch(!showMobileSearch)}
-              className="md:hidden p-2 text-artisan-light hover:text-artisan-grey transition-colors"
-              aria-label="Toggle search"
-            >
-              {showMobileSearch ? <X className="w-4 h-4" /> : <Search className="w-4 h-4" />}
-            </button>
+            {!isAllProductsPage && (
+              <button
+                onClick={() => setShowMobileSearch(!showMobileSearch)}
+                className="md:hidden p-2 text-artisan-light hover:text-artisan-grey transition-colors"
+                aria-label="Toggle search"
+              >
+                {showMobileSearch ? <X className="w-4 h-4" /> : <Search className="w-4 h-4" />}
+              </button>
+            )}
+
+            {/* Wishlist Link (if logged in) */}
+            {user && (
+              <Link
+                to="/wishlist"
+                className="relative p-2 text-artisan-light hover:text-artisan-grey transition-colors flex items-center justify-center"
+                aria-label="Wishlist"
+              >
+                <Heart className="w-4.5 h-4.5" />
+                {wishlistCount > 0 && (
+                  <span className="absolute top-1.5 right-1.5 flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                  </span>
+                )}
+              </Link>
+            )}
+
+            {/* Cart Link (if logged in) */}
+            {user && (
+              <Link
+                to="/cart"
+                className="relative p-2 text-artisan-light hover:text-artisan-grey transition-colors flex items-center justify-center mr-1"
+                aria-label="Cart"
+              >
+                <ShoppingBag className="w-4.5 h-4.5" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-[14px] flex items-center justify-center bg-artisan-grey text-artisan-dark text-[8px] font-mono font-bold rounded-full px-1">
+                    {cartCount}
+                  </span>
+                )}
+              </Link>
+            )}
 
             {/* Menu Trigger */}
             <button
@@ -214,7 +396,7 @@ export default function Navbar() {
               </span>
               <div className="flex flex-col gap-1.5 items-end">
                 <motion.span
-                  animate={isOpen ? { rotate: 45, y: 7, backgroundColor: '#B90504' } : { rotate: 0, y: 0, backgroundColor: '#000000' }}
+                  animate={isOpen ? { rotate: 45, y: 7, backgroundColor: '#eb5e28' } : { rotate: 0, y: 0, backgroundColor: '#252422' }}
                   className="w-8 h-[1px] origin-center transition-all duration-300"
                 />
                 <motion.span
@@ -222,7 +404,7 @@ export default function Navbar() {
                   className="w-5 h-[1px] bg-artisan-light transition-all duration-300"
                 />
                 <motion.span
-                  animate={isOpen ? { rotate: -45, y: -7, backgroundColor: '#B90504' } : { rotate: 0, y: 0, backgroundColor: '#000000' }}
+                  animate={isOpen ? { rotate: -45, y: -7, backgroundColor: '#eb5e28' } : { rotate: 0, y: 0, backgroundColor: '#252422' }}
                   className="w-8 h-[1px] origin-center transition-all duration-300"
                 />
               </div>
@@ -232,7 +414,7 @@ export default function Navbar() {
 
         {/* --- Mobile Search Panel --- */}
         <AnimatePresence>
-          {showMobileSearch && !isOpen && (
+          {showMobileSearch && !isOpen && !isAllProductsPage && (
             <motion.div
               initial={{ y: -20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
@@ -240,15 +422,15 @@ export default function Navbar() {
               transition={{ duration: 0.3, ease: [0.33, 1, 0.68, 1] }}
               className="absolute top-full left-0 w-full bg-artisan-dark/95 backdrop-blur-md border-b border-artisan-light/5 p-4 z-[99]"
             >
-              <form onSubmit={handleSearchSubmit} className="w-full">
+              <form onSubmit={handleSearchSubmit} className="w-full relative" id="navbar-mobile-search">
                 <div className="relative flex items-center border border-artisan-light/15 bg-white px-4 py-3 shadow-inner">
                   <Search className="w-4 h-4 text-artisan-grey/60 mr-2" />
                   <input
                     type="text"
-                    placeholder="Search surgical products..."
+                    placeholder={placeholderText}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-transparent outline-none font-mono text-[10px] uppercase tracking-widest text-artisan-light placeholder:text-artisan-light/30"
+                    className="w-full bg-transparent outline-none font-mono text-[10px] uppercase tracking-widest text-artisan-light placeholder:text-artisan-light/50"
                   />
                   <button
                     type="submit"
@@ -257,6 +439,45 @@ export default function Navbar() {
                     Go
                   </button>
                 </div>
+
+                {/* Mobile Recommendations Dropdown */}
+                <AnimatePresence>
+                  {recommendations.length > 0 && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      className="absolute left-0 top-[110%] w-full bg-artisan-dark/95 border border-artisan-light/10 shadow-2xl z-[120] rounded-sm py-2 max-h-60 overflow-y-auto backdrop-blur-md"
+                    >
+                      <p className="px-3 py-1 text-[7px] font-mono text-artisan-grey uppercase tracking-widest border-b border-artisan-light/5 pb-2">Recommendations</p>
+                      {recommendations.slice(0, 5).map((prod) => (
+                        <button
+                          key={prod._id}
+                          type="button"
+                          onClick={() => {
+                            setSearchQuery('')
+                            setRecommendations([])
+                            setShowMobileSearch(false)
+                            navigate(`/product/${prod._id}`)
+                          }}
+                          className="w-full text-left px-4 py-3 hover:bg-artisan-light/[0.05] transition-colors border-b border-artisan-light/5 last:border-0 flex items-center gap-3"
+                        >
+                          {prod.images && prod.images[0] && (
+                            <img
+                              src={prod.images[0].url}
+                              alt={prod.name}
+                              className="w-6 h-6 object-cover border border-artisan-light/10"
+                            />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[10px] font-mono font-bold uppercase tracking-wider text-artisan-light truncate">{prod.name}</p>
+                            <p className="text-[8px] font-mono text-artisan-grey uppercase tracking-widest truncate">{prod.category} • ₹{prod.price}</p>
+                          </div>
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </form>
             </motion.div>
           )}
@@ -399,7 +620,7 @@ export default function Navbar() {
                         Session: {sessionDuration}
                       </span>
                     ) : (
-                      <span className="flex items-center gap-2 mt-2 font-mono text-artisan-light/30">
+                      <span className="flex items-center gap-2 mt-2 font-mono text-artisan-light/50">
                         Guest Mode
                       </span>
                     )}

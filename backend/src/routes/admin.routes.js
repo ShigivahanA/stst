@@ -29,7 +29,15 @@ import {
   deleteAdminSection,
   reorderAdminSections,
 } from '../controllers/admin.controller.js';
+import {
+  getCoupons,
+  createCoupon,
+  updateCoupon,
+  deleteCoupon
+} from '../controllers/coupon.controller.js';
 import { verifyJWT, authorizeRoles } from '../middlewares/auth.middleware.js';
+import validate from '../middlewares/validate.middleware.js';
+import couponValidation from '../validations/coupon.validation.js';
 
 const router = express.Router();
 
@@ -73,5 +81,11 @@ router.post('/pages/:slug/sections', addAdminSection);
 router.put('/pages/:slug/sections/:sectionId', updateAdminSection);
 router.delete('/pages/:slug/sections/:sectionId', deleteAdminSection);
 router.post('/pages/:slug/reorder', reorderAdminSections);
+
+// Coupon management routes
+router.get('/coupons', getCoupons);
+router.post('/coupons', validate(couponValidation.createCoupon), createCoupon);
+router.put('/coupons/:id', validate(couponValidation.updateCoupon), updateCoupon);
+router.delete('/coupons/:id', deleteCoupon);
 
 export default router;

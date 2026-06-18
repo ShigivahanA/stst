@@ -73,10 +73,10 @@ export default function Testimonials() {
     return (
       <section id="testimonials" className="bg-artisan-dark bg-noise border-b-2 border-artisan-light min-h-screen flex flex-col">
         <div className="container-custom py-12 lg:py-16 flex flex-col flex-1 justify-center items-center text-center w-full">
-           <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-extrabold uppercase text-artisan-light/20">
-             Yet to review.
-           </h2>
-           <p className="text-[10px] font-mono text-artisan-grey uppercase tracking-widest mt-4">Be the first to leave a legacy.</p>
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-extrabold uppercase text-artisan-light/20">
+            Yet to review.
+          </h2>
+          <p className="text-[10px] font-mono text-artisan-grey uppercase tracking-widest mt-4">Be the first to leave a legacy.</p>
         </div>
       </section>
     )
@@ -85,7 +85,7 @@ export default function Testimonials() {
   return (
     <section id="testimonials" className="bg-artisan-dark bg-noise border-b-2 border-artisan-light min-h-screen flex flex-col">
       <div className="container-custom py-12 lg:py-16 flex flex-col flex-1 justify-between w-full">
-        
+
         {/* Header */}
         <div className="mb-6 lg:mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="max-w-4xl">
@@ -97,7 +97,7 @@ export default function Testimonials() {
               <div className="w-8 h-1 bg-artisan-grey" />
               <span className="text-xs font-mono font-bold uppercase tracking-[0.4em] text-artisan-grey">Customer Feedback</span>
             </motion.div>
-            
+
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-extrabold uppercase tracking-tighter leading-[0.85] text-artisan-light">
               What Our <br />
               <span className="text-outline">Customers Say.</span>
@@ -106,7 +106,7 @@ export default function Testimonials() {
               Trusted by hospitals, clinics, and medical professionals across Tamil Nadu
             </p>
           </div>
-          
+
           {/* Index Counter */}
           <div className="text-artisan-light font-display font-extrabold text-3xl lg:text-4xl opacity-10">
             0{current + 1} <span className="text-xl lg:text-2xl">/ 0{reviews.length}</span>
@@ -114,11 +114,11 @@ export default function Testimonials() {
         </div>
 
         {/* Single Testimonial Display */}
-        <div ref={ref} className="relative border-2 border-artisan-light p-6 lg:p-12 flex-1 flex flex-col justify-center overflow-hidden">
-          
+        <div ref={ref} className="relative border-2 border-artisan-light p-6 lg:p-12 flex-1 flex flex-col justify-center overflow-hidden rounded-xl">
+
           {/* Background Decorative Quote */}
           <div className="absolute -top-12 -left-6 text-[10rem] md:text-[15rem] font-display font-extrabold text-artisan-light/[0.03] pointer-events-none select-none">
-             "
+            "
           </div>
 
           <AnimatePresence mode="wait">
@@ -133,7 +133,7 @@ export default function Testimonials() {
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 items-center">
                 {/* Quote Text */}
                 <div className="lg:col-span-9">
-                  <p className="text-xl md:text-2xl lg:text-4xl font-display font-extrabold uppercase text-artisan-light leading-tight">
+                  <p className="text-xl md:text-2xl lg:text-4xl font-display font-extrabold text-artisan-light leading-tight">
                     "{reviews[current].text}"
                   </p>
                 </div>
@@ -147,7 +147,7 @@ export default function Testimonials() {
                     {reviews[current].role} <br />
                     {reviews[current].location}
                   </div>
-                  
+
                   {/* Small Inverted Quote Icon */}
                   <div className="mt-6 w-10 h-10 bg-artisan-grey flex items-center justify-center">
                     <Quote className="w-5 h-5 text-artisan-dark" />
@@ -159,35 +159,35 @@ export default function Testimonials() {
 
           {/* Navigation Controls Integrated into Border */}
           {reviews.length > 1 && (
-            <div className="absolute bottom-0 right-0 flex border-t-2 border-l-2 border-artisan-light">
-               <motion.button 
-                 onClick={prev}
-                 whileHover={{ scale: 1.05 }}
-                 whileTap={{ scale: 0.95 }}
-                 className="w-12 h-12 lg:w-16 lg:h-16 flex items-center justify-center border-r-2 border-artisan-light hover:bg-artisan-grey hover:text-artisan-dark transition-colors duration-300"
-               >
-                 <ChevronLeft className="w-6 h-6" />
-               </motion.button>
-               <motion.button 
-                 onClick={next}
-                 whileHover={{ scale: 1.05 }}
-                 whileTap={{ scale: 0.95 }}
-                 className="w-12 h-12 lg:w-16 lg:h-16 flex items-center justify-center hover:bg-artisan-grey hover:text-artisan-dark transition-colors duration-300"
-               >
-                 <ChevronRight className="w-6 h-6" />
-               </motion.button>
+            <div className="absolute bottom-0 right-0 flex border-t-2 border-l-2 border-artisan-light rounded-xl">
+              <motion.button
+                onClick={prev}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="w-12 h-12 lg:w-16 lg:h-16 flex items-center justify-center border-r-2 border-artisan-light hover:bg-artisan-grey hover:text-artisan-dark transition-colors duration-300 cursor-pointer"
+              >
+                <ChevronLeft className="w-6 h-6" />
+              </motion.button>
+              <motion.button
+                onClick={next}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="w-12 h-12 lg:w-16 lg:h-16 flex items-center justify-center hover:bg-artisan-grey hover:text-artisan-dark transition-colors duration-300"
+              >
+                <ChevronRight className="w-6 h-6" />
+              </motion.button>
             </div>
           )}
         </div>
 
         {/* Bottom Status Bar */}
         <div className="mt-6 flex justify-between items-center px-4 opacity-40">
-           <span className="text-[10px] font-mono uppercase tracking-[0.4em] text-artisan-light">Verified Customer Testimony</span>
-           <div className="flex gap-2">
-             {reviews.map((_, i) => (
-               <div key={i} className={`h-1 transition-all duration-500 ${i === current ? 'w-12 bg-artisan-grey' : 'w-4 bg-artisan-light/20'}`} />
-             ))}
-           </div>
+          <span className="text-[10px] font-mono uppercase tracking-[0.4em] text-artisan-light">Verified Customer Testimony</span>
+          <div className="flex gap-2">
+            {reviews.map((_, i) => (
+              <div key={i} className={`h-1 transition-all duration-500 ${i === current ? 'w-12 bg-artisan-grey' : 'w-4 bg-artisan-light/20'}`} />
+            ))}
+          </div>
         </div>
       </div>
     </section>

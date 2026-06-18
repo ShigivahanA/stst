@@ -1,10 +1,15 @@
 import User from '../models/user.model.js';
 import { sendAbandonedCartEmail } from './email.service.js';
+import { releaseExpiredOrdersStock } from './order.service.js';
 import logger from '../config/logger.js';
 
 export const checkAbandonedCarts = async () => {
   try {
     logger.info('Cart abandonment scheduler check started...');
+    
+    // Clean up expired checkouts and return stock
+    await releaseExpiredOrdersStock();
+
     // Look for users who have items in their cart
     const minutesThreshold = process.env.NODE_ENV === 'production' ? 15 : 1; // 1 minute in dev for easy testing
     const timeThreshold = new Date(Date.now() - minutesThreshold * 60 * 1000);
@@ -54,6 +59,10 @@ export const checkAbandonedCarts = async () => {
 };
 
 export const startCartScheduler = () => {
+  if (process.env.VERCEL === '1') {
+    logger.info('Serverless deployment detected. Bypassing native interval timer. Hook the /cron endpoint.');
+    return;
+  }
   const intervalTime = process.env.NODE_ENV === 'production' ? 5 * 60 * 1000 : 1 * 60 * 1000; // 5 min in prod, 1 min in dev
   setInterval(checkAbandonedCarts, intervalTime);
   logger.info(`Abandoned cart scheduler service initialized (Interval: ${intervalTime / 1000}s)`);

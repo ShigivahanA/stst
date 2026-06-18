@@ -211,12 +211,12 @@ export default function AdminUserDetail() {
                      <div className="h-px bg-artisan-light/5 w-full" />
                      <div className="space-y-4 font-mono text-[10px] sm:text-xs">
                         <div className="space-y-1">
-                           <span className="text-[8px] text-artisan-light/30 uppercase tracking-widest block font-bold">Client Identification</span>
+                           <span className="text-[8px] text-artisan-light/50 uppercase tracking-widest block font-bold">Client Identification</span>
                            <div className="flex items-center justify-between gap-2 p-2.5 bg-artisan-light/[0.02] border border-artisan-light/5">
                               <span className="font-bold text-artisan-light truncate select-all">{user._id}</span>
                               <button
                                  onClick={() => handleCopyId(user._id)}
-                                 className="text-artisan-light/30 hover:text-artisan-light/70 transition-colors shrink-0"
+                                 className="text-artisan-light/50 hover:text-artisan-light/70 transition-colors shrink-0"
                                  title="Copy ID"
                               >
                                  {copied ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
@@ -224,7 +224,7 @@ export default function AdminUserDetail() {
                            </div>
                         </div>
                         <div className="space-y-1">
-                           <span className="text-[8px] text-artisan-light/30 uppercase tracking-widest block font-bold">Registry Date</span>
+                           <span className="text-[8px] text-artisan-light/50 uppercase tracking-widest block font-bold">Registry Date</span>
                            <div className="flex items-center gap-2 text-artisan-light/75">
                               <Calendar className="w-4 h-4 text-artisan-grey shrink-0" />
                               <span className="uppercase">
@@ -266,7 +266,7 @@ export default function AdminUserDetail() {
                            onClick={() => setActiveTab(tab.id)}
                            className={`pb-3 px-2 border-b-2 font-mono text-[9px] font-bold uppercase tracking-widest whitespace-nowrap transition-all ${activeTab === tab.id
                               ? 'border-artisan-grey text-artisan-light'
-                              : 'border-transparent text-artisan-light/30 hover:text-artisan-light/60'
+                              : 'border-transparent text-artisan-light/50 hover:text-artisan-light/60'
                               }`}
                         >
                            {tab.label}
@@ -469,7 +469,7 @@ export default function AdminUserDetail() {
                                                    <td className="px-4 py-4 font-bold text-artisan-light">
                                                       <Link to={`/orders/${ord._id}`} className="hover:text-artisan-grey transition-colors flex items-center gap-1">
                                                          #{orderIdFormatted}
-                                                         <span className="text-[8px] text-artisan-light/30">↗</span>
+                                                         <span className="text-[8px] text-artisan-light/50">↗</span>
                                                       </Link>
                                                    </td>
                                                    <td className="px-4 py-4 text-artisan-light/50">
@@ -779,7 +779,7 @@ export default function AdminUserDetail() {
                                              <option value="365" className="bg-artisan-dark text-artisan-light">1 Year</option>
                                              <option value="99999" className="bg-artisan-dark text-artisan-light">Permanent</option>
                                           </select>
-                                          <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-artisan-light/30 text-[9px] font-mono">▼</div>
+                                          <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-artisan-light/50 text-[9px] font-mono">▼</div>
                                        </div>
                                     </div>
 

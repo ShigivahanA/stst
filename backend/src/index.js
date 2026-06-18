@@ -4,7 +4,7 @@ import app from './app.js';
 import logger from './config/logger.js';
 import { startCartScheduler } from './services/cartScheduler.service.js';
 
-// Load environment variables
+// Load environment variables configuration
 dotenv.config();
 
 const PORT = process.env.PORT || 8000;

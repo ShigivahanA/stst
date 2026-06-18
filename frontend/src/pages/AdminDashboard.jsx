@@ -5,8 +5,6 @@ import {
    Users,
    Package,
    AlertTriangle,
-   CheckCircle,
-   XCircle,
    ShieldAlert,
    Zap,
    Loader2,
@@ -18,7 +16,8 @@ import {
    TrendingUp,
    Globe,
    FileText,
-   Clock
+   Clock,
+   CheckCircle
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useToast } from '../context/ToastContext'
@@ -39,8 +38,7 @@ export default function AdminDashboard() {
    })
    const [bookings, setBookings] = useState([])
    const [analytics, setAnalytics] = useState(null)
-   const [actionLoading, setActionLoading] = useState(null)
-   const [orderTab, setOrderTab] = useState('pending')
+
 
    const fetchData = async () => {
       try {
@@ -74,18 +72,7 @@ export default function AdminDashboard() {
       fetchData()
    }, [])
 
-   const handleStatusUpdate = async (id, status) => {
-      try {
-         setActionLoading(id)
-         await api.put(`/admin/listings/${id}/status`, { status })
-         addToast(`Order ${status === 'approved' ? 'confirmed' : 'cancelled'}`, 'success')
-         fetchData()
-      } catch (err) {
-         addToast('Update failed', 'error')
-      } finally {
-         setActionLoading(null)
-      }
-   }
+
 
    const scrollToSection = (id) => {
       const element = document.getElementById(id)
@@ -97,11 +84,9 @@ export default function AdminDashboard() {
    const statCards = [
       { label: 'Total Users', value: stats.totalUsers, icon: Users, color: 'text-artisan-light', link: '/admin/users' },
       { label: 'Surgical Products', value: stats.totalProducts, icon: Package, color: 'text-artisan-light', link: '/admin/products' },
-      { label: 'Total Orders', value: stats.totalOrders, icon: BarChart3, color: 'text-artisan-light', onClick: () => scrollToSection('pending-orders') },
-      { label: 'Pending Orders', value: stats.pendingOrdersCount, icon: ShieldAlert, color: 'text-artisan-grey', onClick: () => scrollToSection('pending-orders') }
+      { label: 'Total Orders', value: stats.totalOrders, icon: BarChart3, color: 'text-artisan-light', link: '/admin/orders' },
+      { label: 'Pending Orders', value: stats.pendingOrdersCount, icon: ShieldAlert, color: 'text-artisan-grey', link: '/admin/orders' }
    ]
-
-   const pendingBookings = bookings.filter(b => b.status === 'pending')
 
    return (
       <div className="min-h-screen bg-artisan-dark bg-noise flex flex-col pb-24 text-artisan-light">
@@ -136,12 +121,12 @@ export default function AdminDashboard() {
                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10 shrink-0">
                   {statCards.map((stat, idx) => {
                      const cardClassName = "p-6 border border-artisan-light/10 bg-artisan-light/[0.02] group relative overflow-hidden transition-all duration-300 hover:border-artisan-grey/50 hover:bg-artisan-light/[0.04] text-left cursor-pointer"
-                     
+
                      const renderCardContent = () => (
                         <>
                            {/* Interactive Accent Line */}
                            <div className="absolute left-0 top-0 bottom-0 w-0 bg-artisan-grey transition-all duration-300 group-hover:w-1" />
-                           
+
                            <div className="flex justify-between items-start mb-4">
                               <stat.icon className={`w-5 h-5 ${stat.color} transition-transform duration-300 group-hover:scale-110`} />
                               <ArrowUpRight className="w-4 h-4 text-artisan-light/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -170,7 +155,7 @@ export default function AdminDashboard() {
 
                {/* REAL-LIFE OPERATIONAL STATS & GRAPH GRID */}
                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch mb-16">
-                  
+
                   {/* PANEL 1: SALES & REVENUE CHART */}
                   <div className="p-6 sm:p-8 bg-artisan-light/[0.02] border border-artisan-light/10 flex flex-col justify-between hover:border-artisan-light/20 transition-colors duration-300 relative group">
                      <div className="space-y-6">
@@ -181,11 +166,11 @@ export default function AdminDashboard() {
                            </div>
                            <div className="flex gap-3 text-[9px] font-mono shrink-0">
                               <div className="flex items-center gap-1.5">
-                                 <div className="w-2.5 h-2.5 bg-artisan-grey" /> 
+                                 <div className="w-2.5 h-2.5 bg-artisan-grey" />
                                  <span className="text-artisan-light/60">Revenue</span>
                               </div>
                               <div className="flex items-center gap-1.5">
-                                 <div className="w-2.5 h-2.5 bg-artisan-light" /> 
+                                 <div className="w-2.5 h-2.5 bg-artisan-light" />
                                  <span className="text-artisan-light/60">Profit</span>
                               </div>
                            </div>
@@ -208,13 +193,13 @@ export default function AdminDashboard() {
                                  return monthlyStatsArray.map((item, idx) => {
                                     const revHeight = `${Math.max(6, Math.min(100, (item.revenue / maxVal) * 100))}%`;
                                     const profHeight = `${Math.max(3, Math.min(100, (item.profit / maxVal) * 100))}%`;
-                                    
+
                                     const isFirst = idx === 0;
                                     const isLast = idx === monthlyStatsArray.length - 1;
-                                    const tooltipAlignClass = isFirst 
-                                       ? "left-0" 
-                                       : isLast 
-                                          ? "right-0" 
+                                    const tooltipAlignClass = isFirst
+                                       ? "left-0"
+                                       : isLast
+                                          ? "right-0"
                                           : "left-1/2 -translate-x-1/2";
 
                                     return (
@@ -226,23 +211,23 @@ export default function AdminDashboard() {
                                              <p className="text-[10px] font-mono font-bold text-artisan-grey">Rev: ₹{item.revenue.toLocaleString()}</p>
                                              <p className="text-[10px] font-mono font-bold text-artisan-dark">Prof: ₹{item.profit.toLocaleString()}</p>
                                           </div>
-                                          
+
                                           <div className="w-full flex items-end gap-1 h-full">
                                              {/* Animated Revenue Bar */}
-                                             <motion.div 
+                                             <motion.div
                                                 initial={{ scaleY: 0 }}
                                                 animate={{ scaleY: 1 }}
                                                 transition={{ duration: 0.8, ease: [0.25, 1, 0.5, 1], delay: idx * 0.05 }}
-                                                style={{ height: revHeight, transformOrigin: 'bottom' }} 
-                                                className="flex-1 bg-artisan-grey hover:bg-artisan-grey/90 transition-all duration-300 relative cursor-pointer" 
+                                                style={{ height: revHeight, transformOrigin: 'bottom' }}
+                                                className="flex-1 bg-artisan-grey hover:bg-artisan-grey/90 transition-all duration-300 relative cursor-pointer"
                                              />
                                              {/* Animated Profit Bar */}
-                                             <motion.div 
+                                             <motion.div
                                                 initial={{ scaleY: 0 }}
                                                 animate={{ scaleY: 1 }}
                                                 transition={{ duration: 0.8, ease: [0.25, 1, 0.5, 1], delay: idx * 0.05 + 0.05 }}
-                                                style={{ height: profHeight, transformOrigin: 'bottom' }} 
-                                                className="flex-1 bg-artisan-light hover:bg-artisan-light/80 transition-all duration-300 relative cursor-pointer" 
+                                                style={{ height: profHeight, transformOrigin: 'bottom' }}
+                                                className="flex-1 bg-artisan-light hover:bg-artisan-light/80 transition-all duration-300 relative cursor-pointer"
                                              />
                                           </div>
                                           <span className="text-[7px] sm:text-[9px] font-mono text-artisan-light/40 uppercase mt-2 tracking-tighter truncate max-w-full font-bold">{item.month}</span>
@@ -311,7 +296,7 @@ export default function AdminDashboard() {
                               </div>
                               {/* Visual Indicator of profitability */}
                               <div className="h-1.5 w-full bg-artisan-light/5 overflow-hidden">
-                                 <motion.div 
+                                 <motion.div
                                     initial={{ width: 0 }}
                                     animate={{ width: loading ? 0 : `${stats.revenue > 0 ? Math.round((stats.profit / stats.revenue) * 100) : 0}%` }}
                                     transition={{ duration: 1, ease: 'easeOut', delay: 0.2 }}
@@ -351,13 +336,12 @@ export default function AdminDashboard() {
                                  const isZero = prod.quantity === 0;
 
                                  return (
-                                    <div 
-                                       key={idx} 
-                                       className={`p-3.5 border transition-all duration-200 space-y-3 ${
-                                          isZero 
-                                             ? 'border-red-500/20 bg-red-500/[0.01] hover:bg-red-500/[0.03]' 
+                                    <div
+                                       key={idx}
+                                       className={`p-3.5 border transition-all duration-200 space-y-3 ${isZero
+                                             ? 'border-red-500/20 bg-red-500/[0.01] hover:bg-red-500/[0.03]'
                                              : 'border-artisan-light/5 bg-artisan-light/[0.01] hover:bg-artisan-light/[0.03]'
-                                       }`}
+                                          }`}
                                     >
                                        <div className="flex justify-between items-start gap-4">
                                           <div className="space-y-1 min-w-0 flex-1">
@@ -371,28 +355,26 @@ export default function AdminDashboard() {
                                                 {prod.name}
                                              </h4>
                                           </div>
-                                          <span className={`text-[10px] font-mono font-black shrink-0 px-2 py-0.5 border ${
-                                             isZero 
-                                                ? 'border-red-500/20 text-red-500 bg-red-500/5' 
+                                          <span className={`text-[10px] font-mono font-black shrink-0 px-2 py-0.5 border ${isZero
+                                                ? 'border-red-500/20 text-red-500 bg-red-500/5'
                                                 : 'border-artisan-light/10 text-artisan-light'
-                                          }`}>
+                                             }`}>
                                              {prod.quantity} Left
                                           </span>
                                        </div>
-                                       
+
                                        <div className="space-y-1">
                                           <div className="h-1.5 w-full bg-artisan-light/5 relative overflow-hidden">
-                                             <motion.div 
+                                             <motion.div
                                                 initial={{ width: 0 }}
                                                 animate={{ width: `${stockPct}%` }}
                                                 transition={{ duration: 0.8, ease: 'easeOut', delay: idx * 0.1 }}
-                                                className={`absolute inset-y-0 left-0 ${
-                                                   isZero 
-                                                      ? 'bg-red-500' 
-                                                      : stockPct < 30 
-                                                         ? 'bg-red-500' 
+                                                className={`absolute inset-y-0 left-0 ${isZero
+                                                      ? 'bg-red-500'
+                                                      : stockPct < 30
+                                                         ? 'bg-red-500'
                                                          : 'bg-artisan-grey'
-                                                }`} 
+                                                   }`}
                                              />
                                           </div>
                                           <div className="flex justify-between text-[7px] font-mono text-artisan-light/35 uppercase">
@@ -422,7 +404,7 @@ export default function AdminDashboard() {
                   </div>
                ) : analytics ? (
                   <div className="space-y-8 mb-16">
-                     
+
                      {/* Row 1: Session Overview Cards */}
                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div className="p-5 border border-artisan-light/10 bg-artisan-light/[0.01] flex items-center gap-4">
@@ -470,7 +452,7 @@ export default function AdminDashboard() {
 
                      {/* Row 1.5: 2 Graphs (Traffic Trend & Device Breakdown) */}
                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        
+
                         {/* Graph 1: 7-Day Traffic Trend */}
                         <div className="p-6 sm:p-8 border border-artisan-light/10 bg-artisan-light/[0.02] flex flex-col justify-between hover:border-artisan-light/20 transition-colors duration-300 relative group">
                            <div className="space-y-6">
@@ -493,23 +475,23 @@ export default function AdminDashboard() {
                                  {(() => {
                                     const trend = analytics.trafficTrend || [];
                                     const maxSessions = trend.length > 0 ? Math.max(...trend.map(t => t.count), 5) : 5;
-                                    
+
                                     return trend.map((item, idx) => {
                                        const barHeight = `${Math.max(5, (item.count / maxSessions) * 100)}%`;
                                        const isFirst = idx === 0;
                                        const isLast = idx === trend.length - 1;
-                                       const tooltipAlignClass = isFirst 
-                                          ? "left-0" 
-                                          : isLast 
-                                             ? "right-0" 
+                                       const tooltipAlignClass = isFirst
+                                          ? "left-0"
+                                          : isLast
+                                             ? "right-0"
                                              : "left-1/2 -translate-x-1/2";
-                                       
+
                                        // Format date string for displaying in x-axis: e.g. "04 Jun"
                                        let displayDate = item.date;
                                        try {
                                           const d = new Date(item.date);
                                           displayDate = d.toLocaleDateString('en-US', { day: '2-digit', month: 'short' });
-                                       } catch (e) {}
+                                       } catch (e) { }
 
                                        return (
                                           <div key={idx} className="flex-1 flex flex-col items-center gap-1 group/trend-bar h-full justify-end relative">
@@ -554,10 +536,10 @@ export default function AdminDashboard() {
 
                                     return devices.map((item, idx) => {
                                        const pct = Math.round((item.count / totalCount) * 100);
-                                       const colorClass = item.device === 'desktop' 
-                                          ? 'bg-artisan-light' 
-                                          : item.device === 'mobile' 
-                                             ? 'bg-artisan-grey' 
+                                       const colorClass = item.device === 'desktop'
+                                          ? 'bg-artisan-light'
+                                          : item.device === 'mobile'
+                                             ? 'bg-artisan-grey'
                                              : 'bg-artisan-light/40';
 
                                        return (
@@ -574,7 +556,7 @@ export default function AdminDashboard() {
                                                    animate={{ width: `${pct}%` }}
                                                    transition={{ duration: 0.8, ease: 'easeOut', delay: idx * 0.1 }}
                                                    className={`h-full ${colorClass}`}
-                                                 />
+                                                />
                                              </div>
                                           </div>
                                        );
@@ -588,7 +570,7 @@ export default function AdminDashboard() {
 
                      {/* Row 2: Split Layout (Funnel & UTM) */}
                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        
+
                         {/* Panel 1: Conversion Funnel */}
                         <div className="p-6 sm:p-8 border border-artisan-light/10 bg-artisan-light/[0.02] flex flex-col justify-between">
                            <div className="space-y-6">
@@ -605,9 +587,9 @@ export default function AdminDashboard() {
                                     checkoutCount: 0,
                                     purchaseCount: 0
                                  };
-                                 
+
                                  const totalSess = f.sessions || 1;
-                                 
+
                                  const funnelStages = [
                                     { label: 'Sessions', count: f.sessions, pct: 100 },
                                     { label: 'Page Views', count: f.pageViewCount, pct: Math.round((f.pageViewCount / totalSess) * 100) },
@@ -747,7 +729,7 @@ export default function AdminDashboard() {
                ) : (
                   <div className="py-12 text-center border border-dashed border-artisan-light/10 bg-artisan-light/[0.01] mb-16">
                      <Inbox className="w-12 h-12 text-artisan-light/10 mx-auto mb-4" />
-                     <p className="text-[10px] font-mono text-artisan-light/30 uppercase tracking-[0.2em] font-bold">No analytics data recorded yet</p>
+                     <p className="text-[10px] font-mono text-artisan-light/50 uppercase tracking-[0.2em] font-bold">No analytics data recorded yet</p>
                   </div>
                )}
 
@@ -755,155 +737,106 @@ export default function AdminDashboard() {
                <div id="pending-orders" className="flex flex-col mb-16 scroll-mt-24">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8">
                      <div className="flex items-center gap-4 flex-1">
-                        <h2 className="text-xl font-display font-extrabold uppercase tracking-widest text-artisan-light">Orders Ledger & History</h2>
+                        <h2 className="text-xl font-display font-extrabold uppercase tracking-widest text-artisan-light">Recent Orders</h2>
                         <div className="h-px flex-1 bg-artisan-light/10 hidden md:block" />
                      </div>
-                     <div className="flex border border-artisan-light/10 p-1 bg-artisan-light/[0.01] shrink-0">
-                        <button
-                           onClick={() => setOrderTab('pending')}
-                           className={`px-4 py-2 text-[9px] font-mono font-bold uppercase tracking-widest transition-all ${
-                              orderTab === 'pending'
-                                 ? 'bg-artisan-light text-artisan-dark'
-                                 : 'text-artisan-light/40 hover:text-artisan-light'
-                           }`}
-                        >
-                           Pending ({pendingBookings.length})
-                        </button>
-                        <button
-                           onClick={() => setOrderTab('all')}
-                           className={`px-4 py-2 text-[9px] font-mono font-bold uppercase tracking-widest transition-all ${
-                              orderTab === 'all'
-                                 ? 'bg-artisan-light text-artisan-dark'
-                                 : 'text-artisan-light/40 hover:text-artisan-light'
-                           }`}
-                        >
-                           All Orders ({bookings.length})
-                        </button>
-                     </div>
+                     <Link
+                        to="/admin/orders"
+                        className="px-6 py-3 bg-artisan-light/[0.02] border border-artisan-light/10 hover:bg-artisan-light/5 hover:border-artisan-light/20 transition-all group flex items-center justify-center gap-2 font-mono text-[9px] font-bold uppercase tracking-widest text-artisan-grey shrink-0"
+                     >
+                        <Package className="w-4 h-4" />
+                        <span>Manage All Orders</span>
+                        <ArrowUpRight className="w-3 h-3 opacity-50 group-hover:opacity-100 transition-opacity" />
+                     </Link>
                   </div>
 
-                  <div className="space-y-4 min-h-[350px]">
+                  <div className="space-y-3">
                      {loading ? (
                         <div className="flex justify-center py-20">
                            <Loader2 className="w-8 h-8 text-artisan-grey animate-spin" />
                         </div>
+                     ) : bookings.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-20 border border-dashed border-artisan-light/10 bg-artisan-light/[0.01]">
+                           <Inbox className="w-12 h-12 text-artisan-light/10 mb-4" />
+                           <p className="text-[10px] font-mono text-artisan-light/50 uppercase tracking-[0.2em] font-bold">
+                              No order history records
+                           </p>
+                        </div>
                      ) : (
-                        <AnimatePresence mode="wait">
-                           <motion.div
-                              key={orderTab}
-                              initial={{ opacity: 0, y: 15 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              exit={{ opacity: 0, y: -15 }}
-                              transition={{ duration: 0.25, ease: "easeInOut" }}
-                           >
-                              {(orderTab === 'pending' ? pendingBookings : bookings).length === 0 ? (
-                                 <div className="flex flex-col items-center justify-center py-20 border border-dashed border-artisan-light/10 bg-artisan-light/[0.01]">
-                                    <Inbox className="w-12 h-12 text-artisan-light/10 mb-4" />
-                                    <p className="text-[10px] font-mono text-artisan-light/30 uppercase tracking-[0.2em] font-bold">
-                                       {orderTab === 'pending' ? 'All Orders processed // Queue Clear' : 'No order history records'}
-                                    </p>
-                                 </div>
-                              ) : (
-                                 <div className="grid grid-cols-1 gap-3">
-                                    <AnimatePresence>
-                                       {(orderTab === 'pending' ? pendingBookings : bookings).map((booking) => (
-                                          <motion.div 
-                                             key={booking._id} 
-                                             initial={{ opacity: 0, y: 10 }}
-                                             animate={{ opacity: 1, y: 0 }}
-                                             exit={{ opacity: 0, x: -10 }}
-                                             className="p-5 border border-artisan-light/10 bg-artisan-light/[0.01] hover:bg-artisan-light/[0.03] hover:border-artisan-grey/30 transition-all duration-300 flex flex-col md:flex-row md:items-center justify-between gap-5 group/item min-w-0"
-                                          >
-                                             {/* Order Content */}
-                                             <div className="flex items-start sm:items-center gap-5 min-w-0 flex-1">
-                                                <div className="w-14 h-14 bg-artisan-light/5 border border-artisan-light/10 overflow-hidden shrink-0 flex items-center justify-center text-xl text-artisan-grey group-hover/item:bg-artisan-light/10 group-hover/item:border-artisan-grey/20 transition-all">
-                                                   📦
-                                                </div>
-                                                <div className="space-y-1.5 min-w-0 flex-1">
-                                                   <div className="flex flex-wrap items-center gap-3">
-                                                      <Link
-                                                         to={`/orders/${booking._id}`}
-                                                         className="text-[9px] font-mono text-artisan-grey uppercase tracking-[0.2em] font-black hover:text-artisan-light transition-colors flex items-center gap-1"
-                                                      >
-                                                         Order #{booking._id.slice(-8).toUpperCase()}
-                                                         <ArrowUpRight className="w-3 h-3 text-artisan-grey/50 group-hover/item:text-artisan-light transition-colors" />
-                                                      </Link>
-                                                      <div className="flex items-center gap-1 text-[8px] font-mono text-artisan-light/40 uppercase">
-                                                         <Calendar className="w-3 h-3" />
-                                                         <span>{booking.startDate ? new Date(booking.startDate).toLocaleDateString() : 'N/A'}</span>
-                                                      </div>
-                                                   </div>
-                                                   
-                                                   <h3 className="text-lg font-display font-black uppercase text-artisan-light hover:text-artisan-grey transition-colors leading-tight truncate block" title={booking.listing?.title}>
-                                                      <Link to={`/orders/${booking._id}`}>
-                                                         {booking.listing?.title || 'STAT Surgical Tool'}
-                                                      </Link>
-                                                   </h3>
-                                                   
-                                                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-                                                      <span className="text-[9px] font-mono text-artisan-light/50 uppercase font-semibold">
-                                                         Client: <span className="text-artisan-light">{booking.renter?.name || 'Guest User'}</span>
-                                                      </span>
-                                                      <span className="text-artisan-light/20">•</span>
-                                                      <span className="text-[9px] font-mono text-artisan-light/50 uppercase font-semibold">
-                                                         Price: <span className="text-artisan-light">₹{(booking.totalPrice || 0).toLocaleString()}</span>
-                                                      </span>
-                                                   </div>
-                                                </div>
+                        <div className="grid grid-cols-1 gap-2">
+                           <AnimatePresence>
+                              {bookings.slice(0, 5).map((booking) => (
+                                 <motion.div
+                                    key={booking._id}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, x: -10 }}
+                                    className="px-5 py-4 border border-artisan-light/10 bg-artisan-light/[0.01] hover:bg-artisan-light/[0.03] hover:border-artisan-grey/30 transition-all duration-300 flex items-center justify-between gap-4 group/item min-w-0"
+                                 >
+                                    {/* Order brief info */}
+                                    <div className="flex items-center gap-4 min-w-0 flex-1">
+                                       <div className="w-10 h-10 bg-artisan-light/5 border border-artisan-light/10 overflow-hidden shrink-0 flex items-center justify-center text-sm text-artisan-grey">
+                                          📦
+                                       </div>
+                                       <div className="min-w-0 flex-1">
+                                          <div className="flex flex-wrap items-center gap-3">
+                                             <Link
+                                                to={`/orders/${booking._id}`}
+                                                className="text-[9px] font-mono text-artisan-grey uppercase tracking-[0.2em] font-black hover:text-artisan-light transition-colors flex items-center gap-1"
+                                             >
+                                                #{booking._id.slice(-8).toUpperCase()}
+                                                <ArrowUpRight className="w-3 h-3 text-artisan-grey/50 group-hover/item:text-artisan-light transition-colors" />
+                                             </Link>
+                                             <span className="text-[8px] font-mono text-artisan-light/50 uppercase">
+                                                {booking.renter?.name || 'Guest'}
+                                             </span>
+                                             <span className="text-[8px] font-mono text-artisan-light/50 uppercase">
+                                                ₹{(booking.totalPrice || 0).toLocaleString()}
+                                             </span>
+                                             <div className="flex items-center gap-1 text-[8px] font-mono text-artisan-light/25 uppercase">
+                                                <Calendar className="w-3 h-3" />
+                                                <span>{booking.startDate ? new Date(booking.startDate).toLocaleDateString() : 'N/A'}</span>
                                              </div>
-                                             
-                                             {/* Actions / Status Badge */}
-                                             <div className="flex sm:self-end md:self-auto gap-2.5 shrink-0 justify-end mt-2 md:mt-0">
-                                                {booking.status === 'pending' ? (
-                                                   <>
-                                                      <button
-                                                         onClick={() => handleStatusUpdate(booking._id, 'approved')}
-                                                         disabled={actionLoading === booking._id}
-                                                         className="h-11 px-5 bg-artisan-light/5 border border-green-500/20 text-green-600 hover:bg-green-600 hover:text-artisan-dark hover:border-green-600 transition-all duration-300 disabled:opacity-50 flex items-center justify-center gap-2 group/btn font-mono text-[9px] font-bold uppercase tracking-widest"
-                                                         title="Confirm and Process Order"
-                                                      >
-                                                         {actionLoading === booking._id ? (
-                                                            <Loader2 className="w-4 h-4 animate-spin" />
-                                                         ) : (
-                                                            <>
-                                                               <CheckCircle className="w-4 h-4 transition-transform group-hover/btn:scale-110" />
-                                                               <span>Approve</span>
-                                                            </>
-                                                         )}
-                                                      </button>
-                                                      <button
-                                                         onClick={() => handleStatusUpdate(booking._id, 'rejected')}
-                                                         disabled={actionLoading === booking._id}
-                                                         className="h-11 px-5 bg-artisan-light/5 border border-red-500/20 text-red-500 hover:bg-red-500 hover:text-artisan-dark hover:border-red-500 transition-all duration-300 disabled:opacity-50 flex items-center justify-center gap-2 group/btn font-mono text-[9px] font-bold uppercase tracking-widest"
-                                                         title="Cancel and Void Order"
-                                                      >
-                                                         {actionLoading === booking._id ? (
-                                                            <Loader2 className="w-4 h-4 animate-spin" />
-                                                         ) : (
-                                                            <>
-                                                               <XCircle className="w-4 h-4 transition-transform group-hover/btn:scale-110" />
-                                                               <span>Reject</span>
-                                                            </>
-                                                         )}
-                                                      </button>
-                                                   </>
-                                                ) : (
-                                                   <div className={`px-4 py-3 border font-mono text-[9px] font-bold uppercase tracking-widest flex items-center justify-center ${
-                                                      booking.status === 'confirmed'
-                                                         ? 'border-green-500/20 text-green-500 bg-green-500/5'
-                                                         : 'border-red-500/20 text-red-500 bg-red-500/5'
-                                                   }`}>
-                                                      {booking.status}
-                                                   </div>
-                                                )}
-                                             </div>
-                                          </motion.div>
-                                       ))}
-                                    </AnimatePresence>
-                                 </div>
-                              )}
-                           </motion.div>
-                        </AnimatePresence>
+                                          </div>
+                                       </div>
+                                    </div>
+
+                                    {/* Status badges only */}
+                                    <div className="flex items-center gap-2 shrink-0">
+                                       <span className={`text-[8px] font-mono font-bold uppercase tracking-widest px-2.5 py-1.5 border ${booking.orderStatus === 'completed' ? 'border-green-500/30 text-green-500 bg-green-500/5' :
+                                             booking.orderStatus === 'processing' ? 'border-blue-500/30 text-blue-400 bg-blue-500/5' :
+                                                booking.orderStatus === 'pending' ? 'border-yellow-500/30 text-yellow-400 bg-yellow-500/5' :
+                                                   booking.orderStatus === 'cancelled' ? 'border-red-500/30 text-red-500 bg-red-500/5' :
+                                                      booking.orderStatus === 'refunded' ? 'border-purple-500/30 text-purple-400 bg-purple-500/5' :
+                                                         'border-artisan-light/10 text-artisan-light/40'
+                                          }`}>
+                                          {booking.orderStatus || 'pending'}
+                                       </span>
+                                       <span className={`text-[8px] font-mono font-bold uppercase tracking-widest px-2.5 py-1.5 border ${booking.shippingStatus === 'delivered' ? 'border-green-500/30 text-green-500 bg-green-500/5' :
+                                             booking.shippingStatus === 'out_for_delivery' ? 'border-teal-500/30 text-teal-400 bg-teal-500/5' :
+                                                booking.shippingStatus === 'in_transit' ? 'border-blue-500/30 text-blue-400 bg-blue-500/5' :
+                                                   booking.shippingStatus === 'shipped' ? 'border-indigo-500/30 text-indigo-400 bg-indigo-500/5' :
+                                                      booking.shippingStatus === 'pending' ? 'border-yellow-500/30 text-yellow-400 bg-yellow-500/5' :
+                                                         booking.shippingStatus === 'failed' ? 'border-red-500/30 text-red-500 bg-red-500/5' :
+                                                            'border-artisan-light/10 text-artisan-light/40'
+                                          }`}>
+                                          {(booking.shippingStatus || 'pending').replace('_', ' ')}
+                                       </span>
+                                    </div>
+                                 </motion.div>
+                              ))}
+                           </AnimatePresence>
+
+                           {/* View all link at bottom */}
+                           {bookings.length > 5 && (
+                              <Link
+                                 to="/admin/orders"
+                                 className="mt-2 py-3 border border-dashed border-artisan-light/10 hover:border-artisan-grey/30 bg-artisan-light/[0.005] hover:bg-artisan-light/[0.02] transition-all text-center font-mono text-[9px] font-bold text-artisan-light/50 hover:text-artisan-grey uppercase tracking-widest"
+                              >
+                                 View all {bookings.length} orders →
+                              </Link>
+                           )}
+                        </div>
                      )}
                   </div>
                </div>

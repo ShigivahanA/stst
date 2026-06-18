@@ -75,7 +75,7 @@ export default function SafetyTrust() {
            <div className="flex flex-col items-center gap-4">
               <ShieldCheck className="w-16 h-16 text-artisan-grey mb-4" />
               <h2 className="text-2xl font-display font-extrabold uppercase text-artisan-light">The Forge Guarantee</h2>
-              <p className="text-[10px] font-mono text-artisan-light/30 uppercase tracking-[0.4em] max-w-lg leading-relaxed">
+              <p className="text-[10px] font-mono text-artisan-light/50 uppercase tracking-[0.4em] max-w-lg leading-relaxed">
                  "WE STAND BEHIND EVERY TRANSACTION. IF SOMETHING ISN'T RIGHT, WE'LL FIX IT. THAT'S OUR VOW TO THE ARTISAN COMMUNITY."
               </p>
            </div>

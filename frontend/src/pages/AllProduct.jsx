@@ -8,7 +8,9 @@ import {
   ChevronDown,
   Plus,
   Loader2,
-  PackageSearch
+  PackageSearch,
+  Package,
+  PackageX
 } from 'lucide-react'
 import ToolCard from '../components/marketplace/ToolCard'
 import api from '../services/api'
@@ -27,6 +29,10 @@ export default function AllProduct() {
   const [activeCategory, setActiveCategory] = useState(initialCategory)
   const [searchQuery, setSearchQuery] = useState(initialSearch)
   const [loginTime, setLoginTime] = useState(null)
+
+  // Paging Navigation States
+  const [navPage, setNavPage] = useState(1)
+  const [totalFiltered, setTotalFiltered] = useState(0)
 
   useEffect(() => {
     if (user) {
@@ -52,20 +58,29 @@ export default function AllProduct() {
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false)
   const [priceRange, setPriceRange] = useState({ min: 0, max: 25000 })
   const [sortBy, setSortBy] = useState('-averageRating')
+  const [availability, setAvailability] = useState('all')
   const [stats, setStats] = useState({ users: 0, listings: 0 })
 
-  const fetchTools = async () => {
+  const fetchTools = async (pageNum = 1) => {
     try {
       setLoading(true)
-      const params = {}
+
+      const params = {
+        page: pageNum,
+        limit: 20
+      }
       if (activeCategory !== 'All') params.category = activeCategory
       if (searchQuery) params.keyword = searchQuery
       if (priceRange.min > 0) params['price[gte]'] = priceRange.min
       if (priceRange.max < 25000) params['price[lte]'] = priceRange.max
       if (sortBy) params.sort = sortBy
+      if (availability !== 'all') params.availability = availability
 
       const res = await api.get('/listings', { params })
       const fetchedTools = res.data.data || []
+      
+      const totalCount = parseInt(res.headers['x-total-count']) || fetchedTools.length
+      setTotalFiltered(totalCount)
       setTools(fetchedTools)
     } catch (err) {
       console.error('Failed to fetch tools', err)
@@ -87,18 +102,20 @@ export default function AllProduct() {
   // Debounced search / filter trigger
   useEffect(() => {
     const timer = setTimeout(() => {
-      fetchTools()
+      setNavPage(1)
+      fetchTools(1)
     }, 400)
     return () => clearTimeout(timer)
-  }, [activeCategory, searchQuery, priceRange, sortBy])
+  }, [activeCategory, searchQuery, priceRange, sortBy, availability])
 
   useEffect(() => {
     fetchStats()
   }, [])
 
   const FilterContent = () => (
-    <div className="space-y-8 lg:space-y-10">
-      <div className="space-y-4">
+    <div className="flex flex-col gap-0">
+      {/* Category */}
+      <div className="space-y-3 pb-6">
         <span className="text-[10px] font-mono font-bold text-artisan-grey uppercase tracking-[0.4em]">Category</span>
         <div className="relative">
           <button
@@ -135,7 +152,8 @@ export default function AllProduct() {
         </div>
       </div>
 
-      <div className="space-y-4 pt-8 lg:pt-10 border-t border-artisan-light/5">
+      {/* Price Range */}
+      <div className="space-y-3 py-6 border-t border-artisan-light/5">
         <span className="text-[10px] font-mono font-bold text-artisan-grey uppercase tracking-[0.4em]">Price Range (₹)</span>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
@@ -161,7 +179,39 @@ export default function AllProduct() {
         </div>
       </div>
 
-      <div className="space-y-4 pt-8 lg:pt-10 border-t border-artisan-light/5">
+      {/* Availability */}
+      <div className="space-y-3 py-6 border-t border-artisan-light/5">
+        <span className="text-[10px] font-mono font-bold text-artisan-grey uppercase tracking-[0.4em]">Availability</span>
+        <div className="space-y-3">
+          {[
+            { id: 'all', label: 'All Products' },
+            { id: 'inStock', label: 'In Stock' },
+            { id: 'outOfStock', label: 'Out of Stock' }
+          ].map(opt => (
+            <label key={opt.id} className="flex items-center gap-4 cursor-pointer group">
+              <div className="relative w-5 h-5 flex items-center justify-center">
+                <input
+                  type="radio"
+                  name="availability"
+                  className="peer hidden"
+                  checked={availability === opt.id}
+                  onChange={() => setAvailability(opt.id)}
+                />
+                <div className="absolute inset-0 border border-artisan-light/10 group-hover:border-artisan-grey peer-checked:border-artisan-grey peer-checked:bg-artisan-grey transition-all" />
+                <div className="relative z-10 opacity-0 peer-checked:opacity-100 transition-opacity">
+                  <div className="w-2 h-2 bg-artisan-dark" />
+                </div>
+              </div>
+              <span className="text-[10px] font-mono text-artisan-light/50 group-hover:text-artisan-light peer-checked:text-artisan-light uppercase tracking-widest transition-colors flex items-center gap-2">
+                {opt.label}
+              </span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {/* Sort By */}
+      <div className="space-y-3 py-6 border-t border-artisan-light/5">
         <span className="text-[10px] font-mono font-bold text-artisan-grey uppercase tracking-[0.4em]">Sort By</span>
         <div className="space-y-3">
           {[
@@ -184,7 +234,7 @@ export default function AllProduct() {
                   <div className="w-2 h-2 bg-artisan-dark" />
                 </div>
               </div>
-              <span className="text-[10px] font-mono text-artisan-light/30 group-hover:text-artisan-light peer-checked:text-artisan-light uppercase tracking-widest transition-colors">
+              <span className="text-[10px] font-mono text-artisan-light/50 group-hover:text-artisan-light peer-checked:text-artisan-light uppercase tracking-widest transition-colors">
                 {opt.label}
               </span>
             </label>
@@ -200,21 +250,8 @@ export default function AllProduct() {
       <div className="flex flex-col lg:flex-row flex-1">
 
         {/* Sidebar Filters - Desktop */}
-        <aside className="hidden lg:flex w-64 xl:w-72 border-r border-artisan-light/5 flex-col sticky top-24 lg:top-28 h-[calc(100vh-120px)] p-6 xl:p-8 shrink-0 overflow-y-auto">
+        <aside className="hidden lg:flex w-64 xl:w-72 border-r border-artisan-light/5 flex-col sticky top-24 lg:top-28 self-start p-6 xl:p-8 shrink-0">
           <FilterContent />
-          <div className="mt-auto pt-8 border-t border-artisan-light/5 space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-[8px] font-mono text-artisan-grey uppercase tracking-widest">Available now</span>
-              <span className="text-xs font-bold text-artisan-light">{tools.length}</span>
-            </div>
-            <div className="w-full h-0.5 bg-artisan-light/5 overflow-hidden">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${Math.min((tools.length / 20) * 100, 100)}%` }}
-                className="h-full bg-artisan-grey"
-              />
-            </div>
-          </div>
         </aside>
 
         {/* Main Content Area */}
@@ -258,10 +295,10 @@ export default function AllProduct() {
                   <Search className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 w-4 h-4 md:w-6 md:h-6 text-artisan-light/10 group-focus-within:text-artisan-grey transition-all" />
                   <input
                     type="text"
-                    placeholder="SEARCH PRODUCTS (E.G. WHEELCHAIR, NEBULIZER, STETHOSCOPE)..."
+                    placeholder="SEARCH BY NAME, SKU, OR BRAND..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-transparent border-b border-artisan-light/5 p-4 md:p-8 pl-12 md:pl-20 outline-none font-display font-bold uppercase text-base md:text-lg lg:text-xl text-artisan-light placeholder:text-artisan-light/5 focus:border-artisan-grey transition-all"
+                    className="w-full bg-transparent border-b border-artisan-light/5 p-4 md:p-8 pl-12 md:pl-20 outline-none font-display font-bold uppercase text-sm md:text-lg lg:text-xl text-artisan-light placeholder:text-artisan-light/5 focus:border-artisan-grey transition-all"
                   />
                 </motion.div>
               </div>
@@ -286,6 +323,7 @@ export default function AllProduct() {
                     setActiveCategory('All')
                     setSearchQuery('')
                     setPriceRange({ min: 0, max: 25000 })
+                    setAvailability('all')
                   }}
                   className="text-[10px] font-mono font-bold text-artisan-grey hover:text-artisan-light uppercase underline tracking-widest"
                 >
@@ -300,6 +338,103 @@ export default function AllProduct() {
               </AnimatePresence>
             )}
           </div>
+
+          {/* PAGINATION PROGRESS BAR & STATUS */}
+          {tools.length > 0 && (
+            <div className="border-t border-artisan-light/5 mt-16 pt-12 pb-8 flex flex-col items-center gap-6">
+              
+              {/* Progress metrics */}
+              <div className="flex flex-col sm:flex-row items-center justify-between w-full max-w-4xl text-[10px] font-mono uppercase tracking-[0.2em] text-artisan-light/40">
+                <div>
+                  Showing <span className="text-artisan-grey font-bold">{tools.length}</span> of <span className="text-artisan-light font-bold">{totalFiltered}</span> Products
+                </div>
+                <div className="mt-2 sm:mt-0">
+                  Page <span className="text-artisan-grey font-bold">{navPage}</span> of <span className="text-artisan-light font-bold">{Math.ceil(totalFiltered / 20) || 1}</span>
+                </div>
+              </div>
+
+              {/* Progress line indicator */}
+              <div className="w-full max-w-4xl h-[2px] bg-artisan-light/5 relative overflow-hidden">
+                <motion.div 
+                  className="absolute left-0 top-0 h-full bg-artisan-grey"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${Math.min(100, (tools.length / (totalFiltered || 1)) * 100)}%` }}
+                  transition={{ duration: 0.4 }}
+                  layout
+                />
+              </div>
+
+              {/* Status details */}
+              <div className="h-8 flex items-center justify-center">
+                {loading ? (
+                  <div className="flex items-center gap-3">
+                    <Loader2 className="w-4 h-4 text-artisan-grey animate-spin" />
+                    <span className="text-[10px] font-mono text-artisan-light/50 uppercase tracking-widest">Loading page...</span>
+                  </div>
+                ) : (
+                  <span className="text-[10px] font-mono text-artisan-grey uppercase tracking-[0.2em] font-bold">
+                    Page results loaded
+                  </span>
+                )}
+              </div>
+
+              {/* Paging Navigation Buttons */}
+              <div className="flex items-center justify-center gap-2 mt-4">
+                {/* Previous Button */}
+                <button
+                  disabled={navPage === 1 || loading}
+                  onClick={() => {
+                    const prevPage = navPage - 1;
+                    setNavPage(prevPage);
+                    fetchTools(prevPage);
+                    window.scrollTo({ top: 250, behavior: 'smooth' });
+                  }}
+                  className="px-4 py-2.5 border border-artisan-light/10 text-[9px] font-mono font-bold uppercase tracking-widest transition-all disabled:opacity-30 disabled:cursor-not-allowed hover:border-artisan-grey hover:text-artisan-grey text-artisan-light"
+                >
+                  PREV
+                </button>
+
+                {/* Page Number Loop */}
+                {Array.from({ length: Math.ceil(totalFiltered / 20) || 1 }).map((_, idx) => {
+                  const pNum = idx + 1;
+                  const isActive = navPage === pNum;
+                  return (
+                    <button
+                      key={pNum}
+                      disabled={loading}
+                      onClick={() => {
+                        setNavPage(pNum);
+                        fetchTools(pNum);
+                        window.scrollTo({ top: 250, behavior: 'smooth' });
+                      }}
+                      className={`w-10 h-10 border text-[9px] font-mono font-bold transition-all ${
+                        isActive
+                          ? 'bg-artisan-grey border-artisan-grey text-artisan-dark'
+                          : 'border-artisan-light/10 text-artisan-light hover:border-artisan-grey hover:text-artisan-grey'
+                      }`}
+                    >
+                      {String(pNum).padStart(2, '0')}
+                    </button>
+                  );
+                })}
+
+                {/* Next Button */}
+                <button
+                  disabled={navPage === (Math.ceil(totalFiltered / 20) || 1) || loading}
+                  onClick={() => {
+                    const nextPage = navPage + 1;
+                    setNavPage(nextPage);
+                    fetchTools(nextPage);
+                    window.scrollTo({ top: 250, behavior: 'smooth' });
+                  }}
+                  className="px-4 py-2.5 border border-artisan-light/10 text-[9px] font-mono font-bold uppercase tracking-widest transition-all disabled:opacity-30 disabled:cursor-not-allowed hover:border-artisan-grey hover:text-artisan-grey text-artisan-light"
+                >
+                  NEXT
+                </button>
+              </div>
+
+            </div>
+          )}
 
           <footer className="mt-20 border-t border-artisan-light/5 py-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
             <div className="space-y-2">
@@ -322,7 +457,7 @@ export default function AllProduct() {
             </div>
             <div className="space-y-2">
               <span className="text-[8px] font-mono text-artisan-grey uppercase tracking-widest block">About</span>
-              <p className="text-[8px] font-mono text-artisan-light/30 uppercase leading-relaxed tracking-wider max-w-xs">
+              <p className="text-[8px] font-mono text-artisan-light/50 uppercase leading-relaxed tracking-wider max-w-xs">
                 Your trusted partner for rehabilitation equipment, respiratory care products, and diagnostic tools. Serving hospitals and clinics across India.
               </p>
             </div>

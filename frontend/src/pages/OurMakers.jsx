@@ -85,7 +85,7 @@ export default function OurMakers() {
                 <div className="space-y-4">
                   <div className="space-y-1">
                     <h3 className="text-2xl font-display font-black text-artisan-light uppercase tracking-tight">{maker.title}</h3>
-                    <div className="flex items-center gap-2 text-artisan-light/30">
+                    <div className="flex items-center gap-2 text-artisan-light/50">
                       <MapPin className="w-3 h-3" />
                       <span className="text-[8px] font-mono uppercase tracking-widest">{maker.subtitle || 'Global Artisans'}</span>
                     </div>

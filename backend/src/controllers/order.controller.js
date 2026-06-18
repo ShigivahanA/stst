@@ -3,7 +3,7 @@ import ApiResponse from '../utils/ApiResponse.js';
 import asyncHandler from '../utils/asyncHandler.js';
 
 export const checkout = asyncHandler(async (req, res) => {
-  const { items, sessionId, conversionSource } = req.body;
+  const { items, sessionId, conversionSource, couponCode, addressId } = req.body;
   const userId = req.user?._id; // If guest, userId is undefined
 
   const data = await orderService.createCheckoutOrder({
@@ -11,6 +11,8 @@ export const checkout = asyncHandler(async (req, res) => {
     items,
     sessionId,
     conversionSource,
+    couponCode,
+    addressId,
   });
 
   return res
@@ -31,6 +33,18 @@ export const verifyPayment = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(new ApiResponse(200, order, 'Payment verified and order processed successfully'));
+});
+
+export const confirmCod = asyncHandler(async (req, res) => {
+  const { razorpayOrderId } = req.body;
+
+  const order = await orderService.confirmCodOrder({
+    razorpayOrderId,
+  });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, order, 'COD Order confirmed successfully'));
 });
 
 export const webhook = asyncHandler(async (req, res) => {

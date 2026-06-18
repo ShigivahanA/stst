@@ -42,25 +42,25 @@ export default function Insurance() {
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                     <div className="space-y-4">
                        <h4 className="text-xs font-mono font-bold text-artisan-light/60 uppercase tracking-widest">Property Damage</h4>
-                       <p className="text-xs font-mono text-artisan-light/30 uppercase leading-relaxed tracking-wider">
+                       <p className="text-xs font-mono text-artisan-light/50 uppercase leading-relaxed tracking-wider">
                           Coverage for accidental damage to tools during the rental period. Includes parts and labor.
                        </p>
                     </div>
                     <div className="space-y-4">
                        <h4 className="text-xs font-mono font-bold text-artisan-light/60 uppercase tracking-widest">Liability Coverage</h4>
-                       <p className="text-xs font-mono text-artisan-light/30 uppercase leading-relaxed tracking-wider">
+                       <p className="text-xs font-mono text-artisan-light/50 uppercase leading-relaxed tracking-wider">
                           General liability protection for users and owners against third-party claims.
                        </p>
                     </div>
                     <div className="space-y-4">
                        <h4 className="text-xs font-mono font-bold text-artisan-light/60 uppercase tracking-widest">Theft & Loss</h4>
-                       <p className="text-xs font-mono text-artisan-light/30 uppercase leading-relaxed tracking-wider">
+                       <p className="text-xs font-mono text-artisan-light/50 uppercase leading-relaxed tracking-wider">
                           Protection against tool theft or total loss during the rental session.
                        </p>
                     </div>
                     <div className="space-y-4">
                        <h4 className="text-xs font-mono font-bold text-artisan-light/60 uppercase tracking-widest">Downtime Credit</h4>
-                       <p className="text-xs font-mono text-artisan-light/30 uppercase leading-relaxed tracking-wider">
+                       <p className="text-xs font-mono text-artisan-light/50 uppercase leading-relaxed tracking-wider">
                           Compensation for owners if a tool is out of service for extended repairs.
                        </p>
                     </div>

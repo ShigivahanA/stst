@@ -49,7 +49,7 @@ export default function PressRoom() {
 
         {/* RELEASES LIST */}
         <div className="space-y-4">
-          <div className="hidden md:grid grid-cols-12 gap-8 px-8 py-4 border-b border-artisan-light/10 text-[8px] font-mono font-bold text-artisan-light/30 uppercase tracking-[0.4em]">
+          <div className="hidden md:grid grid-cols-12 gap-8 px-8 py-4 border-b border-artisan-light/10 text-[8px] font-mono font-bold text-artisan-light/50 uppercase tracking-[0.4em]">
             <div className="col-span-2">Date</div>
             <div className="col-span-8">Release Title</div>
             <div className="col-span-2 text-right">Resource</div>

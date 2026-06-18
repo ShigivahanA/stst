@@ -18,6 +18,8 @@ export default function ToolCard({ tool, idx }) {
 
     if (!user) {
       addToast('Please login to save items', 'info')
+      localStorage.setItem('pending_wishlist_action', JSON.stringify({ productId: tool._id }))
+      localStorage.setItem('auth_redirect', window.location.pathname)
       navigate('/login')
       return
     }
@@ -37,23 +39,26 @@ export default function ToolCard({ tool, idx }) {
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95 }}
         transition={{ duration: 0.4, delay: idx * 0.05 }}
-        className="group flex flex-col bg-artisan-light/[0.02] border border-artisan-light/5 hover:border-artisan-grey transition-colors duration-500 h-full relative"
+        className="group flex flex-col bg-artisan-dark/40 backdrop-blur-sm border border-artisan-light/10 hover:border-artisan-grey transition-colors duration-500 h-full relative rounded-xl"
       >
-        {/* Tool ID Badge */}
-        <div className="absolute top-0 right-0 z-10 px-3 py-1 bg-artisan-grey text-artisan-dark text-[8px] font-mono font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
-          Item #{tool._id.slice(-6).toUpperCase()}
+        {/* Rating Badge */}
+        <div className="absolute top-4 right-4 z-10 flex items-center gap-1.5 px-2.5 py-1 bg-artisan-dark/80 backdrop-blur-md text-[9px] font-mono text-artisan-grey border border-artisan-light/10 rounded-md">
+          <Star className="w-3 h-3 fill-artisan-grey text-artisan-grey" />
+          <span>
+            {tool.averageRating || '0.0'} ({tool.numOfReviews || 0})
+          </span>
         </div>
 
         {/* Wishlist Button */}
         <button
           onClick={handleWishlist}
-          className={`absolute top-4 left-4 z-20 w-8 h-8 backdrop-blur-md border flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 ${isWishlisted ? 'bg-red-500/20 border-red-500 text-red-500' : 'bg-artisan-dark/80 border-artisan-light/10 text-artisan-light hover:text-artisan-grey'}`}
+          className={`absolute top-4 left-4 z-20 w-8 h-8 backdrop-blur-md border flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 ${isWishlisted ? 'bg-red-500/20 border-red-500 text-red-500' : 'bg-artisan-dark/80 border-artisan-light/10 text-artisan-light hover:text-artisan-grey'} rounded-full`}
         >
           <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-current' : ''}`} />
         </button>
 
         {/* Image Area */}
-        <div className="relative aspect-[16/11] overflow-hidden bg-artisan-dark">
+        <div className="relative aspect-[16/11] overflow-hidden bg-artisan-dark rounded-t-xl">
           <img
             src={displayImage}
             alt={tool.name || tool.title}
@@ -61,8 +66,8 @@ export default function ToolCard({ tool, idx }) {
           />
 
           {/* Category Floating Label */}
-          <div className="absolute bottom-4 left-4 flex items-center gap-2">
-            <span className="px-2 py-1 bg-artisan-dark/80 backdrop-blur-md text-[8px] font-mono text-artisan-grey border border-artisan-light/10 uppercase tracking-widest">
+          <div className="absolute bottom-4 left-4 pointer-events-none">
+            <span className="px-2.5 py-1 bg-artisan-dark/80 backdrop-blur-md text-[8px] font-mono text-artisan-grey border border-artisan-light/10 uppercase tracking-widest pointer-events-auto rounded-md">
               {tool.category}
             </span>
           </div>
@@ -90,18 +95,18 @@ export default function ToolCard({ tool, idx }) {
               </span>
             </div>
 
-            <div className="flex items-center gap-3 px-5 py-3 border border-artisan-light/10 group-hover:border-artisan-grey group-hover:bg-artisan-grey group-hover:text-artisan-dark transition-[color,background-color,border-color] duration-500 text-[10px] font-display font-bold uppercase tracking-widest">
+            <div className="flex items-center gap-3 px-5 py-3 border border-artisan-light/10 group-hover:border-artisan-grey group-hover:bg-artisan-grey group-hover:text-artisan-dark transition-[color,background-color,border-color] duration-500 text-[10px] font-display font-bold uppercase tracking-widest rounded-xl">
               View
               <ArrowUpRight className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
             </div>
           </div>
         </div>
 
-        {/* Decorative Corner */}
+        {/* Decorative Corner
         <div className="absolute bottom-0 right-0 w-8 h-8 pointer-events-none">
           <div className="absolute bottom-2 right-2 w-px h-2 bg-artisan-light/5 group-hover:bg-artisan-grey transition-colors" />
           <div className="absolute bottom-2 right-2 h-px w-2 bg-artisan-light/5 group-hover:bg-artisan-grey transition-colors" />
-        </div>
+        </div> */}
       </motion.div>
     </Link>
   )

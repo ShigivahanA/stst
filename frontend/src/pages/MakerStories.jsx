@@ -77,7 +77,7 @@ export default function MakerStories() {
                   />
                 </Link>
                 <div className="lg:col-span-5 space-y-8">
-                  <div className="flex items-center gap-6 text-[10px] font-mono text-artisan-light/30 uppercase tracking-widest">
+                  <div className="flex items-center gap-6 text-[10px] font-mono text-artisan-light/50 uppercase tracking-widest">
                     <div className="flex items-center gap-2">
                       <User className="w-3 h-3 text-artisan-grey" />
                       {story.author || 'Collective'}

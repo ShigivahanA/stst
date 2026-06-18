@@ -11,7 +11,7 @@ import AnalyticsEvent from '../models/analytics.model.js';
 import ApiResponse from '../utils/ApiResponse.js';
 import asyncHandler from '../utils/asyncHandler.js';
 import ApiError from '../utils/ApiError.js';
-import { sendSuspensionEmail } from '../services/email.service.js';
+import { sendSuspensionEmail, sendShippingUpdateEmail } from '../services/email.service.js';
 import { uploadToCloudinary, deleteFromCloudinary } from '../utils/cloudinary.js';
 import { DEFAULT_PAGES } from '../constants/defaultPages.js';
 
@@ -120,16 +120,82 @@ export const getPendingListings = asyncHandler(async (req, res) => {
 
 // Update status for either an order or product
 export const updateListingStatus = asyncHandler(async (req, res) => {
-  const { status } = req.body;
-  const orderStatus = status === 'approved' ? 'completed' : 'cancelled';
+  const { status, orderStatus, shippingStatus } = req.body;
 
   // 1. Try finding and updating an Order
-  const order = await Order.findByIdAndUpdate(
-    req.params.id,
-    { orderStatus },
-    { new: true }
-  );
+  const order = await Order.findById(req.params.id).populate('user');
   if (order) {
+    let shippingChanged = false;
+
+    if (orderStatus) {
+      order.orderStatus = orderStatus;
+    }
+
+    if (shippingStatus && order.shippingStatus !== shippingStatus) {
+      order.shippingStatus = shippingStatus;
+      shippingChanged = true;
+
+      const statusDescriptions = {
+        pending: 'Order confirmed. Undergoing sterilization and quality verification.',
+        shipped: 'Order sterilized, packaged and handed over to courier partner.',
+        in_transit: 'Order in transit through regional courier facility.',
+        out_for_delivery: 'Order out for delivery with local surgical delivery agent.',
+        delivered: 'Order delivered successfully to shipping address.',
+        failed: 'Delivery attempt failed.'
+      };
+
+      order.shippingHistory.push({
+        status: shippingStatus,
+        description: statusDescriptions[shippingStatus] || `Order status updated to ${shippingStatus}`,
+        timestamp: new Date()
+      });
+
+      if (shippingStatus === 'delivered') {
+        order.orderStatus = 'completed';
+      }
+    }
+
+    // Support legacy "approved" / "rejected" logic from confirm buttons
+    if (status) {
+      const targetOrderStatus = status === 'approved' ? 'processing' : 'cancelled';
+      if (order.orderStatus !== targetOrderStatus) {
+        order.orderStatus = targetOrderStatus;
+      }
+      
+      const targetShippingStatus = status === 'approved' ? 'shipped' : 'failed';
+      if (order.shippingStatus !== targetShippingStatus) {
+        order.shippingStatus = targetShippingStatus;
+        shippingChanged = true;
+
+        order.shippingHistory.push({
+          status: targetShippingStatus,
+          description: status === 'approved' 
+            ? 'Order sterilized, packaged and handed over to courier partner.' 
+            : 'Order rejected and cancelled by admin.',
+          timestamp: new Date()
+        });
+      }
+    }
+
+    await order.save();
+
+    // Send shipping update email if shipping status was changed
+    if (shippingChanged && order.user && order.user.email) {
+      try {
+        const latestHistory = order.shippingHistory[order.shippingHistory.length - 1];
+        const description = latestHistory ? latestHistory.description : `Order shipping status updated to ${order.shippingStatus}`;
+        await sendShippingUpdateEmail(
+          order.user.email,
+          order.user.name,
+          order._id.toString(),
+          order.shippingStatus,
+          description
+        );
+      } catch (err) {
+        console.error(`Error sending manual shipping update email: ${err.message}`);
+      }
+    }
+
     return res.status(200).json(
       new ApiResponse(200, order, 'Order status updated successfully')
     );
@@ -183,6 +249,9 @@ export const getBookings = asyncHandler(async (req, res) => {
       totalPrice: order.totalAmount,
       status: order.orderStatus === 'completed' || order.orderStatus === 'processing' ? 'confirmed' :
               order.orderStatus === 'pending' ? 'pending' : 'cancelled',
+      orderStatus: order.orderStatus,
+      shippingStatus: order.shippingStatus,
+      paymentStatus: order.paymentStatus,
     };
   });
 
@@ -193,7 +262,7 @@ export const getBookings = asyncHandler(async (req, res) => {
 
 // User registry management
 export const getUsers = asyncHandler(async (req, res) => {
-  const users = await User.find({ role: { $ne: 'admin' } }).select('-password -refreshTokens');
+  const users = await User.find({ role: { $ne: 'admin' } }).select('-password -refreshTokens -addresses -cart -wishlist');
   return res.status(200).json(
     new ApiResponse(200, users, 'Users fetched successfully')
   );

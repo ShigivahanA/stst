@@ -270,7 +270,7 @@ function StatsTab() {
             <tbody className="divide-y divide-artisan-light/5">
               {stats.map((stat, i) => (
                 <tr key={stat._id} className={`group transition-all hover:bg-artisan-light/[0.02] ${!stat.isActive ? 'opacity-40' : ''}`}>
-                  <td className="px-5 py-5 font-mono text-[10px] text-artisan-light/30">{String(stat.order || i + 1).padStart(2, '0')}</td>
+                  <td className="px-5 py-5 font-mono text-[10px] text-artisan-light/50">{String(stat.order || i + 1).padStart(2, '0')}</td>
                   <td className="px-5 py-5">
                     <span className="text-xl font-display font-black text-artisan-grey tracking-tighter">{stat.value}</span>
                   </td>
@@ -572,7 +572,7 @@ function ReviewsTab() {
                   <span className="text-[10px] font-display font-black text-artisan-grey uppercase tracking-tight block">
                     {review.userName}
                   </span>
-                  <span className="text-[9px] font-mono text-artisan-light/30 uppercase tracking-widest">
+                  <span className="text-[9px] font-mono text-artisan-light/50 uppercase tracking-widest">
                     {review.userRole} · {review.userLocation}
                   </span>
                 </div>
@@ -587,6 +587,8 @@ function ReviewsTab() {
     </div>
   )
 }
+
+
 
 // ─── Page Sections Tab (Privacy, Shipping, Terms, Returns, FAQ) ───────────────
 function PageSectionsTab({ slug, title }) {
@@ -936,6 +938,8 @@ function PageSectionsTab({ slug, title }) {
   )
 }
 
+
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function AdminContent() {
   const [activeTab, setActiveTab] = useState('stats')
@@ -959,7 +963,7 @@ export default function AdminContent() {
           <h1 className="text-5xl sm:text-6xl font-display font-black uppercase tracking-tighter leading-none text-artisan-light">
             CONTENT <span className="text-outline">MANAGER.</span>
           </h1>
-          <p className="text-[11px] font-mono text-artisan-light/30 uppercase tracking-widest max-w-lg">
+          <p className="text-[11px] font-mono text-artisan-light/50 uppercase tracking-widest max-w-lg">
             Control what appears on the landing page and policy/FAQ pages.
           </p>
         </div>
@@ -974,7 +978,7 @@ export default function AdminContent() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`relative group pb-4 px-3 sm:px-4 border-b-2 font-mono text-[9px] font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-all ${activeTab === tab.id
                     ? 'border-artisan-grey text-artisan-light'
-                    : 'border-transparent text-artisan-light/30 hover:text-artisan-light/60'
+                    : 'border-transparent text-artisan-light/50 hover:text-artisan-light/60'
                   }`}
               >
                 <Icon className="w-4 h-4 md:w-3.5 md:h-3.5 shrink-0" />

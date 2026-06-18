@@ -7,6 +7,10 @@ import analyticsRoutes from './analytics.routes.js';
 import userRoutes from './user.routes.js';
 import adminRoutes from './admin.routes.js';
 import contentRoutes from './content.routes.js';
+import couponRoutes from './coupon.routes.js';
+import bulkEnquiryRoutes from './bulkEnquiry.routes.js';
+import bookingRoutes from './booking.routes.js';
+import cronRoutes from './cron.routes.js';
 
 const router = express.Router();
 
@@ -18,5 +22,9 @@ router.use('/orders', orderRoutes);
 router.use('/analytics', analyticsRoutes);
 router.use('/admin', adminRoutes);
 router.use('/content', contentRoutes);
+router.use('/coupons', couponRoutes);
+router.use('/bulk-enquiries', bulkEnquiryRoutes);
+router.use('/bookings', bookingRoutes);
+router.use('/cron', cronRoutes);
 
 export default router;

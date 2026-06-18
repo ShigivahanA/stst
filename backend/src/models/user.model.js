@@ -22,8 +22,17 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: [true, 'Password is required'],
-      minlength: [6, 'Password must be at least 6 characters'],
+      required: false,
+      validate: {
+        validator: function(v) {
+          if (!v) return true; // Optional for Google OAuth users
+          // Allow valid bcrypt hashes (60 chars starting with $2) to pass through database-level internal calls
+          if (v.startsWith('$2') && v.length === 60) return true;
+          // Verify raw password strength
+          return v.length >= 8 && /[A-Z]/.test(v) && /[a-z]/.test(v) && /\d/.test(v) && /[^A-Za-z0-9]/.test(v);
+        },
+        message: 'Password must be at least 8 characters long, and contain at least one uppercase letter, one lowercase letter, one number, and one special character.'
+      }
     },
     role: {
       type: String,
@@ -229,6 +238,7 @@ userSchema.post('save', function (doc) {
 
 // Compare password method
 userSchema.methods.comparePassword = async function (password) {
+  if (!this.password) return false;
   return await bcrypt.compare(password, this.password);
 };
 

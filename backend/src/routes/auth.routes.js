@@ -10,7 +10,8 @@ import {
   addToCart,
   getCart,
   clearCart,
-  verify2FA
+  verify2FA,
+  googleLogin
 } from '../controllers/auth.controller.js';
 import { verifyJWT } from '../middlewares/auth.middleware.js';
 import { authLimiter } from '../middlewares/rateLimiter.middleware.js';
@@ -21,6 +22,7 @@ const router = express.Router();
 
 router.post('/register', authLimiter, validate(authValidation.register), register);
 router.post('/login', authLimiter, validate(authValidation.login), login);
+router.post('/google-login', googleLogin);
 router.post('/verify2fa', verify2FA);
 router.post('/logout', logout);
 router.post('/refresh-token', refresh);

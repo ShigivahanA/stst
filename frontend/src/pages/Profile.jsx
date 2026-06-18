@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Link, useNavigate } from 'react-router-dom'
 import {
@@ -49,6 +49,43 @@ export default function Profile() {
    const [stateName, setStateName] = useState('')
    const [pincode, setPincode] = useState('')
    const [addrLoading, setAddrLoading] = useState(false)
+   const [isFetchingPincode, setIsFetchingPincode] = useState(false)
+   const lastFetchedPincodeRef = useRef('')
+
+   // Fetch city and state automatically from pincode API
+   useEffect(() => {
+      const fetchAddressDetails = async () => {
+         const pin = pincode.trim()
+         if (pin.length === 6 && pin !== lastFetchedPincodeRef.current) {
+            try {
+               setIsFetchingPincode(true)
+               const response = await fetch(`https://api.postalpincode.in/pincode/${pin}`)
+               if (!response.ok) throw new Error('API request failed')
+               const data = await response.json()
+
+               if (data && data[0] && data[0].Status === 'Success' && data[0].PostOffice && data[0].PostOffice.length > 0) {
+                  const postOffice = data[0].PostOffice[0]
+                  const fetchedCity = postOffice.District || ''
+                  const fetchedState = postOffice.State || ''
+
+                  setCity(fetchedCity)
+                  setStateName(fetchedState)
+                  // addToast('City and State fetched successfully', 'success')
+               } else {
+                  addToast('Invalid Pincode. Please check and try again.', 'error')
+               }
+            } catch (err) {
+               console.error('Pincode fetch error:', err)
+               addToast('Could not fetch address details. Please fill manually.', 'warning')
+            } finally {
+               setIsFetchingPincode(false)
+               lastFetchedPincodeRef.current = pin
+            }
+         }
+      }
+
+      fetchAddressDetails()
+   }, [pincode, addToast])
 
    // Password states
    const [currentPassword, setCurrentPassword] = useState('')
@@ -165,6 +202,7 @@ export default function Profile() {
          setCity('')
          setStateName('')
          setPincode('')
+         lastFetchedPincodeRef.current = ''
          setAddressTag('Home')
       } catch (err) {
          addToast(err.response?.data?.message || 'Failed to save address', 'error')
@@ -182,6 +220,7 @@ export default function Profile() {
       setCity(addr.city)
       setStateName(addr.state)
       setPincode(addr.pincode)
+      lastFetchedPincodeRef.current = addr.pincode
    }
 
    const handleCancelEditAddress = () => {
@@ -193,6 +232,7 @@ export default function Profile() {
       setCity('')
       setStateName('')
       setPincode('')
+      lastFetchedPincodeRef.current = ''
    }
 
    const handleDeleteAddress = async (addressId) => {
@@ -281,7 +321,7 @@ export default function Profile() {
 
             {/* Split Dashboard Layout */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-               
+
                {/* Left Sidebar Column - Primary User Info */}
                <motion.div
                   initial={{ opacity: 0, x: -20 }}
@@ -290,7 +330,7 @@ export default function Profile() {
                   className="bg-artisan-light/[0.02] border border-artisan-light/10 p-8 flex flex-col justify-between relative overflow-hidden h-fit"
                >
                   <div className="absolute top-0 left-0 w-1 h-full bg-artisan-grey" />
-                  
+
                   <div className="space-y-8">
                      {/* User Avatar with Cloudinary Upload capabilities */}
                      <div className="flex flex-col items-center text-center pb-6 border-b border-artisan-light/5">
@@ -304,7 +344,7 @@ export default function Profile() {
                                  {getInitials(user.name)}
                               </span>
                            )}
-                           
+
                            {/* Hover overlay triggers image upload */}
                            <label className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center cursor-pointer text-center p-2 text-artisan-light">
                               <Settings className="w-4 h-4 mb-1 text-artisan-light" />
@@ -318,7 +358,7 @@ export default function Profile() {
                               />
                            </label>
                         </div>
-                        
+
                         {/* Option to delete profile picture if exists */}
                         {user.avatar && !avatarLoading && (
                            <button
@@ -328,7 +368,7 @@ export default function Profile() {
                               Remove Photo
                            </button>
                         )}
-                        
+
                         {/* Name Field with Inline Editing */}
                         <div className="w-full space-y-2 mt-2">
                            {isEditingName ? (
@@ -378,7 +418,7 @@ export default function Profile() {
                      {/* Profile Info Details List */}
                      <div className="space-y-4">
                         <div className="flex items-center justify-between py-2 border-b border-artisan-light/5">
-                           <span className="text-[9px] font-mono text-artisan-light/30 uppercase tracking-[0.2em] flex items-center gap-2">
+                           <span className="text-[9px] font-mono text-artisan-light/50 uppercase tracking-[0.2em] flex items-center gap-2">
                               <Mail className="w-3.5 h-3.5 text-artisan-light/20" /> Email
                            </span>
                            <span className="text-xs font-mono text-artisan-light/85 break-all max-w-[180px] text-right">
@@ -387,7 +427,7 @@ export default function Profile() {
                         </div>
 
                         <div className="flex items-center justify-between py-2 border-b border-artisan-light/5">
-                           <span className="text-[9px] font-mono text-artisan-light/30 uppercase tracking-[0.2em] flex items-center gap-2">
+                           <span className="text-[9px] font-mono text-artisan-light/50 uppercase tracking-[0.2em] flex items-center gap-2">
                               <Shield className="w-3.5 h-3.5 text-artisan-light/20" /> System Level
                            </span>
                            <span className="text-xs font-mono uppercase text-artisan-light/85">
@@ -396,7 +436,7 @@ export default function Profile() {
                         </div>
 
                         <div className="flex items-center justify-between py-2">
-                           <span className="text-[9px] font-mono text-artisan-light/30 uppercase tracking-[0.2em] flex items-center gap-2">
+                           <span className="text-[9px] font-mono text-artisan-light/50 uppercase tracking-[0.2em] flex items-center gap-2">
                               <Calendar className="w-3.5 h-3.5 text-artisan-light/20" /> Onboarded
                            </span>
                            <span className="text-xs font-mono text-artisan-light/85">
@@ -441,11 +481,10 @@ export default function Profile() {
                      {user.role === 'customer' && (
                         <button
                            onClick={() => setActiveTab('addresses')}
-                           className={`pb-4 text-xs font-mono font-bold uppercase tracking-widest border-b-2 transition-all flex items-center gap-2 ${
-                              activeTab === 'addresses'
+                           className={`pb-4 text-xs font-mono font-bold uppercase tracking-widest border-b-2 transition-all flex items-center gap-2 ${activeTab === 'addresses'
                                  ? 'border-artisan-light text-artisan-light'
                                  : 'border-transparent text-artisan-light/35 hover:text-artisan-light/60'
-                           }`}
+                              }`}
                         >
                            <MapPin className="w-3.5 h-3.5" />
                            [Addresses]
@@ -453,11 +492,10 @@ export default function Profile() {
                      )}
                      <button
                         onClick={() => setActiveTab('security')}
-                        className={`pb-4 text-xs font-mono font-bold uppercase tracking-widest border-b-2 transition-all flex items-center gap-2 ${
-                           activeTab === 'security'
+                        className={`pb-4 text-xs font-mono font-bold uppercase tracking-widest border-b-2 transition-all flex items-center gap-2 ${activeTab === 'security'
                               ? 'border-artisan-light text-artisan-light'
                               : 'border-transparent text-artisan-light/35 hover:text-artisan-light/60'
-                        }`}
+                           }`}
                      >
                         <Settings className="w-3.5 h-3.5" />
                         [Security]
@@ -487,15 +525,13 @@ export default function Profile() {
                                        user.addresses.map((addr) => (
                                           <div
                                              key={addr._id}
-                                             className={`group p-5 flex flex-col justify-between min-h-[140px] transition-all relative overflow-hidden ${
-                                                editingAddressId === addr._id
+                                             className={`group p-5 flex flex-col justify-between min-h-[140px] transition-all relative overflow-hidden ${editingAddressId === addr._id
                                                    ? 'bg-artisan-light/[0.05] border border-artisan-light/40 shadow-lg'
                                                    : 'bg-artisan-light/[0.01] border border-artisan-light/5 hover:border-artisan-light/10'
-                                             }`}
+                                                }`}
                                           >
-                                             <div className={`absolute top-0 left-0 w-[2px] h-full transition-colors ${
-                                                editingAddressId === addr._id ? 'bg-artisan-light' : 'bg-artisan-light/10 group-hover:bg-artisan-grey'
-                                             }`} />
+                                             <div className={`absolute top-0 left-0 w-[2px] h-full transition-colors ${editingAddressId === addr._id ? 'bg-artisan-light' : 'bg-artisan-light/10 group-hover:bg-artisan-grey'
+                                                }`} />
                                              <div className="flex items-start justify-between gap-3 mb-4">
                                                 <span className="text-[8px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 bg-artisan-light/5 border border-artisan-light/10 text-artisan-grey">
                                                    {addr.tag}
@@ -528,7 +564,7 @@ export default function Profile() {
                                        ))
                                     ) : (
                                        <div className="sm:col-span-2 text-center py-12 border border-dashed border-artisan-light/10 bg-artisan-light/[0.01]">
-                                          <p className="text-xs font-mono text-artisan-light/30 uppercase tracking-widest">No addresses saved</p>
+                                          <p className="text-xs font-mono text-artisan-light/50 uppercase tracking-widest">No addresses saved</p>
                                        </div>
                                     )}
                                  </div>
@@ -540,7 +576,7 @@ export default function Profile() {
                                     <h4 className="text-sm font-display font-bold uppercase tracking-widest text-artisan-light">
                                        {editingAddressId ? 'Edit Address' : 'Add Address'}
                                     </h4>
-                                    
+
                                     <form onSubmit={handleAddAddress} className="space-y-4">
                                        {/* Custom Tag Selector Chips */}
                                        <div className="space-y-1.5">
@@ -553,11 +589,10 @@ export default function Profile() {
                                                    key={tag}
                                                    type="button"
                                                    onClick={() => setAddressTag(tag)}
-                                                   className={`px-4 py-2 text-xs font-mono font-bold uppercase tracking-wider border transition-all ${
-                                                      addressTag === tag 
-                                                         ? 'bg-artisan-light text-artisan-dark border-artisan-light' 
+                                                   className={`px-4 py-2 text-xs font-mono font-bold uppercase tracking-wider border transition-all ${addressTag === tag
+                                                         ? 'bg-artisan-light text-artisan-dark border-artisan-light'
                                                          : 'bg-transparent border-artisan-light/10 text-artisan-grey hover:border-artisan-grey hover:text-artisan-light'
-                                                   }`}
+                                                      }`}
                                                 >
                                                    {tag}
                                                 </button>
@@ -606,6 +641,26 @@ export default function Profile() {
                                              />
                                           </div>
 
+                                           <div className="md:col-span-3">
+                                             <label className="block text-[8px] font-mono text-artisan-light/40 uppercase tracking-widest mb-1.5">
+                                                Pincode *
+                                             </label>
+                                             <div className="relative">
+                                                <input
+                                                   type="text"
+                                                   maxLength={6}
+                                                   value={pincode}
+                                                   onChange={(e) => setPincode(e.target.value.replace(/\D/g, ''))}
+                                                   placeholder="600075"
+                                                   required
+                                                   className="w-full bg-artisan-dark border border-artisan-light/10 p-2.5 pr-8 text-xs text-artisan-light font-mono uppercase tracking-wider focus:border-artisan-grey outline-none"
+                                                />
+                                                {isFetchingPincode && (
+                                                   <Loader2 className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 animate-spin text-artisan-light/40" />
+                                                )}
+                                             </div>
+                                          </div>
+
                                           <div className="md:col-span-3">
                                              <label className="block text-[8px] font-mono text-artisan-light/40 uppercase tracking-widest mb-1.5">
                                                 City *
@@ -616,7 +671,8 @@ export default function Profile() {
                                                 onChange={(e) => setCity(e.target.value)}
                                                 placeholder="CHENNAI"
                                                 required
-                                                className="w-full bg-artisan-dark border border-artisan-light/10 p-2.5 text-xs text-artisan-light font-mono uppercase tracking-wider focus:border-artisan-grey outline-none"
+                                                disabled
+                                                className="w-full bg-artisan-dark border border-artisan-light/10 p-2.5 text-xs text-artisan-light font-mono uppercase tracking-wider focus:border-artisan-grey outline-none opacity-50 cursor-not-allowed"
                                              />
                                           </div>
 
@@ -630,21 +686,8 @@ export default function Profile() {
                                                 onChange={(e) => setStateName(e.target.value)}
                                                 placeholder="TAMIL NADU"
                                                 required
-                                                className="w-full bg-artisan-dark border border-artisan-light/10 p-2.5 text-xs text-artisan-light font-mono uppercase tracking-wider focus:border-artisan-grey outline-none"
-                                             />
-                                          </div>
-
-                                          <div className="md:col-span-3">
-                                             <label className="block text-[8px] font-mono text-artisan-light/40 uppercase tracking-widest mb-1.5">
-                                                Pincode *
-                                             </label>
-                                             <input
-                                                type="text"
-                                                value={pincode}
-                                                onChange={(e) => setPincode(e.target.value)}
-                                                placeholder="600075"
-                                                required
-                                                className="w-full bg-artisan-dark border border-artisan-light/10 p-2.5 text-xs text-artisan-light font-mono uppercase tracking-wider focus:border-artisan-grey outline-none"
+                                                disabled
+                                                className="w-full bg-artisan-dark border border-artisan-light/10 p-2.5 text-xs text-artisan-light font-mono uppercase tracking-wider focus:border-artisan-grey outline-none opacity-50 cursor-not-allowed"
                                              />
                                           </div>
                                        </div>
@@ -696,22 +739,20 @@ export default function Profile() {
                                     </p>
                                  </div>
                                  <div className="flex flex-col items-start sm:items-end gap-2 flex-shrink-0">
-                                    <span className={`inline-flex items-center gap-1.5 text-[8px] font-mono font-bold uppercase px-2 py-0.5 border rounded-sm ${
-                                       user.twoFactorEnabled 
-                                          ? 'border-green-500/20 bg-green-500/5 text-green-400' 
+                                    <span className={`inline-flex items-center gap-1.5 text-[8px] font-mono font-bold uppercase px-2 py-0.5 border rounded-sm ${user.twoFactorEnabled
+                                          ? 'border-green-500/20 bg-green-500/5 text-green-400'
                                           : 'border-artisan-light/10 bg-artisan-light/5 text-artisan-grey'
-                                    }`}>
+                                       }`}>
                                        <span className={`w-1.5 h-1.5 rounded-full ${user.twoFactorEnabled ? 'bg-green-500' : 'bg-artisan-grey'}`} />
                                        {user.twoFactorEnabled ? '2FA Active' : '2FA Inactive'}
                                     </span>
                                     <button
                                        onClick={handleToggle2FA}
                                        disabled={twoFactorLoading}
-                                       className={`w-full sm:w-auto px-5 py-2.5 text-[9px] font-mono font-bold uppercase tracking-widest border transition-all duration-300 ${
-                                          user.twoFactorEnabled
+                                       className={`w-full sm:w-auto px-5 py-2.5 text-[9px] font-mono font-bold uppercase tracking-widest border transition-all duration-300 ${user.twoFactorEnabled
                                              ? 'bg-red-500/10 border-red-500/20 text-red-500 hover:bg-red-500 hover:text-artisan-dark'
                                              : 'bg-artisan-light text-artisan-dark hover:bg-artisan-grey'
-                                       }`}
+                                          }`}
                                     >
                                        {twoFactorLoading ? 'Syncing...' : user.twoFactorEnabled ? 'Disable 2FA' : 'Enable 2FA'}
                                     </button>

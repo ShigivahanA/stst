@@ -124,7 +124,7 @@ export default function Auth() {
       >
         <Link
           to="/"
-          className="group flex items-center gap-4 text-[10px] font-mono font-bold text-artisan-light/30 hover:text-artisan-grey transition-all uppercase tracking-[0.5em] whitespace-nowrap"
+          className="group flex items-center gap-4 text-[10px] font-mono font-bold text-artisan-light/50 hover:text-artisan-grey transition-all uppercase tracking-[0.5em] whitespace-nowrap"
         >
           <div className="w-8 h-px bg-artisan-light/10 group-hover:bg-artisan-grey transition-colors" />
           Home
