@@ -726,13 +726,18 @@ export default function ProductDetail() {
                         Technical measurements, standards, and product data.
                      </p>
                   </div>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                     {specs.map((spec, i) => (
-                        <div key={i} className="border border-artisan-light/10 bg-artisan-light/[0.01] p-4 flex flex-col justify-between space-y-1">
-                           <span className="text-[9px] font-mono text-artisan-light/40 uppercase tracking-wider">{spec.label}</span>
-                           <span className="font-mono font-bold uppercase text-artisan-light text-[11px] break-words">{spec.value}</span>
-                        </div>
-                     ))}
+                  <div className="border border-artisan-light/10 bg-artisan-light/[0.01] p-6 rounded-xl">
+                     <ul className="space-y-3 font-mono text-xs text-artisan-light leading-relaxed">
+                        {specs.map((spec, i) => (
+                           <li key={i} className="flex items-start gap-2">
+                              <span className="text-artisan-grey mt-0.5">•</span>
+                              <div className="flex flex-col sm:flex-row sm:gap-2 uppercase tracking-wide">
+                                 <strong className="text-artisan-light/50">{spec.label}:</strong>
+                                 <span className="text-artisan-light">{spec.value}</span>
+                              </div>
+                           </li>
+                        ))}
+                     </ul>
                   </div>
                </div>
             )}
