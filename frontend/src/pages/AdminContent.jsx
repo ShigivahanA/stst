@@ -327,6 +327,10 @@ function ReviewsTab() {
   const [actionLoading, setActionLoading] = useState(null)
   const [showForm, setShowForm] = useState(false)
 
+  // Toggle & Config state
+  const [sectionVisible, setSectionVisible] = useState(true)
+  const [configId, setConfigId] = useState(null)
+
   // Form state
   const [fText, setFText] = useState('')
   const [fName, setFName] = useState('')
@@ -337,7 +341,21 @@ function ReviewsTab() {
     try {
       setLoading(true)
       const res = await api.get('/admin/reviews')
-      setReviews(res.data.data || [])
+      const allReviews = res.data.data || []
+
+      // Find the visibility config review
+      const configReview = allReviews.find(r => r.userName === '__TESTIMONIALS_VISIBILITY__')
+      if (configReview) {
+        setSectionVisible(configReview.text !== 'hidden')
+        setConfigId(configReview._id)
+      } else {
+        setSectionVisible(true)
+        setConfigId(null)
+      }
+
+      // Filter out the config review from list
+      const displayReviews = allReviews.filter(r => r.userName !== '__TESTIMONIALS_VISIBILITY__')
+      setReviews(displayReviews)
     } catch {
       addToast('Failed to load reviews', 'error')
     } finally {
@@ -401,6 +419,39 @@ function ReviewsTab() {
     }
   }
 
+  const handleToggleSectionVisibility = async (newVal) => {
+    try {
+      setActionLoading('visibility_toggle')
+      if (configId) {
+        await api.put(`/admin/reviews/${configId}`, {
+          text: newVal ? 'visible' : 'hidden',
+          userName: '__TESTIMONIALS_VISIBILITY__',
+          userRole: 'SYSTEM',
+          userLocation: 'SYSTEM',
+          isActive: true
+        })
+      } else {
+        const res = await api.post('/admin/reviews', {
+          text: newVal ? 'visible' : 'hidden',
+          userName: '__TESTIMONIALS_VISIBILITY__',
+          userRole: 'SYSTEM',
+          userLocation: 'SYSTEM',
+          isActive: true
+        })
+        if (res.data.data) {
+          setConfigId(res.data.data._id)
+        }
+      }
+      setSectionVisible(newVal)
+      addToast(newVal ? 'Testimonials section is now visible on landing page' : 'Testimonials section is now hidden from landing page', 'success')
+    } catch (err) {
+      console.error(err)
+      addToast('Failed to update testimonials section visibility', 'error')
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* Controls */}
@@ -429,6 +480,22 @@ function ReviewsTab() {
             {showForm ? 'Cancel' : 'Add Review'}
           </button>
         </div>
+      </div>
+
+      {/* Section Visibility Setting */}
+      <div className="border border-artisan-light/10 bg-artisan-light/[0.01] p-5 flex items-center justify-between gap-4 rounded-xl">
+        <div className="space-y-1">
+          <span className="text-[8px] font-mono font-bold text-artisan-grey uppercase tracking-widest block">Landing Page Layout Control</span>
+          <h3 className="text-xs font-display font-bold uppercase text-artisan-light tracking-tight">Show Testimonials Section</h3>
+          <p className="text-[9px] font-mono text-artisan-light/40 uppercase tracking-wider">
+            Toggle whether the testimonials section is visible on the home page.
+          </p>
+        </div>
+        <Toggle
+          checked={sectionVisible}
+          onChange={handleToggleSectionVisibility}
+          disabled={actionLoading === 'visibility_toggle'}
+        />
       </div>
 
       {/* Add Review Form */}

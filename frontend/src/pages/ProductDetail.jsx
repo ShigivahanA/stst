@@ -20,7 +20,8 @@ import {
    ShoppingCart,
    Phone,
    Truck,
-   Check
+   Check,
+   Share2
 } from 'lucide-react'
 import api from '../services/api'
 import { useToast } from '../context/ToastContext'
@@ -199,6 +200,57 @@ export default function ProductDetail() {
       window.scrollTo(0, 0)
    }, [id, addToast, navigate, user])
 
+   // Auto-cycle images every 4 seconds
+   useEffect(() => {
+      if (!tool) return
+      const images = tool.images?.length ? tool.images : (tool.image ? [tool.image] : [])
+      if (images.length <= 1) return
+
+      const interval = setInterval(() => {
+         setActiveImage(prev => (prev + 1) % images.length)
+      }, 4000)
+
+      return () => clearInterval(interval)
+   }, [activeImage, tool])
+
+   const handleShare = async () => {
+      if (!tool) return
+      const shareUrl = window.location.href
+      const shareTitle = tool.name || tool.title
+      const sharePrice = `₹${(tool.price !== undefined ? tool.price : tool.pricePerDay)?.toLocaleString()}`
+      const shareDesc = tool.desc || tool.description || ''
+      const shareText = `Check out this product on STAT Surgical Supplies:\n\n*${shareTitle}*\nPrice: ${sharePrice}\nDescription: ${shareDesc.slice(0, 100)}${shareDesc.length > 100 ? '...' : ''}\nLink: ${shareUrl}`
+
+      if (navigator.share) {
+         try {
+            await navigator.share({
+               title: shareTitle,
+               text: shareText,
+               url: shareUrl,
+            })
+            addToast('Shared successfully!', 'success')
+         } catch (err) {
+            if (err.name !== 'AbortError') {
+               console.error('Error sharing:', err)
+               copyToClipboard(shareText)
+            }
+         }
+      } else {
+         copyToClipboard(shareText)
+      }
+   }
+
+   const copyToClipboard = (text) => {
+      navigator.clipboard.writeText(text)
+         .then(() => {
+            addToast('Product details and link copied to clipboard!', 'success')
+         })
+         .catch((err) => {
+            console.error('Failed to copy text: ', err)
+            addToast('Failed to copy to clipboard', 'error')
+         })
+   }
+
    const toggleWishlist = async () => {
       if (!user) {
          addToast('Please login to save items', 'info')
@@ -361,12 +413,12 @@ export default function ProductDetail() {
                               key={i}
                               onClick={() => setActiveImage(i)}
                               className={`relative w-16 h-16 md:w-20 md:h-20 shrink-0 p-1 bg-artisan-dark/40 border transition-all duration-300 group overflow-hidden ${activeImage === i
-                                 ? 'border-artisan-grey ring-2 ring-artisan-grey/30 bg-artisan-grey/10'
-                                 : 'border-artisan-light/10 hover:border-artisan-light/30 hover:bg-artisan-dark/65'
+                                 ? 'border-2 border-[#eb5e28] bg-artisan-dark/60 shadow-[0_0_12px_rgba(235,94,40,0.15)]'
+                                 : 'border border-artisan-light/10 hover:border-artisan-light/30 hover:bg-artisan-dark/65'
                                  }`}
                            >
                               {/* Glowing bottom border indicator */}
-                              <div className={`absolute bottom-0 left-0 w-full h-[2px] transition-all duration-300 ${activeImage === i ? 'bg-artisan-grey scale-x-100' : 'bg-transparent scale-x-0 group-hover:scale-x-50 group-hover:bg-artisan-light/30'
+                              <div className={`absolute bottom-0 left-0 w-full h-[2px] transition-all duration-300 ${activeImage === i ? 'bg-[#eb5e28] scale-x-100' : 'bg-transparent scale-x-0 group-hover:scale-x-50 group-hover:bg-artisan-light/30'
                                  }`} />
 
                               {/* Inner Container for white-backed images */}
@@ -520,6 +572,14 @@ export default function ProductDetail() {
                            className={`px-4 py-4 border border-artisan-light/10 hover:border-artisan-grey transition-all flex items-center justify-center ${isWishlisted ? 'bg-red-500/10 border-red-500 text-red-500' : 'text-artisan-light hover:bg-artisan-light/5'}`}
                         >
                            <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-current' : ''}`} />
+                        </button>
+                        <button
+                           onClick={handleShare}
+                           className="px-4 py-4 border border-artisan-light/10 hover:border-artisan-grey text-artisan-light hover:bg-artisan-light/5 transition-all flex items-center justify-center gap-2"
+                           title="Share Product"
+                        >
+                           <Share2 className="w-4 h-4" />
+                           <span className="hidden sm:inline text-[10px] font-mono font-bold uppercase tracking-wider">Share</span>
                         </button>
                      </div>
                   </div>

@@ -39,14 +39,27 @@ export default function Testimonials() {
   const [current, setCurrent] = useState(0)
   const [reviews, setReviews] = useState(FALLBACK_REVIEWS.map(normaliseReview))
   const [loading, setLoading] = useState(true)
+  const [sectionVisible, setSectionVisible] = useState(true)
 
   useEffect(() => {
     const fetchReviews = async () => {
       try {
         setLoading(true)
         const res = await api.get('/content/reviews')
-        if (res.data.data?.length > 0) {
-          setReviews(res.data.data.map(normaliseReview))
+        const allReviews = res.data.data || []
+
+        const configReview = allReviews.find(r => r.userName === '__TESTIMONIALS_VISIBILITY__')
+        if (configReview) {
+          setSectionVisible(configReview.text !== 'hidden')
+        } else {
+          setSectionVisible(true)
+        }
+
+        const displayReviews = allReviews.filter(r => r.userName !== '__TESTIMONIALS_VISIBILITY__')
+        if (displayReviews.length > 0) {
+          setReviews(displayReviews.map(normaliseReview))
+        } else {
+          setReviews(FALLBACK_REVIEWS.map(normaliseReview))
         }
       } catch (err) {
         console.error('Failed to fetch landing reviews', err)
@@ -67,6 +80,10 @@ export default function Testimonials() {
         <Loader2 className="w-8 h-8 text-artisan-grey animate-spin" />
       </div>
     )
+  }
+
+  if (!sectionVisible) {
+    return null
   }
 
   if (reviews.length === 0) {
