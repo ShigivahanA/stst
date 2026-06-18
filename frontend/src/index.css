@@ -54,3 +54,106 @@
   .font-display.text-6xl { font-size: clamp(2.25rem, 5vw, 3.5rem) !important; }
   .font-display.text-5xl { font-size: clamp(2rem, 4vw, 2.75rem) !important; }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   Mobile Desktop View Height Scaling & Layout Overrides
+   ═══════════════════════════════════════════════════════════════ */
+
+.mobile-desktop-mode .min-h-screen,
+.mobile-desktop-mode .min-h-dvh {
+  min-height: auto !important;
+  padding-top: 150px !important;
+  padding-bottom: 6rem !important;
+}
+
+.mobile-desktop-mode .h-screen,
+.mobile-desktop-mode .h-dvh {
+  height: auto !important;
+}
+
+.mobile-desktop-mode #hero {
+  min-height: 600px !important;
+  height: auto !important;
+  padding-top: 170px !important;
+  padding-bottom: 4rem !important;
+}
+
+/* Allow horizontal scroll to prevent layout cropping if elements overflow */
+.mobile-desktop-mode body {
+  overflow-x: auto !important;
+}
+
+/* Scale up header, logo, search input, and right controls for easy touch & view using layout sizes */
+.mobile-desktop-mode header {
+  height: 120px !important;
+}
+
+.mobile-desktop-mode header .container-custom {
+  height: 120px !important;
+  padding-left: 2rem !important;
+  padding-right: 2rem !important;
+}
+
+/* 1. Scale Logo */
+.mobile-desktop-mode header a.flex svg {
+  width: 32px !important;
+  height: 32px !important;
+}
+
+.mobile-desktop-mode header a.flex span {
+  font-size: 20px !important;
+  letter-spacing: 0.25em !important;
+}
+
+/* 2. Scale Searchbar and center it without overlapping */
+.mobile-desktop-mode #navbar-desktop-search {
+  flex: 1 !important;
+  max-width: 420px !important;
+  margin-left: 2rem !important;
+  margin-right: 2rem !important;
+}
+
+.mobile-desktop-mode #navbar-desktop-search > div {
+  padding: 10px 16px !important;
+  width: 100% !important;
+}
+
+.mobile-desktop-mode #navbar-desktop-search svg {
+  width: 20px !important;
+  height: 20px !important;
+}
+
+.mobile-desktop-mode #navbar-desktop-search input {
+  font-size: 15px !important;
+  width: 100% !important;
+  padding-left: 10px !important;
+}
+
+/* 3. Scale Right-Side Controls */
+.mobile-desktop-mode header .flex.items-center.gap-3 {
+  gap: 20px !important;
+}
+
+.mobile-desktop-mode header .flex.items-center.gap-3 svg {
+  width: 26px !important;
+  height: 26px !important;
+}
+
+.mobile-desktop-mode header .flex.items-center.gap-3 span {
+  font-size: 16px !important;
+}
+
+/* Hamburger lines menu button size adjustments */
+.mobile-desktop-mode header button span.w-8 {
+  width: 44px !important;
+  height: 2px !important;
+}
+
+.mobile-desktop-mode header button span.w-5 {
+  width: 28px !important;
+  height: 2px !important;
+}
+
+.mobile-desktop-mode header button div.flex-col {
+  gap: 8px !important;
+}
