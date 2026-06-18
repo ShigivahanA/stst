@@ -8,11 +8,11 @@ export default function Footer() {
   }
 
   return (
-    <footer className="bg-artisan-light bg-noise border-t-2 border-artisan-grey relative overflow-hidden min-h-screen flex flex-col justify-between">
-      <div className="container-custom py-12 lg:py-16 flex flex-col flex-1 justify-between w-full relative z-10">
+    <footer className="bg-artisan-light bg-noise border-t-2 border-artisan-grey relative overflow-hidden flex flex-col">
+      <div className="container-custom py-12 lg:py-16 flex flex-col flex-1 w-full relative z-10">
 
         {/* Top Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-16 mb-auto my-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-16">
 
           {/* Brand Intro */}
           <div className="lg:col-span-4 flex flex-col justify-between h-full">
@@ -128,7 +128,7 @@ export default function Footer() {
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, ease: 'easeOut' }}
-            className="text-[8vw] font-display font-extrabold uppercase tracking-[-0.05em] leading-none text-artisan-dark select-none opacity-[0.02] mb-6 pointer-events-none"
+            className="text-[6.5vw] lg:text-[7vw] font-display font-extrabold uppercase tracking-[-0.05em] leading-none text-artisan-dark select-none opacity-[0.02] mb-6 pointer-events-none"
           >
             STAT SURGICALS
           </motion.div>
