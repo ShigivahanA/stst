@@ -275,7 +275,7 @@ export default function Navbar() {
               className="flex items-center gap-2"
             >
               <Activity className="w-5 h-5 text-artisan-light" />
-              <span className="text-lg font-display font-bold uppercase tracking-[0.2em]">
+              <span className="text-sm font-display font-bold uppercase tracking-[0.2em]">
                 <span className="text-artisan-light">STAT</span>
                 <span className="text-artisan-grey ml-2 hidden sm:inline">Surgical Supplies</span>
               </span>
@@ -284,7 +284,7 @@ export default function Navbar() {
 
           {/* Desktop/Tablet Centered Search Bar */}
           {!isAllProductsPage && (
-            <form 
+            <form
               onSubmit={handleSearchSubmit}
               id="navbar-desktop-search"
               className="hidden md:flex items-center relative z-[110] mx-4"
@@ -296,7 +296,7 @@ export default function Navbar() {
                   placeholder={placeholderText}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-40 lg:w-56 focus:w-52 lg:focus:w-72 transition-all duration-300 bg-transparent pl-2 outline-none font-mono text-[9px] uppercase tracking-widest text-artisan-light placeholder:text-artisan-light/50"
+                  className="w-40 lg:w-66 focus:w-52 lg:focus:w-72 transition-all duration-300 bg-transparent pl-2 outline-none font-mono text-[9px] uppercase tracking-widest text-artisan-light placeholder:text-artisan-light/50"
                 />
               </div>
 
@@ -511,12 +511,12 @@ export default function Navbar() {
                       <motion.div variants={linkVariants} className="flex items-baseline gap-4 md:gap-6">
                         <span className="text-[10px] md:text-xs font-mono text-artisan-grey">{link.id}</span>
                         <h2 className={`font-display font-bold uppercase tracking-tight group-hover:text-outline transition-all duration-500 leading-[1.1] ${user?.role === 'admin'
-                            ? 'text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl'
-                            : 'text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-8xl'
+                          ? 'text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl'
+                          : 'text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl'
                           }`}>
                           {link.title}
                         </h2>
-                        <ArrowUpRight className={`text-artisan-light opacity-0 group-hover:opacity-100 -translate-x-4 group-hover:translate-x-0 transition-all duration-500 ${user?.role === 'admin' ? 'w-4 h-4 md:w-6 md:h-6' : 'w-5 h-5 md:w-8 md:h-8 lg:w-10 lg:h-10'
+                        <ArrowUpRight className={`text-artisan-light opacity-0 group-hover:opacity-100 -translate-x-4 group-hover:translate-x-0 transition-all duration-500 ${user?.role === 'admin' ? 'w-3.5 h-3.5 md:w-5 md:h-5' : 'w-4 h-4 md:w-6 md:h-6 lg:w-8 lg:h-8'
                           }`} />
                       </motion.div>
                     </Link>
@@ -532,10 +532,10 @@ export default function Navbar() {
                     >
                       <motion.div variants={linkVariants} className="flex items-baseline gap-4 md:gap-6">
                         <span className="text-[10px] md:text-xs font-mono text-artisan-grey">04</span>
-                        <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-8xl font-display font-bold uppercase tracking-tight group-hover:text-outline transition-all duration-500 leading-[1.1]">
+                        <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-display font-bold uppercase tracking-tight group-hover:text-outline transition-all duration-500 leading-[1.1]">
                           Join Us
                         </h2>
-                        <ArrowUpRight className="w-5 h-5 md:w-8 md:h-8 lg:w-10 lg:h-10 text-artisan-light opacity-0 group-hover:opacity-100 -translate-x-4 group-hover:translate-x-0 transition-all duration-500" />
+                        <ArrowUpRight className="w-4 h-4 md:w-6 md:h-6 lg:w-8 lg:h-8 text-artisan-light opacity-0 group-hover:opacity-100 -translate-x-4 group-hover:translate-x-0 transition-all duration-500" />
                       </motion.div>
                     </Link>
                   </div>

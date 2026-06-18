@@ -28,7 +28,7 @@ function AccordionItem({ question, answer, isOpen, onToggle }) {
     <motion.div
       layout
       variants={itemVariants}
-      className={`border border-artisan-light/10 p-6 transition-colors duration-300 bg-artisan-light/[0.01] hover:border-artisan-grey/40 hover:bg-artisan-light/[0.02] ${isOpen ? 'border-artisan-grey bg-artisan-light/[0.03]' : ''
+      className={`border border-artisan-light/10 p-6 transition-colors duration-300 bg-artisan-light/[0.01] hover:border-artisan-grey/40 hover:bg-artisan-light/[0.02] rounded-xl ${isOpen ? 'border-artisan-grey bg-artisan-light/[0.03]' : ''
         }`}
     >
       <button
@@ -220,10 +220,10 @@ export default function ReturnsAndRefunds() {
                 <motion.div
                   key={idx}
                   variants={itemVariants}
-                  className="border border-artisan-light/10 p-6 relative overflow-hidden bg-artisan-light/[0.01] hover:border-artisan-grey/40 hover:bg-artisan-light/[0.02] transition-colors duration-300 flex flex-col justify-between group cursor-default"
+                  className="border border-artisan-light/10 p-6 relative overflow-hidden bg-artisan-light/[0.01] hover:border-artisan-grey/40 hover:bg-artisan-light/[0.02] transition-colors duration-300 flex flex-col justify-between group cursor-default rounded-xl"
                 >
                   <div className="flex justify-between items-center mb-6">
-                    <span className="w-8 h-8 border border-artisan-light/15 flex items-center justify-center text-artisan-grey group-hover:bg-artisan-grey group-hover:text-artisan-dark transition-colors duration-300 shrink-0">
+                    <span className="w-8 h-8 border border-artisan-light/15 flex items-center justify-center text-artisan-grey group-hover:bg-artisan-grey group-hover:text-artisan-dark transition-colors duration-300 shrink-0 rounded-xl">
                       <RotateCcw className="w-4 h-4" />
                     </span>
                     <span className="text-[8px] font-mono text-artisan-light/50 uppercase tracking-widest block font-bold">
@@ -258,7 +258,7 @@ export default function ReturnsAndRefunds() {
                   className="space-y-4 border-l-2 border-artisan-grey pl-6 py-2 relative"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="w-8 h-8 border border-artisan-light/15 flex items-center justify-center text-artisan-grey shrink-0">
+                    <span className="w-8 h-8 border border-artisan-light/15 flex items-center justify-center text-artisan-grey shrink-0 rounded-xl">
                       <Icon className="w-4 h-4" />
                     </span>
                     <h3 className="text-xl sm:text-2xl font-display font-extrabold uppercase text-artisan-light tracking-tight">{info.title}</h3>

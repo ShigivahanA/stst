@@ -145,7 +145,7 @@ export default function About() {
                whileInView="visible"
                viewport={{ once: true, margin: "-100px" }}
                variants={fadeLeftVariants}
-               className="mb-16 md:mb-24 max-w-4xl border border-artisan-light/10 p-6 md:p-8 bg-artisan-light/[0.01] relative overflow-hidden"
+               className="mb-16 md:mb-24 max-w-4xl border border-artisan-light/10 p-6 md:p-8 bg-artisan-light/[0.01] relative overflow-hidden rounded-xl"
             >
                <div className="absolute top-0 right-0 p-4 opacity-10">
                   <span className="text-[9px] font-mono tracking-widest text-artisan-grey font-bold">[ MISSION // 01 ]</span>
@@ -179,9 +179,9 @@ export default function About() {
                            variants={itemVariants}
                            whileHover={{ y: -4 }}
                            transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                           className="border border-artisan-light/10 p-6 md:p-8 relative overflow-hidden bg-artisan-light/[0.01] hover:border-artisan-grey/40 hover:bg-artisan-light/[0.02] transition-colors duration-300 flex flex-col justify-between group cursor-default"
+                           className="border border-artisan-light/10 p-6 md:p-8 relative overflow-hidden bg-artisan-light/[0.01] hover:border-artisan-grey/40 hover:bg-artisan-light/[0.02] transition-colors duration-300 flex flex-col justify-between group cursor-default rounded-xl"
                         >
-                           <div className="w-10 h-10 border border-artisan-light/15 flex items-center justify-center text-artisan-grey group-hover:bg-artisan-grey group-hover:text-artisan-dark transition-colors duration-300 shrink-0">
+                           <div className="w-10 h-10 border border-artisan-light/15 flex items-center justify-center text-artisan-grey group-hover:bg-artisan-grey group-hover:text-artisan-dark transition-colors duration-300 shrink-0 rounded-xl">
                               <Icon className="w-4 h-4" />
                            </div>
                            <div className="space-y-2 mt-8">
@@ -205,7 +205,7 @@ export default function About() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-100px" }}
                   transition={{ duration: 0.6, ease: [0.33, 1, 0.68, 1] }}
-                  className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-artisan-light/10 border border-artisan-light/10 mx-auto"
+                  className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-artisan-light/10 border border-artisan-light/10 mx-auto rounded-xl overflow-hidden"
                >
                   {stats.map((stat, idx) => (
                      <motion.div
@@ -230,7 +230,7 @@ export default function About() {
                whileInView={{ opacity: 1, y: 0 }}
                viewport={{ once: true, margin: "-100px" }}
                transition={{ duration: 0.7, ease: [0.33, 1, 0.68, 1] }}
-               className="bg-artisan-light/[0.01] border border-artisan-light/10 p-6 md:p-12 relative overflow-hidden"
+               className="bg-artisan-light/[0.01] border border-artisan-light/10 p-6 md:p-12 relative overflow-hidden rounded-xl"
             >
                <div className="absolute top-0 right-0 p-4 opacity-10">
                   <span className="text-[9px] font-mono tracking-widest text-artisan-grey font-bold">[ VISION // 02 ]</span>

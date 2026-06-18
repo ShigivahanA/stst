@@ -104,6 +104,9 @@ function App() {
     location.pathname.startsWith('/resetpassword/') ||
     location.pathname.startsWith('/verifyemail/')
 
+  const transitionKey = ['/login', '/signup'].includes(location.pathname)
+    ? 'auth'
+    : location.pathname
 
   return (
     <div className="min-h-screen bg-artisan-dark">
@@ -113,7 +116,7 @@ function App() {
       <main className="relative">
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
-            key={location.pathname}
+            key={transitionKey}
             className="w-full relative"
           >
             {/* Curtain 1: Exit curtain (slides up to fill the screen) */}
@@ -122,7 +125,7 @@ function App() {
               initial={{ y: '100%' }}
               animate={{ y: '100%' }}
               exit={{ y: 0 }}
-              transition={{ duration: 0.5, ease: [0.76, 0, 0.24, 1] }}
+              transition={{ duration: 0.3, ease: [0.76, 0, 0.24, 1] }}
             />
             {/* Curtain 2: Enter curtain (slides up to unfill the screen) */}
             <motion.div
@@ -130,7 +133,7 @@ function App() {
               initial={{ y: 0 }}
               animate={{ y: '-100%' }}
               exit={{ y: '-100%' }}
-              transition={{ duration: 0.5, ease: [0.76, 0, 0.24, 1] }}
+              transition={{ duration: 0.3, ease: [0.76, 0, 0.24, 1] }}
             />
 
             <Suspense fallback={

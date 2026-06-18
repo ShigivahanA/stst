@@ -193,7 +193,7 @@ export default function Sitemap() {
                 </div>
                 
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-artisan-light/5 border border-artisan-light/10 flex items-center justify-center text-artisan-grey">
+                  <div className="w-12 h-12 bg-artisan-light/5 border border-artisan-light/10 flex items-center justify-center text-artisan-grey rounded-xl">
                     <section.icon className="w-6 h-6" />
                   </div>
                   <h2 className="text-2xl font-display font-extrabold uppercase text-artisan-light tracking-tight">
@@ -206,7 +206,7 @@ export default function Sitemap() {
                     <Link
                       key={lIdx}
                       to={link.path}
-                      className="p-6 border border-artisan-light/10 bg-artisan-light/[0.01] hover:bg-artisan-light/[0.03] hover:border-artisan-grey transition-all duration-300 group flex items-center justify-between"
+                      className="p-6 border border-artisan-light/10 bg-artisan-light/[0.01] hover:bg-artisan-light/[0.03] hover:border-artisan-grey transition-all duration-300 group flex items-center justify-between rounded-xl"
                     >
                       <div className="space-y-1">
                         <span className="text-sm font-display font-bold text-artisan-light group-hover:text-artisan-grey transition-colors uppercase">

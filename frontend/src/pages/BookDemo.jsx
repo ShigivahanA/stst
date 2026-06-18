@@ -39,7 +39,7 @@ export default function BookDemo() {
   const [productsList, setProductsList] = useState([])
   const [loadingProducts, setLoadingProducts] = useState(false)
   const [submitting, setSubmitting] = useState(false)
-  
+
   // Custom dropdown state
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
@@ -371,7 +371,7 @@ export default function BookDemo() {
                 <span className="text-outline">{demoType === 'virtual' ? 'CONSULTATION.' : 'DEMO TRIAL.'}</span>
               </h1>
               <p className="text-xs font-mono text-artisan-light/50 uppercase tracking-widest leading-relaxed">
-                {demoType === 'virtual' 
+                {demoType === 'virtual'
                   ? 'Connect with our clinical engineers virtually. Request a live Google Meet walkthrough of patient lifts, ICU beds, or respiratory gear to inspect controls and sanitization history from your home or facility.'
                   : 'Want to test the patient lifts, diagnostics, or wheelchairs in person before completing your rental or purchase? Schedule a slot at our Chennai Pammal location to try clinical-grade products live with certified technicians.'
                 }
@@ -445,7 +445,7 @@ export default function BookDemo() {
 
                   {/* CHOOSE FORMAT - DUAL CARDS */}
                   <div className="space-y-3">
-                    <label className="text-[9px] font-mono font-bold text-artisan-light/50 uppercase tracking-widest block">
+                    <label className="text-[9px] font-mono font-bold text-artisan-grey uppercase tracking-widest block">
                       Choose Consultation Format
                     </label>
                     <div className="grid grid-cols-2 gap-4">
@@ -455,7 +455,7 @@ export default function BookDemo() {
                         className={`p-4 border font-mono text-[10px] uppercase tracking-wider text-left transition-all flex flex-col justify-between h-24 cursor-pointer rounded-2xl ${demoType === 'in-store'
                           ? 'bg-artisan-light border-artisan-light text-artisan-dark font-black'
                           : 'bg-transparent border-artisan-light/10 text-artisan-light hover:border-artisan-light/30'
-                        }`}
+                          }`}
                       >
                         <div className="flex justify-between items-center w-full">
                           <Building className="w-5 h-5 shrink-0" />
@@ -473,7 +473,7 @@ export default function BookDemo() {
                         className={`p-4 border font-mono text-[10px] uppercase tracking-wider text-left transition-all flex flex-col justify-between h-24 cursor-pointer rounded-2xl ${demoType === 'virtual'
                           ? 'bg-artisan-light border-artisan-light text-artisan-dark font-black'
                           : 'bg-transparent border-artisan-light/10 text-artisan-light hover:border-artisan-light/30'
-                        }`}
+                          }`}
                       >
                         <div className="flex justify-between items-center w-full">
                           <Video className="w-5 h-5 shrink-0" />
@@ -489,7 +489,7 @@ export default function BookDemo() {
 
                   {/* 1. SELECT PRODUCT - CUSTOM DROPDOWN */}
                   <div className="space-y-2 relative" ref={dropdownRef}>
-                    <label className="text-[9px] font-mono font-bold text-artisan-light/50 uppercase tracking-widest block">
+                    <label className="text-[9px] font-mono font-bold text-artisan-grey uppercase tracking-widest block">
                       1. Choose Equipment for Demo
                     </label>
                     {loadingProducts ? (
@@ -554,7 +554,7 @@ export default function BookDemo() {
                   {/* 2. PICK DATE */}
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
-                      <label className="text-[9px] font-mono font-bold text-artisan-light/40 uppercase tracking-widest block">
+                      <label className="text-[9px] font-mono font-bold text-artisan-grey uppercase tracking-widest block">
                         2. Select Date (Sundays Closed)
                       </label>
                       <div className="flex gap-2">
@@ -592,7 +592,7 @@ export default function BookDemo() {
                             className={`flex-shrink-0 w-20 p-3 flex flex-col items-center justify-center border font-mono tracking-wider transition-all snap-start cursor-pointer select-none rounded-2xl ${isSelected
                               ? 'bg-artisan-grey border-artisan-grey text-artisan-dark font-bold'
                               : 'bg-transparent border-artisan-light/10 text-artisan-light hover:border-artisan-light/30'
-                            }`}
+                              }`}
                           >
                             <span className="text-[9px] opacity-65 mb-1">{formatted.dayOfWeek}</span>
                             <span className="text-lg font-bold font-display tracking-tighter leading-none mb-1">{formatted.dayNum}</span>
@@ -605,7 +605,7 @@ export default function BookDemo() {
 
                   {/* 3. PICK TIME SLOT */}
                   <div className="space-y-3">
-                    <label className="text-[9px] font-mono font-bold text-artisan-light/40 uppercase tracking-widest block">
+                    <label className="text-[9px] font-mono font-bold text-artisan-grey uppercase tracking-widest block">
                       3. Select Time Slot
                     </label>
 
@@ -620,7 +620,7 @@ export default function BookDemo() {
                             className={`w-full p-4 border font-mono text-[10px] uppercase tracking-wider text-left transition-all flex items-center justify-between cursor-pointer rounded-2xl ${isSelected
                               ? 'bg-artisan-light border-artisan-light text-artisan-dark font-black'
                               : 'bg-transparent border-artisan-light/10 text-artisan-light/80 hover:border-artisan-light/30'
-                            }`}
+                              }`}
                           >
                             <span className="flex items-center gap-2">
                               <Clock className="w-3.5 h-3.5" />
@@ -760,7 +760,7 @@ export default function BookDemo() {
                     <span className="text-[8px] font-mono font-bold text-artisan-grey uppercase tracking-widest block border-b border-artisan-light/5 pb-2">
                       Booking Summary
                     </span>
-                    
+
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 font-mono text-[10px] uppercase tracking-wider text-artisan-light/75">
                       <div>
                         <span className="text-artisan-light/50 block mb-0.5 text-[8px] tracking-widest">Client Name</span>

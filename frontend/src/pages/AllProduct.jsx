@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Link, useSearchParams } from 'react-router-dom'
 import {
@@ -18,101 +18,56 @@ import { useAuth } from '../context/AuthContext'
 
 const categories = ['All', 'Rehabilitation', 'Respiratory', 'Diagnostic Tools', 'Elder Care', 'Mother & Baby', 'Pain Relief', 'Wound Care']
 
-export default function AllProduct() {
-  const { user } = useAuth()
-  const [searchParams, setSearchParams] = useSearchParams()
-  const initialCategory = searchParams.get('category') || 'All'
-  const initialSearch = searchParams.get('search') || ''
-
-  const [tools, setTools] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [activeCategory, setActiveCategory] = useState(initialCategory)
-  const [searchQuery, setSearchQuery] = useState(initialSearch)
-  const [loginTime, setLoginTime] = useState(null)
-
-  // Paging Navigation States
-  const [navPage, setNavPage] = useState(1)
-  const [totalFiltered, setTotalFiltered] = useState(0)
-
-  useEffect(() => {
-    if (user) {
-      let storedTime = sessionStorage.getItem(`login_time_${user._id}`)
-      if (!storedTime) {
-        storedTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        sessionStorage.setItem(`login_time_${user._id}`, storedTime)
-      }
-      setLoginTime(storedTime)
-    } else {
-      setLoginTime(null)
-    }
-  }, [user])
-
-  useEffect(() => {
-    const category = searchParams.get('category') || 'All'
-    const search = searchParams.get('search') || ''
-    setActiveCategory(category)
-    setSearchQuery(search)
-  }, [searchParams])
-
-  const [isFilterOpen, setIsFilterOpen] = useState(false)
-  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false)
-  const [priceRange, setPriceRange] = useState({ min: 0, max: 25000 })
-  const [sortBy, setSortBy] = useState('-averageRating')
-  const [availability, setAvailability] = useState('all')
-  const [stats, setStats] = useState({ users: 0, listings: 0 })
-
-  const fetchTools = async (pageNum = 1) => {
-    try {
-      setLoading(true)
-
-      const params = {
-        page: pageNum,
-        limit: 20
-      }
-      if (activeCategory !== 'All') params.category = activeCategory
-      if (searchQuery) params.keyword = searchQuery
-      if (priceRange.min > 0) params['price[gte]'] = priceRange.min
-      if (priceRange.max < 25000) params['price[lte]'] = priceRange.max
-      if (sortBy) params.sort = sortBy
-      if (availability !== 'all') params.availability = availability
-
-      const res = await api.get('/listings', { params })
-      const fetchedTools = res.data.data || []
-      
-      const totalCount = parseInt(res.headers['x-total-count']) || fetchedTools.length
-      setTotalFiltered(totalCount)
-      setTools(fetchedTools)
-    } catch (err) {
-      console.error('Failed to fetch tools', err)
-      setTools([])
-    } finally {
-      setLoading(false)
+function FilterContent({
+  activeCategory,
+  setActiveCategory,
+  isCategoryDropdownOpen,
+  setIsCategoryDropdownOpen,
+  setIsFilterOpen,
+  minInput,
+  setMinInput,
+  maxInput,
+  setMaxInput,
+  priceRange,
+  setPriceRange,
+  availability,
+  setAvailability,
+  sortBy,
+  setSortBy
+}) {
+  const handleMinBlur = () => {
+    const val = minInput === '' ? 0 : Number(minInput)
+    if (val !== priceRange.min) {
+      setPriceRange(prev => ({ ...prev, min: val }))
     }
   }
 
-  const fetchStats = async () => {
-    try {
-      const res = await api.get('/listings/stats')
-      setStats(res.data.data)
-    } catch (err) {
-      console.error('Failed to fetch stats', err)
+  const handleMinKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      const val = minInput === '' ? 0 : Number(minInput)
+      if (val !== priceRange.min) {
+        setPriceRange(prev => ({ ...prev, min: val }))
+      }
     }
   }
 
-  // Debounced search / filter trigger
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setNavPage(1)
-      fetchTools(1)
-    }, 400)
-    return () => clearTimeout(timer)
-  }, [activeCategory, searchQuery, priceRange, sortBy, availability])
+  const handleMaxBlur = () => {
+    const val = maxInput === '' ? 100000 : Number(maxInput)
+    if (val !== priceRange.max) {
+      setPriceRange(prev => ({ ...prev, max: val }))
+    }
+  }
 
-  useEffect(() => {
-    fetchStats()
-  }, [])
+  const handleMaxKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      const val = maxInput === '' ? 100000 : Number(maxInput)
+      if (val !== priceRange.max) {
+        setPriceRange(prev => ({ ...prev, max: val }))
+      }
+    }
+  }
 
-  const FilterContent = () => (
+  return (
     <div className="flex flex-col gap-0">
       {/* Category */}
       <div className="space-y-3 pb-6">
@@ -120,7 +75,7 @@ export default function AllProduct() {
         <div className="relative">
           <button
             onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
-            className="w-full flex items-center justify-between p-4 border border-artisan-light/10 text-[10px] font-bold uppercase tracking-widest hover:border-artisan-grey transition-all"
+            className="w-full flex items-center justify-between p-4 border border-artisan-light/10 text-[10px] font-bold uppercase tracking-widest hover:border-artisan-grey rounded-xl transition-all"
           >
             {activeCategory}
             <ChevronDown className={`w-4 h-4 transition-transform ${isCategoryDropdownOpen ? 'rotate-180' : ''}`} />
@@ -161,19 +116,23 @@ export default function AllProduct() {
             <input
               type="number"
               placeholder="0"
-              value={priceRange.min}
-              onChange={(e) => setPriceRange({ ...priceRange, min: Number(e.target.value) })}
-              className="w-full bg-artisan-light/5 border border-artisan-light/10 p-3 text-xs font-bold text-artisan-light outline-none focus:border-artisan-grey transition-all"
+              value={minInput}
+              onChange={(e) => setMinInput(e.target.value)}
+              onBlur={handleMinBlur}
+              onKeyDown={handleMinKeyDown}
+              className="w-full bg-artisan-light/5 border border-artisan-light/10 rounded-xl p-3 text-xs font-bold text-artisan-light outline-none focus:border-artisan-grey transition-all"
             />
           </div>
           <div className="space-y-2">
             <span className="text-[8px] font-mono text-artisan-grey uppercase tracking-widest">Max</span>
             <input
               type="number"
-              placeholder="10000"
-              value={priceRange.max}
-              onChange={(e) => setPriceRange({ ...priceRange, max: Number(e.target.value) })}
-              className="w-full bg-artisan-light/5 border border-artisan-light/10 p-3 text-xs font-bold text-artisan-light outline-none focus:border-artisan-grey transition-all"
+              placeholder="100000"
+              value={maxInput}
+              onChange={(e) => setMaxInput(e.target.value)}
+              onBlur={handleMaxBlur}
+              onKeyDown={handleMaxKeyDown}
+              className="w-full bg-artisan-light/5 border border-artisan-light/10 rounded-xl p-3 text-xs font-bold text-artisan-light outline-none focus:border-artisan-grey transition-all"
             />
           </div>
         </div>
@@ -197,9 +156,9 @@ export default function AllProduct() {
                   checked={availability === opt.id}
                   onChange={() => setAvailability(opt.id)}
                 />
-                <div className="absolute inset-0 border border-artisan-light/10 group-hover:border-artisan-grey peer-checked:border-artisan-grey peer-checked:bg-artisan-grey transition-all" />
+                <div className="absolute inset-0 border rounded-full border-artisan-light/10 group-hover:border-artisan-grey peer-checked:border-artisan-grey peer-checked:bg-artisan-grey transition-all" />
                 <div className="relative z-10 opacity-0 peer-checked:opacity-100 transition-opacity">
-                  <div className="w-2 h-2 bg-artisan-dark" />
+                  <div className="w-2 h-2 bg-artisan-dark rounded-full" />
                 </div>
               </div>
               <span className="text-[10px] font-mono text-artisan-light/50 group-hover:text-artisan-light peer-checked:text-artisan-light uppercase tracking-widest transition-colors flex items-center gap-2">
@@ -229,9 +188,9 @@ export default function AllProduct() {
                   checked={sortBy === opt.id}
                   onChange={() => setSortBy(opt.id)}
                 />
-                <div className="absolute inset-0 border border-artisan-light/10 group-hover:border-artisan-grey peer-checked:border-artisan-grey peer-checked:bg-artisan-grey transition-all" />
+                <div className="absolute inset-0 border rounded-full border-artisan-light/10 group-hover:border-artisan-grey peer-checked:border-artisan-grey peer-checked:bg-artisan-grey transition-all" />
                 <div className="relative z-10 opacity-0 peer-checked:opacity-100 transition-opacity">
-                  <div className="w-2 h-2 bg-artisan-dark" />
+                  <div className="w-2 h-2 bg-artisan-dark rounded-full" />
                 </div>
               </div>
               <span className="text-[10px] font-mono text-artisan-light/50 group-hover:text-artisan-light peer-checked:text-artisan-light uppercase tracking-widest transition-colors">
@@ -243,6 +202,145 @@ export default function AllProduct() {
       </div>
     </div>
   )
+}
+
+export default function AllProduct() {
+  const { user } = useAuth()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const initialCategory = searchParams.get('category') || 'All'
+  const initialSearch = searchParams.get('search') || ''
+
+  const [tools, setTools] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [activeCategory, setActiveCategory] = useState(initialCategory)
+  const [searchQuery, setSearchQuery] = useState(initialSearch)
+  const [loginTime, setLoginTime] = useState(null)
+
+  const containerRef = useRef(null)
+  const [containerHeight, setContainerHeight] = useState('auto')
+
+  const startLoading = () => {
+    if (containerRef.current) {
+      setContainerHeight(`${containerRef.current.offsetHeight}px`)
+    }
+    setLoading(true)
+  }
+
+  // Paging Navigation States
+  const [navPage, setNavPage] = useState(1)
+  const [totalFiltered, setTotalFiltered] = useState(0)
+
+  useEffect(() => {
+    if (user) {
+      let storedTime = sessionStorage.getItem(`login_time_${user._id}`)
+      if (!storedTime) {
+        storedTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        sessionStorage.setItem(`login_time_${user._id}`, storedTime)
+      }
+      setLoginTime(storedTime)
+    } else {
+      setLoginTime(null)
+    }
+  }, [user])
+
+  useEffect(() => {
+    const category = searchParams.get('category') || 'All'
+    const search = searchParams.get('search') || ''
+    setActiveCategory(category)
+    setSearchQuery(search)
+  }, [searchParams])
+
+  const [isFilterOpen, setIsFilterOpen] = useState(false)
+  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false)
+  const [priceRange, setPriceRange] = useState({ min: 0, max: 100000 })
+  const [sortBy, setSortBy] = useState('-averageRating')
+  const [availability, setAvailability] = useState('all')
+  const [stats, setStats] = useState({ users: 0, listings: 0 })
+
+  const [minInput, setMinInput] = useState(priceRange.min === 0 ? '' : priceRange.min.toString())
+  const [maxInput, setMaxInput] = useState(priceRange.max === 100000 ? '' : priceRange.max.toString())
+
+  useEffect(() => {
+    setMinInput(priceRange.min === 0 ? '' : priceRange.min.toString())
+    setMaxInput(priceRange.max === 100000 ? '' : priceRange.max.toString())
+  }, [priceRange])
+
+  const fetchTools = async (pageNum = 1) => {
+    try {
+      startLoading()
+
+      const params = {
+        page: pageNum,
+        limit: 20
+      }
+      if (activeCategory !== 'All') params.category = activeCategory
+      if (searchQuery) params.keyword = searchQuery
+      if (priceRange.min > 0) {
+        params.minPrice = priceRange.min
+        params['price[gte]'] = priceRange.min
+      }
+      if (priceRange.max > 0) {
+        params.maxPrice = priceRange.max
+        params['price[lte]'] = priceRange.max
+      }
+      if (sortBy) params.sort = sortBy
+      if (availability !== 'all') params.availability = availability
+
+      const res = await api.get('/listings', { params })
+      const fetchedTools = res.data.data || []
+
+      const totalCount = parseInt(res.headers['x-total-count']) || fetchedTools.length
+      setTotalFiltered(totalCount)
+      setTools(fetchedTools)
+    } catch (err) {
+      console.error('Failed to fetch tools', err)
+      setTools([])
+    } finally {
+      setLoading(false)
+      setContainerHeight('auto')
+    }
+  }
+
+  const fetchStats = async () => {
+    try {
+      const res = await api.get('/listings/stats')
+      setStats(res.data.data)
+    } catch (err) {
+      console.error('Failed to fetch stats', err)
+    }
+  }
+
+  // Debounced search / filter trigger
+  useEffect(() => {
+    startLoading()
+    const timer = setTimeout(() => {
+      setNavPage(1)
+      fetchTools(1)
+    }, 400)
+    return () => clearTimeout(timer)
+  }, [activeCategory, searchQuery, priceRange, sortBy, availability])
+
+  useEffect(() => {
+    fetchStats()
+  }, [])
+
+  const filterProps = {
+    activeCategory,
+    setActiveCategory,
+    isCategoryDropdownOpen,
+    setIsCategoryDropdownOpen,
+    setIsFilterOpen,
+    minInput,
+    setMinInput,
+    maxInput,
+    setMaxInput,
+    priceRange,
+    setPriceRange,
+    availability,
+    setAvailability,
+    sortBy,
+    setSortBy
+  }
 
   return (
     <div className="min-h-screen bg-artisan-dark text-artisan-light font-display bg-noise relative flex flex-col pt-20 md:pt-24 lg:pt-28">
@@ -251,7 +349,7 @@ export default function AllProduct() {
 
         {/* Sidebar Filters - Desktop */}
         <aside className="hidden lg:flex w-64 xl:w-72 border-r border-artisan-light/5 flex-col sticky top-24 lg:top-28 self-start p-6 xl:p-8 shrink-0">
-          <FilterContent />
+          <FilterContent {...filterProps} />
         </aside>
 
         {/* Main Content Area */}
@@ -280,7 +378,7 @@ export default function AllProduct() {
               <div className="flex items-center gap-4">
                 <button
                   onClick={() => setIsFilterOpen(true)}
-                  className="lg:hidden flex items-center gap-3 px-6 py-4 bg-artisan-grey text-artisan-dark text-[10px] font-bold uppercase tracking-widest hover:bg-artisan-light transition-all shrink-0"
+                  className="lg:hidden flex items-center gap-3 px-6 py-4 bg-artisan-grey rounded-full text-artisan-dark text-[10px] font-bold uppercase tracking-widest hover:bg-artisan-light transition-all shrink-0"
                 >
                   <Filter className="w-4 h-4" />
                   Filters
@@ -305,7 +403,11 @@ export default function AllProduct() {
             </div>
           </header>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 md:gap-8 pb-12 min-h-[400px]">
+          <div
+            ref={containerRef}
+            style={{ minHeight: containerHeight }}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 md:gap-8 pb-12 min-h-[400px]"
+          >
             {loading ? (
               <div className="col-span-full flex flex-col items-center justify-center space-y-4 py-20">
                 <Loader2 className="w-12 h-12 text-artisan-grey animate-spin" />
@@ -322,7 +424,7 @@ export default function AllProduct() {
                   onClick={() => {
                     setActiveCategory('All')
                     setSearchQuery('')
-                    setPriceRange({ min: 0, max: 25000 })
+                    setPriceRange({ min: 0, max: 100000 })
                     setAvailability('all')
                   }}
                   className="text-[10px] font-mono font-bold text-artisan-grey hover:text-artisan-light uppercase underline tracking-widest"
@@ -342,7 +444,7 @@ export default function AllProduct() {
           {/* PAGINATION PROGRESS BAR & STATUS */}
           {tools.length > 0 && (
             <div className="border-t border-artisan-light/5 mt-16 pt-12 pb-8 flex flex-col items-center gap-6">
-              
+
               {/* Progress metrics */}
               <div className="flex flex-col sm:flex-row items-center justify-between w-full max-w-4xl text-[10px] font-mono uppercase tracking-[0.2em] text-artisan-light/40">
                 <div>
@@ -355,7 +457,7 @@ export default function AllProduct() {
 
               {/* Progress line indicator */}
               <div className="w-full max-w-4xl h-[2px] bg-artisan-light/5 relative overflow-hidden">
-                <motion.div 
+                <motion.div
                   className="absolute left-0 top-0 h-full bg-artisan-grey"
                   initial={{ width: 0 }}
                   animate={{ width: `${Math.min(100, (tools.length / (totalFiltered || 1)) * 100)}%` }}
@@ -407,11 +509,10 @@ export default function AllProduct() {
                         fetchTools(pNum);
                         window.scrollTo({ top: 250, behavior: 'smooth' });
                       }}
-                      className={`w-10 h-10 border text-[9px] font-mono font-bold transition-all ${
-                        isActive
-                          ? 'bg-artisan-grey border-artisan-grey text-artisan-dark'
-                          : 'border-artisan-light/10 text-artisan-light hover:border-artisan-grey hover:text-artisan-grey'
-                      }`}
+                      className={`w-10 h-10 border text-[9px] font-mono font-bold transition-all ${isActive
+                        ? 'bg-artisan-grey border-artisan-grey text-artisan-dark'
+                        : 'border-artisan-light/10 text-artisan-light hover:border-artisan-grey hover:text-artisan-grey'
+                        }`}
                     >
                       {String(pNum).padStart(2, '0')}
                     </button>
@@ -488,10 +589,10 @@ export default function AllProduct() {
                   <X className="w-6 h-6" />
                 </button>
               </div>
-              <FilterContent />
+              <FilterContent {...filterProps} />
               <button
                 onClick={() => setIsFilterOpen(false)}
-                className="w-full mt-12 py-6 bg-artisan-grey text-artisan-dark font-display font-extrabold uppercase tracking-widest"
+                className="w-full mt-12 py-6 bg-artisan-grey text-artisan-dark font-display font-extrabold uppercase tracking-widest rounded-full hover:cursor-pointer hover:scale-105 transition-all duration-300"
               >
                 Apply Filters
               </button>

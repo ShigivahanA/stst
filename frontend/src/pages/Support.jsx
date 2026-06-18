@@ -175,7 +175,7 @@ export default function Support() {
                 >
                   <motion.div
                     whileHover={{ scale: 1.1, rotate: 5 }}
-                    className="w-10 h-10 bg-artisan-light/5 border border-artisan-light/10 flex items-center justify-center text-artisan-grey shrink-0 group-hover:bg-artisan-grey group-hover:text-artisan-dark transition-all duration-300"
+                    className="w-10 h-10 bg-artisan-light/5 border border-artisan-light/10 flex items-center justify-center text-artisan-grey shrink-0 group-hover:bg-artisan-grey group-hover:text-artisan-dark transition-all duration-300 rounded-xl"
                   >
                     <MapPin className="w-5 h-5" />
                   </motion.div>
@@ -195,7 +195,7 @@ export default function Support() {
                 >
                   <motion.div
                     whileHover={{ scale: 1.1, rotate: 5 }}
-                    className="w-10 h-10 bg-artisan-light/5 border border-artisan-light/10 flex items-center justify-center text-artisan-grey shrink-0 group-hover:bg-artisan-grey group-hover:text-artisan-dark transition-all duration-300"
+                    className="w-10 h-10 bg-artisan-light/5 border border-artisan-light/10 flex items-center justify-center text-artisan-grey shrink-0 group-hover:bg-artisan-grey group-hover:text-artisan-dark transition-all duration-300 rounded-xl"
                   >
                     <MessageSquare className="w-5 h-5" />
                   </motion.div>
@@ -215,7 +215,7 @@ export default function Support() {
                 >
                   <motion.div
                     whileHover={{ scale: 1.1, rotate: 5 }}
-                    className="w-10 h-10 bg-artisan-light/5 border border-artisan-light/10 flex items-center justify-center text-artisan-grey shrink-0 group-hover:bg-artisan-grey group-hover:text-artisan-dark transition-all duration-300"
+                    className="w-10 h-10 bg-artisan-light/5 border border-artisan-light/10 flex items-center justify-center text-artisan-grey shrink-0 group-hover:bg-artisan-grey group-hover:text-artisan-dark transition-all duration-300 rounded-xl"
                   >
                     <Phone className="w-5 h-5" />
                   </motion.div>
@@ -235,7 +235,7 @@ export default function Support() {
                 >
                   <motion.div
                     whileHover={{ scale: 1.1, rotate: 5 }}
-                    className="w-10 h-10 bg-artisan-light/5 border border-artisan-light/10 flex items-center justify-center text-artisan-grey shrink-0 group-hover:bg-artisan-grey group-hover:text-artisan-dark transition-all duration-300"
+                    className="w-10 h-10 bg-artisan-light/5 border border-artisan-light/10 flex items-center justify-center text-artisan-grey shrink-0 group-hover:bg-artisan-grey group-hover:text-artisan-dark transition-all duration-300 rounded-xl"
                   >
                     <Mail className="w-5 h-5" />
                   </motion.div>
@@ -289,7 +289,7 @@ export default function Support() {
             variants={formContainerVariants}
             initial="hidden"
             animate="visible"
-            className="lg:col-span-7 bg-artisan-light/[0.01] border border-artisan-light/10 p-8 md:p-10 space-y-8"
+            className="lg:col-span-7 bg-artisan-light/[0.01] border border-artisan-light/10 p-8 md:p-10 space-y-8 rounded-xl"
           >
             <motion.div variants={formItemVariants} className="space-y-2">
               <h2 className="text-2xl font-display font-black uppercase text-artisan-light tracking-tight">Send Message</h2>
@@ -374,7 +374,7 @@ export default function Support() {
                 variants={formItemVariants}
                 whileHover={animationPhase === 'idle' ? { scale: 1.01 } : {}}
                 whileTap={animationPhase === 'idle' ? { scale: 0.99 } : {}}
-                className="w-full h-16 bg-artisan-grey text-artisan-dark font-display font-extrabold uppercase tracking-[0.6em] text-[10px] transition-all duration-500 flex items-center justify-center gap-4 group relative overflow-hidden disabled:opacity-90"
+                className="w-full h-16 bg-artisan-grey text-artisan-dark font-display font-extrabold uppercase tracking-[0.6em] text-[10px] transition-all duration-500 flex items-center justify-center gap-4 group relative overflow-hidden disabled:opacity-90 rounded-full"
               >
                 {/* Hover bg slide - only active on idle */}
                 {animationPhase === 'idle' && (
@@ -509,14 +509,14 @@ export default function Support() {
               href="https://www.google.com/maps/dir/?api=1&destination=No+85+Nalla+Thambi+Road+Pammal+Chennai+600075"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-3 px-6 py-3 bg-artisan-grey text-artisan-dark text-[10px] font-display font-extrabold uppercase tracking-widest hover:bg-artisan-light transition-all duration-300 group"
+              className="flex items-center gap-3 px-6 py-3 bg-artisan-grey text-artisan-dark text-[10px] font-display font-extrabold uppercase tracking-widest hover:bg-artisan-light rounded-full transition-all duration-300 group"
             >
               <Navigation className="w-4 h-4 group-hover:rotate-360 transition-transform duration-300" />
               Get Directions
             </a>
           </div>
 
-          <div className="relative w-full border border-artisan-light/10 overflow-hidden" style={{ aspectRatio: '16/6' }}>
+          <div className="relative w-full border border-artisan-light/10 overflow-hidden rounded-xl" style={{ aspectRatio: '16/6' }}>
             {/* Dark-themed map overlay tint */}
             <div className="absolute inset-0 pointer-events-none z-10 mix-blend-multiply bg-artisan-dark/20" />
             <iframe

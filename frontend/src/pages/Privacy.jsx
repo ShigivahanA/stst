@@ -102,7 +102,7 @@ export default function Privacy() {
         return (
           <div
             key={pIdx}
-            className="border border-artisan-light/10 p-5 bg-artisan-light/[0.01] hover:border-artisan-grey/40 transition-colors duration-300 my-4"
+            className="border border-artisan-light/10 p-5 bg-artisan-light/[0.01] hover:border-artisan-grey/40 transition-colors duration-300 my-4 rounded-xl"
           >
             <strong className="text-xs font-mono uppercase tracking-widest text-artisan-grey block mb-2">{term}</strong>
             <p className="text-sm text-artisan-light/70">{definition}</p>
@@ -113,7 +113,7 @@ export default function Privacy() {
       if (/^\d+\.\s/.test(para.trim())) {
         return (
           <div key={pIdx} className="flex items-start gap-3 my-2">
-            <span className="w-6 h-6 border border-artisan-light/15 flex items-center justify-center text-xs text-artisan-grey font-mono shrink-0">
+            <span className="w-6 h-6 border border-artisan-light/15 flex items-center justify-center text-xs text-artisan-grey font-mono shrink-0 rounded-xl">
               {para.match(/^\d+/)[0]}
             </span>
             <span className="text-sm sm:text-base pt-0.5">{para.replace(/^\d+\.\s/, '')}</span>

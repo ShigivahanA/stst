@@ -119,7 +119,7 @@ export default function Categories() {
         </header>
 
         {/* CATEGORIES GRID */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-px bg-artisan-light/10 border border-artisan-light/10 mb-24">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-px bg-artisan-light/10 border border-artisan-light/10 mb-24 rounded-xl overflow-hidden">
           {categoriesList.map((category, idx) => {
             const actualProducts = productsByCategory[category.title] || []
             const hasActualProducts = actualProducts.length > 0
@@ -131,7 +131,7 @@ export default function Categories() {
               >
                 <div className="space-y-8">
                   <div className="flex justify-between items-start">
-                    <div className="w-12 h-12 bg-artisan-light/5 border border-artisan-light/10 flex items-center justify-center text-artisan-grey group-hover:bg-artisan-grey group-hover:text-artisan-dark transition-all duration-500">
+                    <div className="w-12 h-12 bg-artisan-light/5 border border-artisan-light/10 flex items-center justify-center text-artisan-grey group-hover:bg-artisan-grey group-hover:text-artisan-dark transition-all duration-500 rounded-xl">
                       <category.icon className="w-6 h-6" />
                     </div>
                     <span className="text-[10px] font-mono font-bold text-artisan-light/20 uppercase tracking-widest">{category.id}</span>
@@ -207,7 +207,7 @@ export default function Categories() {
         </div>
 
         {/* CALL TO ACTION */}
-        <section className="border border-artisan-grey/20 bg-artisan-grey/[0.02] p-12 md:p-20 text-center space-y-10 relative overflow-hidden">
+        <section className="border border-artisan-grey/20 bg-artisan-grey/[0.02] p-12 md:p-20 text-center space-y-10 relative overflow-hidden rounded-xl">
           <div className="absolute inset-0 pointer-events-none opacity-5 flex items-center justify-center">
             <Activity className="w-64 h-64 text-artisan-grey" />
           </div>
@@ -225,13 +225,13 @@ export default function Categories() {
           <div className="relative z-10 flex flex-col sm:flex-row justify-center gap-6">
             <Link
               to="/bulk-enquiry"
-              className="px-12 py-6 bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-widest hover:bg-artisan-grey transition-all"
+              className="px-12 py-6 bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-widest hover:bg-artisan-grey transition-all rounded-full"
             >
               Bulk Orders ?
             </Link>
             <Link
               to="/support"
-              className="px-12 py-6 border-2 border-artisan-light/10 text-artisan-light font-display font-black uppercase tracking-widest hover:bg-artisan-light/5 transition-all flex items-center justify-center gap-4"
+              className="px-12 py-6 border-2 border-artisan-light/10 text-artisan-light font-display font-black uppercase tracking-widest hover:bg-artisan-light/5 transition-all flex items-center justify-center gap-4 rounded-full"
             >
               Contact Support
               <ArrowRight className="w-5 h-5" />

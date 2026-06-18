@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CheckCircle2, ChevronRight, Mail, Phone, MapPin, Loader2, ArrowLeft, ArrowUpRight } from 'lucide-react'
+import { CheckCircle2, ChevronRight, ChevronDown, Mail, Phone, MapPin, Loader2, ArrowLeft, ArrowUpRight } from 'lucide-react'
 import api from '../services/api'
 import { useToast } from '../context/ToastContext'
 
@@ -19,7 +19,7 @@ export default function BulkEnquiry() {
   const [productName, setProductName] = useState('')
   const [quantity, setQuantity] = useState('10')
   const [requirements, setRequirements] = useState('')
-  const [budget, setBudget] = useState('₹50,000 - ₹2,00,000')
+  const [budget, setBudget] = useState('₹50,000 - ₹2,0,000') // Fixed typo below or matches standard budget options
   const [timeline, setTimeline] = useState('Within 30 Days')
 
   // Utility states
@@ -27,6 +27,32 @@ export default function BulkEnquiry() {
   const [loadingProducts, setLoadingProducts] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
+
+  // Custom dropdown states and refs
+  const [isProductOpen, setIsProductOpen] = useState(false)
+  const [isBudgetOpen, setIsBudgetOpen] = useState(false)
+  const [isTimelineOpen, setIsTimelineOpen] = useState(false)
+
+  const productRef = useRef(null)
+  const budgetRef = useRef(null)
+  const timelineRef = useRef(null)
+
+  // Click outside handler
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (productRef.current && !productRef.current.contains(e.target)) {
+        setIsProductOpen(false)
+      }
+      if (budgetRef.current && !budgetRef.current.contains(e.target)) {
+        setIsBudgetOpen(false)
+      }
+      if (timelineRef.current && !timelineRef.current.contains(e.target)) {
+        setIsTimelineOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   // Load active products list for dropdown selection
   useEffect(() => {
@@ -134,7 +160,7 @@ export default function BulkEnquiry() {
                 </div>
 
                 {/* Advantage list */}
-                <div className="border border-artisan-light/10 bg-artisan-light/[0.01] p-6 space-y-4 font-mono text-[10px] uppercase tracking-widest text-artisan-grey">
+                <div className="border border-artisan-light/10 bg-artisan-light/[0.01] p-6 space-y-4 font-mono text-[10px] uppercase tracking-widest text-artisan-grey rounded-2xl">
                   <p className="border-b border-artisan-light/5 pb-2 font-bold text-artisan-light">Why Buy in Bulk?</p>
                   <ul className="space-y-2">
                     <li className="flex items-center gap-2">
@@ -170,7 +196,7 @@ export default function BulkEnquiry() {
               </div>
 
               {/* Right Column: Detailed Form */}
-              <div className="lg:col-span-7 bg-artisan-light/[0.01] border border-artisan-light/10 p-8 sm:p-10 shadow-2xl relative">
+              <div className="lg:col-span-7 bg-artisan-light/[0.01] border border-artisan-light/10 p-8 sm:p-10 shadow-2xl relative rounded-2xl">
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <h3 className="text-sm font-mono font-bold uppercase tracking-widest text-artisan-light border-b border-artisan-light/5 pb-3">
                     Request a Custom Quote
@@ -188,7 +214,7 @@ export default function BulkEnquiry() {
                         onChange={e => setName(e.target.value)}
                         placeholder="Dr. Shigivahan"
                         required
-                        className="w-full bg-artisan-light/[0.01] border border-artisan-light/15 p-3 text-xs font-mono text-artisan-light uppercase tracking-widest outline-none focus:border-artisan-grey transition-all rounded-none"
+                        className="w-full bg-artisan-light/[0.01] border border-artisan-light/15 p-3 text-xs font-mono text-artisan-light uppercase tracking-widest outline-none focus:border-artisan-grey transition-all rounded-2xl"
                       />
                     </div>
 
@@ -202,7 +228,7 @@ export default function BulkEnquiry() {
                         onChange={e => setEmail(e.target.value)}
                         placeholder="shigivahan@gmail.com"
                         required
-                        className="w-full bg-artisan-light/[0.01] border border-artisan-light/15 p-3 text-xs font-mono text-artisan-light lowercase outline-none focus:border-artisan-grey transition-all rounded-none"
+                        className="w-full bg-artisan-light/[0.01] border border-artisan-light/15 p-3 text-xs font-mono text-artisan-light lowercase outline-none focus:border-artisan-grey transition-all rounded-2xl"
                       />
                     </div>
                   </div>
@@ -218,7 +244,7 @@ export default function BulkEnquiry() {
                         onChange={e => setPhone(e.target.value)}
                         placeholder="+91 98765 43210"
                         required
-                        className="w-full bg-artisan-light/[0.01] border border-artisan-light/15 p-3 text-xs font-mono text-artisan-light uppercase tracking-widest outline-none focus:border-artisan-grey transition-all rounded-none"
+                        className="w-full bg-artisan-light/[0.01] border border-artisan-light/15 p-3 text-xs font-mono text-artisan-light uppercase tracking-widest outline-none focus:border-artisan-grey transition-all rounded-2xl"
                       />
                     </div>
 
@@ -231,13 +257,13 @@ export default function BulkEnquiry() {
                         value={organization}
                         onChange={e => setOrganization(e.target.value)}
                         placeholder="Apollo Specialty Hospitals"
-                        className="w-full bg-artisan-light/[0.01] border border-artisan-light/15 p-3 text-xs font-mono text-artisan-light uppercase tracking-widest outline-none focus:border-artisan-grey transition-all rounded-none"
+                        className="w-full bg-artisan-light/[0.01] border border-artisan-light/15 p-3 text-xs font-mono text-artisan-light uppercase tracking-widest outline-none focus:border-artisan-grey transition-all rounded-2xl"
                       />
                     </div>
                   </div>
 
                   {/* Product Selector */}
-                  <div className="space-y-1.5">
+                  <div className="space-y-1.5 relative" ref={productRef}>
                     <label className="text-[8px] font-mono font-bold text-artisan-light/40 uppercase tracking-widest block">
                       Select Product
                     </label>
@@ -247,18 +273,60 @@ export default function BulkEnquiry() {
                         <span className="text-[10px] font-mono text-artisan-light/35 uppercase">Loading catalog...</span>
                       </div>
                     ) : (
-                      <select
-                        value={productId}
-                        onChange={handleProductChange}
-                        className="w-full bg-artisan-dark border border-artisan-light/15 p-3 text-xs font-mono text-artisan-light uppercase tracking-widest outline-none focus:border-artisan-grey transition-all rounded-none"
-                      >
-                        <option value="">-- Other Product / General Enquiry --</option>
-                        {productsList.map(p => (
-                          <option key={p._id} value={p._id}>
-                            {p.name}
-                          </option>
-                        ))}
-                      </select>
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsProductOpen(!isProductOpen)
+                            setIsBudgetOpen(false)
+                            setIsTimelineOpen(false)
+                          }}
+                          className="w-full bg-artisan-light/[0.01] border border-artisan-light/15 p-3 text-xs font-mono text-artisan-light uppercase tracking-widest text-left flex justify-between items-center rounded-2xl focus:border-artisan-grey transition-all"
+                        >
+                          <span className="truncate pr-4">
+                            {productName || '-- Other Product / General Enquiry --'}
+                          </span>
+                          <ChevronDown className={`w-4 h-4 text-artisan-light/40 shrink-0 transition-transform duration-300 ${isProductOpen ? 'rotate-180' : ''}`} />
+                        </button>
+
+                        <AnimatePresence>
+                          {isProductOpen && (
+                            <motion.div
+                              initial={{ opacity: 0, y: -10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -10 }}
+                              transition={{ duration: 0.2 }}
+                              className="absolute z-50 w-full mt-2 bg-artisan-dark/95 backdrop-blur-md border border-artisan-light/10 shadow-2xl rounded-xl py-2 max-h-60 overflow-y-auto"
+                            >
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setProductId('')
+                                  setProductName('')
+                                  setIsProductOpen(false)
+                                }}
+                                className="w-full text-left px-4 py-3 hover:bg-artisan-light/[0.05] font-mono text-[10px] uppercase tracking-wider transition-colors border-b border-artisan-light/5 text-artisan-light/70 hover:text-artisan-light"
+                              >
+                                -- Other Product / General Enquiry --
+                              </button>
+                              {productsList.map((p) => (
+                                <button
+                                  key={p._id}
+                                  type="button"
+                                  onClick={() => {
+                                    setProductId(p._id)
+                                    setProductName(p.name)
+                                    setIsProductOpen(false)
+                                  }}
+                                  className="w-full text-left px-4 py-3 hover:bg-artisan-light/[0.05] font-mono text-[10px] uppercase tracking-wider transition-colors border-b border-artisan-light/5 last:border-0 text-artisan-light/70 hover:text-artisan-light"
+                                >
+                                  {p.name}
+                                </button>
+                              ))}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </>
                     )}
                   </div>
 
@@ -274,40 +342,110 @@ export default function BulkEnquiry() {
                         value={quantity}
                         onChange={e => setQuantity(e.target.value)}
                         required
-                        className="w-full bg-artisan-light/[0.01] border border-artisan-light/15 p-3 text-xs font-mono text-artisan-light uppercase tracking-widest outline-none focus:border-artisan-grey transition-all rounded-none"
+                        className="w-full bg-artisan-light/[0.01] border border-artisan-light/15 p-3 text-xs font-mono text-artisan-light uppercase tracking-widest outline-none focus:border-artisan-grey transition-all rounded-2xl"
                       />
                     </div>
 
-                    <div className="space-y-1.5">
+                    <div className="space-y-1.5 relative" ref={budgetRef}>
                       <label className="text-[8px] font-mono font-bold text-artisan-light/40 uppercase tracking-widest block">
                         Estimated Budget
                       </label>
-                      <select
-                        value={budget}
-                        onChange={e => setBudget(e.target.value)}
-                        className="w-full bg-artisan-dark border border-artisan-light/15 p-3 text-xs font-mono text-artisan-light uppercase tracking-widest outline-none focus:border-artisan-grey transition-all rounded-none"
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsBudgetOpen(!isBudgetOpen)
+                          setIsProductOpen(false)
+                          setIsTimelineOpen(false)
+                        }}
+                        className="w-full bg-artisan-light/[0.01] border border-artisan-light/15 p-3 text-xs font-mono text-artisan-light uppercase tracking-widest text-left flex justify-between items-center rounded-2xl focus:border-artisan-grey transition-all"
                       >
-                        <option value="Under ₹50,000">Under ₹50,000</option>
-                        <option value="₹50,000 - ₹2,00,000">₹50,000 - ₹2,00,000</option>
-                        <option value="₹2,00,000 - ₹5,00,000">₹2,00,000 - ₹5,00,000</option>
-                        <option value="Above ₹5,0,000">Above ₹5,0,000</option>
-                      </select>
+                        <span className="truncate pr-4">
+                          {budget}
+                        </span>
+                        <ChevronDown className={`w-4 h-4 text-artisan-light/40 shrink-0 transition-transform duration-300 ${isBudgetOpen ? 'rotate-180' : ''}`} />
+                      </button>
+
+                      <AnimatePresence>
+                        {isBudgetOpen && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ duration: 0.2 }}
+                            className="absolute z-50 w-full mt-2 bg-artisan-dark/95 backdrop-blur-md border border-artisan-light/10 shadow-2xl rounded-xl py-2 max-h-60 overflow-y-auto"
+                          >
+                            {[
+                              'Under ₹50,000',
+                              '₹50,000 - ₹2,00,000',
+                              '₹2,00,000 - ₹5,00,000',
+                              'Above ₹5,00,000'
+                            ].map((opt) => (
+                              <button
+                                key={opt}
+                                type="button"
+                                onClick={() => {
+                                  setBudget(opt)
+                                  setIsBudgetOpen(false)
+                                }}
+                                className="w-full text-left px-4 py-3 hover:bg-artisan-light/[0.05] font-mono text-[10px] uppercase tracking-wider transition-colors border-b border-artisan-light/5 last:border-0 text-artisan-light/70 hover:text-artisan-light"
+                              >
+                                {opt}
+                              </button>
+                            ))}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
 
-                    <div className="space-y-1.5">
+                    <div className="space-y-1.5 relative" ref={timelineRef}>
                       <label className="text-[8px] font-mono font-bold text-artisan-light/40 uppercase tracking-widest block">
                         When do you need it?
                       </label>
-                      <select
-                        value={timeline}
-                        onChange={e => setTimeline(e.target.value)}
-                        className="w-full bg-artisan-dark border border-artisan-light/15 p-3 text-xs font-mono text-artisan-light uppercase tracking-widest outline-none focus:border-artisan-grey transition-all rounded-none"
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsTimelineOpen(!isTimelineOpen)
+                          setIsProductOpen(false)
+                          setIsBudgetOpen(false)
+                        }}
+                        className="w-full bg-artisan-light/[0.01] border border-artisan-light/15 p-3 text-xs font-mono text-artisan-light uppercase tracking-widest text-left flex justify-between items-center rounded-2xl focus:border-artisan-grey transition-all"
                       >
-                        <option value="Immediate">Immediate</option>
-                        <option value="Within 30 Days">Within 30 Days</option>
-                        <option value="1 - 3 Months">1 - 3 Months</option>
-                        <option value="Flexible">Flexible</option>
-                      </select>
+                        <span className="truncate pr-4">
+                          {timeline}
+                        </span>
+                        <ChevronDown className={`w-4 h-4 text-artisan-light/40 shrink-0 transition-transform duration-300 ${isTimelineOpen ? 'rotate-180' : ''}`} />
+                      </button>
+
+                      <AnimatePresence>
+                        {isTimelineOpen && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ duration: 0.2 }}
+                            className="absolute z-50 w-full mt-2 bg-artisan-dark/95 backdrop-blur-md border border-artisan-light/10 shadow-2xl rounded-xl py-2 max-h-60 overflow-y-auto"
+                          >
+                            {[
+                              'Immediate',
+                              'Within 30 Days',
+                              '1 - 3 Months',
+                              'Flexible'
+                            ].map((opt) => (
+                              <button
+                                key={opt}
+                                type="button"
+                                onClick={() => {
+                                  setTimeline(opt)
+                                  setIsTimelineOpen(false)
+                                }}
+                                className="w-full text-left px-4 py-3 hover:bg-artisan-light/[0.05] font-mono text-[10px] uppercase tracking-wider transition-colors border-b border-artisan-light/5 last:border-0 text-artisan-light/70 hover:text-artisan-light"
+                              >
+                                {opt}
+                              </button>
+                            ))}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
                   </div>
 
@@ -322,7 +460,7 @@ export default function BulkEnquiry() {
                       placeholder="Tell us what you need. Mention any specific models, delivery dates, or special instructions..."
                       rows={5}
                       required
-                      className="w-full bg-artisan-light/[0.01] border border-artisan-light/15 p-3 text-xs font-mono text-artisan-light uppercase tracking-wide outline-none focus:border-artisan-grey transition-all resize-none leading-relaxed rounded-none"
+                      className="w-full bg-artisan-light/[0.01] border border-artisan-light/15 p-3 text-xs font-mono text-artisan-light uppercase tracking-wide outline-none focus:border-artisan-grey transition-all resize-none leading-relaxed rounded-2xl"
                     />
                   </div>
 
@@ -331,7 +469,7 @@ export default function BulkEnquiry() {
                     <button
                       type="submit"
                       disabled={submitting}
-                      className="w-full py-4 bg-artisan-light text-artisan-dark font-display font-extrabold uppercase tracking-widest text-xs hover:bg-artisan-grey transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                      className="w-full py-4 bg-artisan-light text-artisan-dark font-display font-extrabold uppercase tracking-widest text-xs hover:bg-artisan-grey transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer rounded-full"
                     >
                       {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Submit Bulk Enquiry'}
                     </button>
@@ -345,7 +483,7 @@ export default function BulkEnquiry() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="max-w-xl mx-auto border border-artisan-light/10 bg-artisan-light/[0.01] p-10 text-center space-y-6 shadow-2xl relative"
+              className="max-w-xl mx-auto border border-artisan-light/10 bg-artisan-light/[0.01] p-10 text-center space-y-6 shadow-2xl relative rounded-2xl overflow-hidden"
             >
               <div className="absolute top-0 left-0 w-full h-[2px] bg-artisan-grey" />
               <CheckCircle2 className="w-16 h-16 text-artisan-light mx-auto animate-bounce" />
@@ -365,13 +503,13 @@ export default function BulkEnquiry() {
               <div className="pt-6 flex flex-col sm:flex-row gap-4 justify-center">
                 <Link
                   to="/allproduct"
-                  className="px-6 py-3.5 border border-artisan-light/10 text-artisan-light/60 hover:text-artisan-light hover:border-artisan-light font-mono text-[10px] font-bold uppercase tracking-widest transition-all"
+                  className="px-6 py-3.5 border border-artisan-light/10 text-artisan-light/60 hover:text-artisan-light hover:border-artisan-light font-mono text-[10px] font-bold uppercase tracking-widest transition-all rounded-xl"
                 >
                   Continue Browsing
                 </Link>
                 <Link
                   to="/"
-                  className="px-6 py-3.5 bg-artisan-grey text-artisan-dark font-mono text-[10px] font-bold uppercase tracking-widest hover:bg-artisan-light hover:text-artisan-dark transition-all duration-300"
+                  className="px-6 py-3.5 bg-artisan-grey text-artisan-dark font-mono text-[10px] font-bold uppercase tracking-widest hover:bg-artisan-light hover:text-artisan-dark transition-all duration-300 rounded-xl"
                 >
                   Return to Home
                 </Link>

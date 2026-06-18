@@ -29,7 +29,7 @@ function AccordionItem({ question, answer, isOpen, onToggle }) {
     <motion.div
       layout
       variants={itemVariants}
-      className={`border border-artisan-light/10 p-6 transition-all duration-500 bg-artisan-light/[0.01] hover:border-artisan-grey/40 hover:bg-artisan-light/[0.02] ${isOpen ? 'border-artisan-grey bg-artisan-light/[0.03]' : ''
+      className={`border border-artisan-light/10 p-6 transition-all duration-500 bg-artisan-light/[0.01] hover:border-artisan-grey/40 hover:bg-artisan-light/[0.02] rounded-xl ${isOpen ? 'border-artisan-grey bg-artisan-light/[0.03]' : ''
         }`}
     >
       <button
@@ -274,7 +274,7 @@ export default function FAQ() {
                     <button
                       key={cat.category}
                       onClick={() => setActiveCategory(cat.category)}
-                      className={`relative flex items-center justify-between px-6 py-4 border transition-all duration-500 shrink-0 text-left group overflow-hidden ${isActive
+                      className={`relative flex items-center justify-between px-6 py-4 border transition-all duration-500 shrink-0 text-left group overflow-hidden rounded-full ${isActive
                           ? 'border-artisan-grey text-artisan-dark font-bold'
                           : 'border-artisan-light/10 text-artisan-light/60 hover:border-artisan-grey hover:text-artisan-light'
                         }`}
@@ -282,7 +282,7 @@ export default function FAQ() {
                       {isActive && (
                         <motion.div
                           layoutId="activeCategoryBg"
-                          className="absolute inset-0 bg-artisan-grey z-0"
+                          className="absolute inset-0 bg-artisan-grey z-0 rounded-full"
                           transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                         />
                       )}
@@ -328,7 +328,7 @@ export default function FAQ() {
                   />
                 ))
               ) : (
-                <div className="text-center py-12 border border-dashed border-artisan-light/10">
+                <div className="text-center py-12 border border-dashed border-artisan-light/10 rounded-xl">
                   <p className="text-xs font-mono text-artisan-light/40 uppercase tracking-wider">
                     No matching questions found. Try searching for other terms or contact our support team.
                   </p>
@@ -345,7 +345,7 @@ export default function FAQ() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="mt-20 border border-artisan-light/10 p-8 md:p-10 bg-artisan-light/[0.01] relative overflow-hidden flex flex-col md:flex-row justify-between items-start md:items-center gap-6"
+          className="mt-20 border border-artisan-light/10 p-8 md:p-10 bg-artisan-light/[0.01] relative overflow-hidden flex flex-col md:flex-row justify-between items-start md:items-center gap-6 rounded-xl"
         >
           <div className="absolute inset-0 bg-gradient-to-r from-artisan-grey/5 to-transparent pointer-events-none" />
 
@@ -360,7 +360,7 @@ export default function FAQ() {
 
           <Link
             to="/support"
-            className="relative z-10 shrink-0 px-8 py-4 bg-artisan-grey text-artisan-dark font-display font-extrabold uppercase tracking-[0.4em] text-[10px] hover:bg-artisan-light hover:text-artisan-dark transition-all duration-300 flex items-center gap-3 group"
+            className="relative z-10 shrink-0 px-8 py-4 bg-artisan-grey text-artisan-dark font-display font-extrabold uppercase tracking-[0.4em] text-[10px] hover:bg-artisan-light hover:text-artisan-dark transition-all duration-300 flex items-center gap-3 group rounded-full"
           >
             <span>Contact Support</span>
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1.5 transition-transform duration-300" />
