@@ -58,7 +58,7 @@ export default function AdminProductDetail() {
    const [editName, setEditName] = useState('')
    const [editDesc, setEditDesc] = useState('')
    const [editPrice, setEditPrice] = useState('')
-   const [editCategory, setEditCategory] = useState('Instruments')
+   const [editCategory, setEditCategory] = useState('Rehabilitation')
    const [editCustomCategory, setEditCustomCategory] = useState('')
    const [editLowStockThreshold, setEditLowStockThreshold] = useState('10')
    const [editImage, setEditImage] = useState('')
@@ -106,7 +106,7 @@ export default function AdminProductDetail() {
             : prodData.image ? [{ url: prodData.image, publicId: 'legacy' }] : []
          setEditUploadedImages(legacyImages)
 
-         const standardCategories = ['Instruments', 'Orthopedics', 'Respiratory', 'Diagnostics', 'Consumables']
+         const standardCategories = ['Rehabilitation', 'Respiratory', 'Diagnostic Tools', 'Elder Care', 'Mother & Baby', 'Pain Relief', 'Wound Care']
          if (standardCategories.includes(prodData.category)) {
             setEditCategory(prodData.category)
             setEditCustomCategory('')
@@ -479,11 +479,13 @@ export default function AdminProductDetail() {
                                           onChange={(e) => setEditCategory(e.target.value)}
                                           className="w-full bg-artisan-light/[0.01] border border-artisan-light/10 p-4 text-xs sm:text-sm font-mono text-artisan-light uppercase tracking-widest outline-none focus:border-artisan-grey transition-all appearance-none"
                                        >
-                                          <option value="Instruments" className="bg-artisan-dark text-artisan-light">Instruments</option>
-                                          <option value="Orthopedics" className="bg-artisan-dark text-artisan-light">Orthopedics</option>
+                                          <option value="Rehabilitation" className="bg-artisan-dark text-artisan-light">Rehabilitation</option>
                                           <option value="Respiratory" className="bg-artisan-dark text-artisan-light">Respiratory</option>
-                                          <option value="Diagnostics" className="bg-artisan-dark text-artisan-light">Diagnostics</option>
-                                          <option value="Consumables" className="bg-artisan-dark text-artisan-light">Consumables</option>
+                                          <option value="Diagnostic Tools" className="bg-artisan-dark text-artisan-light">Diagnostic Tools</option>
+                                          <option value="Elder Care" className="bg-artisan-dark text-artisan-light">Elder Care</option>
+                                          <option value="Mother & Baby" className="bg-artisan-dark text-artisan-light">Mother & Baby</option>
+                                          <option value="Pain Relief" className="bg-artisan-dark text-artisan-light">Pain Relief</option>
+                                          <option value="Wound Care" className="bg-artisan-dark text-artisan-light">Wound Care</option>
                                           <option value="Other" className="bg-artisan-dark text-artisan-light">Other / Custom</option>
                                        </select>
                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-artisan-light/50 text-[9px] font-mono">▼</div>

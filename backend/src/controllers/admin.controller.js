@@ -5,10 +5,12 @@ import Order from '../models/order.model.js';
 import Content from '../models/content.model.js';
 import Stat from '../models/stat.model.js';
 import Review from '../models/review.model.js';
+import Badge from '../models/badge.model.js';
 import Page from '../models/page.model.js';
 import Session from '../models/session.model.js';
 import AnalyticsEvent from '../models/analytics.model.js';
 import ApiResponse from '../utils/ApiResponse.js';
+
 import asyncHandler from '../utils/asyncHandler.js';
 import ApiError from '../utils/ApiError.js';
 import { sendSuspensionEmail, sendShippingUpdateEmail } from '../services/email.service.js';
@@ -685,3 +687,47 @@ export const reorderAdminSections = asyncHandler(async (req, res) => {
   await page.save();
   return res.status(200).json(new ApiResponse(200, page, 'Sections reordered'));
 });
+
+// ─── Quality Badges CRUD ───────────────────────────────────────────────────────
+
+export const getAdminBadges = asyncHandler(async (req, res) => {
+  let badges = await Badge.find().sort({ order: 1, createdAt: 1 });
+  if (badges.length === 0) {
+    const DEFAULT_BADGES = [
+      { icon: 'ShieldCheck', title: 'ISO 13485', description: 'QUALITY CERTIFIED', order: 1, isActive: true },
+      { icon: 'Award', title: 'CE Standard', description: 'EU COMPLIANT', order: 2, isActive: true },
+      { icon: 'Info', title: 'FDA / CDSCO', description: 'REGISTERED DEV', order: 3, isActive: true },
+      { icon: 'Check', title: 'EO Sterile', description: '100% DECONTAMINATED', order: 4, isActive: true },
+      { icon: 'ShieldCheck', title: 'ISO 9001', description: 'PROCESS CERTIFIED', order: 5, isActive: true },
+      { icon: 'Award', title: 'GMP Certified', description: 'GOOD MFG PRACTICE', order: 6, isActive: true },
+    ];
+    badges = await Badge.insertMany(DEFAULT_BADGES);
+  }
+  return res.status(200).json(new ApiResponse(200, badges, 'Badges fetched'));
+});
+
+export const createAdminBadge = asyncHandler(async (req, res) => {
+  const { icon, title, description, order } = req.body;
+  if (!title || !description) throw new ApiError(400, 'Title and description are required');
+  const badge = await Badge.create({
+    icon: icon || 'ShieldCheck',
+    title,
+    description,
+    order: order || 0,
+    isActive: true
+  });
+  return res.status(201).json(new ApiResponse(201, badge, 'Badge created'));
+});
+
+export const updateAdminBadge = asyncHandler(async (req, res) => {
+  const badge = await Badge.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+  if (!badge) throw new ApiError(404, 'Badge not found');
+  return res.status(200).json(new ApiResponse(200, badge, 'Badge updated'));
+});
+
+export const deleteAdminBadge = asyncHandler(async (req, res) => {
+  const badge = await Badge.findByIdAndDelete(req.params.id);
+  if (!badge) throw new ApiError(404, 'Badge not found');
+  return res.status(200).json(new ApiResponse(200, {}, 'Badge deleted'));
+});
+

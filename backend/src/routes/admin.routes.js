@@ -28,6 +28,10 @@ import {
   updateAdminSection,
   deleteAdminSection,
   reorderAdminSections,
+  getAdminBadges,
+  createAdminBadge,
+  updateAdminBadge,
+  deleteAdminBadge,
 } from '../controllers/admin.controller.js';
 import {
   getCoupons,
@@ -74,6 +78,13 @@ router.get('/reviews', getAdminReviews);
 router.post('/reviews', createAdminReview);
 router.put('/reviews/:id', updateAdminReview);
 router.delete('/reviews/:id', deleteAdminReview);
+
+// Quality Badges routes
+router.get('/badges', getAdminBadges);
+router.post('/badges', createAdminBadge);
+router.put('/badges/:id', updateAdminBadge);
+router.delete('/badges/:id', deleteAdminBadge);
+
 
 // Policy/Info Pages routes
 router.get('/pages/:slug', getAdminPage);

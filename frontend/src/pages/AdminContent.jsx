@@ -20,7 +20,9 @@ import {
   Info,
   Truck,
   RotateCcw,
-  Scale
+  Scale,
+  ShieldCheck,
+  Award
 } from 'lucide-react'
 import { useToast } from '../context/ToastContext'
 import api from '../services/api'
@@ -655,6 +657,367 @@ function ReviewsTab() {
   )
 }
 
+// ─── Quality Badges Tab ──────────────────────────────────────────────────────
+function BadgesTab() {
+  const { addToast } = useToast()
+  const [badges, setBadges] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [actionLoading, setActionLoading] = useState(null)
+  const [showForm, setShowForm] = useState(false)
+  const [editingId, setEditingId] = useState(null)
+
+  // Toggle & Config state
+  const [sectionVisible, setSectionVisible] = useState(true)
+  const [configId, setConfigId] = useState(null)
+
+  // Form state
+  const [fIcon, setFIcon] = useState('ShieldCheck')
+  const [fTitle, setFTitle] = useState('')
+  const [fDescription, setFDescription] = useState('')
+  const [fOrder, setFOrder] = useState('0')
+
+  const fetchBadges = async () => {
+    try {
+      setLoading(true)
+      const res = await api.get('/admin/badges')
+      const allBadges = res.data.data || []
+
+      // Find the visibility config badge
+      const configBadge = allBadges.find(b => b.title === '__BADGES_VISIBILITY__')
+      if (configBadge) {
+        setSectionVisible(configBadge.description !== 'hidden')
+        setConfigId(configBadge._id)
+      } else {
+        setSectionVisible(true)
+        setConfigId(null)
+      }
+
+      // Filter out config doc from the list of badges
+      const filteredBadges = allBadges.filter(b => b.title !== '__BADGES_VISIBILITY__')
+      setBadges(filteredBadges)
+    } catch {
+      addToast('Failed to load quality certifications', 'error')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => { fetchBadges() }, [])
+
+  const resetForm = () => {
+    setFIcon('ShieldCheck'); setFTitle(''); setFDescription(''); setFOrder('0')
+    setEditingId(null); setShowForm(false)
+  }
+
+  const openEdit = (badge) => {
+    setFIcon(badge.icon || 'ShieldCheck'); setFTitle(badge.title)
+    setFDescription(badge.description || ''); setFOrder(String(badge.order || 0))
+    setEditingId(badge._id); setShowForm(true)
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    if (!fTitle.trim() || !fDescription.trim()) {
+      addToast('Title and description are required', 'error'); return
+    }
+    try {
+      setActionLoading('form')
+      const payload = {
+        icon: fIcon,
+        title: fTitle.trim(),
+        description: fDescription.trim(),
+        order: parseInt(fOrder) || 0
+      }
+      if (editingId) {
+        await api.put(`/admin/badges/${editingId}`, payload)
+        addToast('Certification badge updated', 'success')
+      } else {
+        await api.post('/admin/badges', payload)
+        addToast('Certification badge created', 'success')
+      }
+      resetForm(); fetchBadges()
+    } catch (err) {
+      addToast(err.response?.data?.message || 'Failed to save badge', 'error')
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
+  const toggleActive = async (badge) => {
+    try {
+      setActionLoading(badge._id + '_toggle')
+      await api.put(`/admin/badges/${badge._id}`, { isActive: !badge.isActive })
+      setBadges(prev => prev.map(b => b._id === badge._id ? { ...b, isActive: !b.isActive } : b))
+      addToast(badge.isActive ? 'Badge hidden from product page' : 'Badge visible on product page', 'success')
+    } catch {
+      addToast('Failed to update badge visibility', 'error')
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
+  const deleteBadge = async (id) => {
+    if (!window.confirm('Delete this badge permanently?')) return
+    try {
+      setActionLoading(id + '_delete')
+      await api.delete(`/admin/badges/${id}`)
+      setBadges(prev => prev.filter(b => b._id !== id))
+      addToast('Badge deleted', 'success')
+    } catch {
+      addToast('Failed to delete badge', 'error')
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
+  const handleToggleSectionVisibility = async (newVal) => {
+    try {
+      setActionLoading('visibility_toggle')
+      if (configId) {
+        await api.put(`/admin/badges/${configId}`, {
+          icon: 'ShieldCheck',
+          title: '__BADGES_VISIBILITY__',
+          description: newVal ? 'visible' : 'hidden',
+          isActive: true
+        })
+      } else {
+        const res = await api.post('/admin/badges', {
+          icon: 'ShieldCheck',
+          title: '__BADGES_VISIBILITY__',
+          description: newVal ? 'visible' : 'hidden',
+          isActive: true
+        })
+        if (res.data.data) {
+          setConfigId(res.data.data._id)
+        }
+      }
+      setSectionVisible(newVal)
+      addToast(newVal ? 'Certifications row is now visible on product pages' : 'Certifications row is now hidden from product pages', 'success')
+    } catch (err) {
+      console.error(err)
+      addToast('Failed to update section visibility', 'error')
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
+  const ICON_CHOICES = [
+    { value: 'ShieldCheck', label: 'Shield Check' },
+    { value: 'Award', label: 'Award Badge' },
+    { value: 'Info', label: 'Info Circle' },
+    { value: 'Check', label: 'Check Mark' },
+    { value: 'Heart', label: 'Heart' },
+    { value: 'Truck', label: 'Delivery Truck' },
+    { value: 'Star', label: 'Star Badge' },
+  ]
+
+  return (
+    <div className="space-y-6">
+      {/* Controls */}
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="space-y-1">
+          <h2 className="text-lg font-display font-black uppercase text-artisan-light tracking-tight">
+            Quality Certifications Badges
+          </h2>
+          <p className="text-[10px] font-mono text-artisan-light/40 uppercase tracking-widest">
+            Badges displayed on product detail pages to build credibility and trust.
+          </p>
+        </div>
+        <div className="flex gap-3">
+          <button
+            onClick={fetchBadges}
+            className="h-9 px-4 bg-artisan-light/5 border border-artisan-light/10 text-artisan-grey hover:bg-artisan-light/10 flex items-center gap-2 font-mono text-[9px] font-bold uppercase tracking-widest transition-all group"
+          >
+            <RefreshCcw className={`w-3.5 h-3.5 group-hover:rotate-180 transition-transform duration-700 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </button>
+          <button
+            onClick={() => { resetForm(); setShowForm(v => !v) }}
+            className="h-9 px-4 bg-artisan-light text-artisan-dark hover:bg-artisan-grey flex items-center gap-2 font-mono text-[9px] font-bold uppercase tracking-widest transition-all"
+          >
+            {showForm ? <X className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
+            {showForm ? 'Cancel' : 'Add Badge'}
+          </button>
+        </div>
+      </div>
+
+      {/* Section Visibility Setting */}
+      <div className="border border-artisan-light/10 bg-artisan-light/[0.01] p-5 flex items-center justify-between gap-4 rounded-xl">
+        <div className="space-y-1">
+          <span className="text-[8px] font-mono font-bold text-artisan-grey uppercase tracking-widest block">Product Details Layout Control</span>
+          <h3 className="text-xs font-display font-bold uppercase text-artisan-light tracking-tight">Show Quality Certifications Row</h3>
+          <p className="text-[9px] font-mono text-artisan-light/40 uppercase tracking-wider">
+            Toggle whether the quality certifications badges row is visible on product details pages.
+          </p>
+        </div>
+        <Toggle
+          checked={sectionVisible}
+          onChange={handleToggleSectionVisibility}
+          disabled={actionLoading === 'visibility_toggle'}
+        />
+      </div>
+
+      {/* Add/Edit Badge Form */}
+      <AnimatePresence>
+        {showForm && (
+          <motion.form
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            onSubmit={handleSubmit}
+            className="border border-artisan-light/10 bg-artisan-dark/50 p-6 space-y-4"
+          >
+            <span className="text-[9px] font-mono font-bold text-artisan-light/40 uppercase tracking-widest block border-b border-artisan-light/5 pb-2">
+              {editingId ? 'Edit Quality Certification Badge' : 'New Quality Certification Badge'}
+            </span>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Title */}
+              <div className="space-y-1">
+                <label className="text-[8px] font-mono text-artisan-light/40 uppercase tracking-widest block font-bold">
+                  Certification Title (e.g., ISO 13485) <span className="text-artisan-grey">*</span>
+                </label>
+                <input
+                  value={fTitle}
+                  onChange={e => setFTitle(e.target.value)}
+                  placeholder="e.g. ISO 13485"
+                  className="w-full bg-artisan-light/[0.01] border border-artisan-light/10 p-3 text-xs font-mono text-artisan-light uppercase tracking-widest outline-none focus:border-artisan-grey transition-all"
+                  required
+                />
+              </div>
+
+              {/* Description */}
+              <div className="space-y-1">
+                <label className="text-[8px] font-mono text-artisan-light/40 uppercase tracking-widest block font-bold">
+                  Description / Label <span className="text-artisan-grey">*</span>
+                </label>
+                <input
+                  value={fDescription}
+                  onChange={e => setFDescription(e.target.value)}
+                  placeholder="e.g. QUALITY CERTIFIED"
+                  className="w-full bg-artisan-light/[0.01] border border-artisan-light/10 p-3 text-xs font-mono text-artisan-light uppercase tracking-widest outline-none focus:border-artisan-grey transition-all"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Icon Choice */}
+              <div className="space-y-1">
+                <label className="text-[8px] font-mono text-artisan-light/40 uppercase tracking-widest block font-bold">Badge Icon</label>
+                <select
+                  value={fIcon}
+                  onChange={e => setFIcon(e.target.value)}
+                  className="w-full bg-artisan-light/[0.01] border border-artisan-light/10 p-3 text-xs font-mono text-artisan-light uppercase tracking-widest outline-none focus:border-artisan-grey transition-all appearance-none"
+                >
+                  {ICON_CHOICES.map(c => (
+                    <option key={c.value} value={c.value} className="bg-artisan-dark text-artisan-light">{c.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Order */}
+              <div className="space-y-1">
+                <label className="text-[8px] font-mono text-artisan-light/40 uppercase tracking-widest block font-bold">Sort Order</label>
+                <input
+                  type="number"
+                  value={fOrder}
+                  onChange={e => setFOrder(e.target.value)}
+                  min="0"
+                  className="w-full bg-artisan-light/[0.01] border border-artisan-light/10 p-3 text-xs font-mono text-artisan-light tracking-widest outline-none focus:border-artisan-grey transition-all"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                type="submit"
+                disabled={actionLoading === 'form'}
+                className="h-10 px-6 bg-artisan-light text-artisan-dark font-mono text-[9px] font-bold uppercase tracking-widest hover:bg-artisan-grey transition-all flex items-center gap-2 disabled:opacity-50"
+              >
+                {actionLoading === 'form' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                {editingId ? 'Save Changes' : 'Create Badge'}
+              </button>
+              <button type="button" onClick={resetForm} className="h-10 px-4 border border-artisan-light/10 text-artisan-light/50 hover:text-artisan-light font-mono text-[9px] uppercase tracking-widest transition-all">
+                Cancel
+              </button>
+            </div>
+          </motion.form>
+        )}
+      </AnimatePresence>
+
+      {/* Badges Table */}
+      {loading ? (
+        <div className="flex items-center justify-center py-16">
+          <Loader2 className="w-6 h-6 animate-spin text-artisan-grey" />
+        </div>
+      ) : badges.length === 0 ? (
+        <div className="border border-dashed border-artisan-light/10 p-12 text-center">
+          <ShieldCheck className="w-10 h-10 text-artisan-light/10 mx-auto mb-3" />
+          <p className="text-[10px] font-mono text-artisan-light/20 uppercase tracking-widest">No badges created yet. Add your first one.</p>
+        </div>
+      ) : (
+        <div className="border border-artisan-light/10 bg-artisan-dark/50 overflow-hidden">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="border-b border-artisan-light/10 bg-artisan-light/[0.02] text-left">
+                <th className="px-5 py-4 text-[9px] font-mono font-bold text-artisan-light/40 uppercase tracking-widest">#</th>
+                <th className="px-5 py-4 text-[9px] font-mono font-bold text-artisan-light/40 uppercase tracking-widest">Icon</th>
+                <th className="px-5 py-4 text-[9px] font-mono font-bold text-artisan-light/40 uppercase tracking-widest">Title</th>
+                <th className="px-5 py-4 text-[9px] font-mono font-bold text-artisan-light/40 uppercase tracking-widest">Description</th>
+                <th className="px-5 py-4 text-[9px] font-mono font-bold text-artisan-light/40 uppercase tracking-widest text-center">Visible</th>
+                <th className="px-5 py-4 text-[9px] font-mono font-bold text-artisan-light/40 uppercase tracking-widest text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-artisan-light/5">
+              {badges.map((badge, i) => (
+                <tr key={badge._id} className={`group transition-all hover:bg-artisan-light/[0.02] ${!badge.isActive ? 'opacity-40' : ''}`}>
+                  <td className="px-5 py-5 font-mono text-[10px] text-artisan-light/50">{String(badge.order || i + 1).padStart(2, '0')}</td>
+                  <td className="px-5 py-5 font-mono text-xs text-artisan-light/75 font-bold uppercase">{badge.icon}</td>
+                  <td className="px-5 py-5">
+                    <span className="text-xs font-display font-black text-artisan-grey tracking-tight">{badge.title}</span>
+                  </td>
+                  <td className="px-5 py-5">
+                    <span className="text-[10px] font-mono text-artisan-light/50">{badge.description}</span>
+                  </td>
+                  <td className="px-5 py-5 text-center">
+                    <Toggle
+                      checked={badge.isActive}
+                      onChange={() => toggleActive(badge)}
+                      disabled={actionLoading === badge._id + '_toggle'}
+                    />
+                  </td>
+                  <td className="px-5 py-5 text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        onClick={() => openEdit(badge)}
+                        className="h-8 w-8 flex items-center justify-center border border-artisan-light/10 text-artisan-light/40 hover:text-artisan-light hover:border-artisan-light/30 transition-all"
+                        title="Edit badge"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => deleteBadge(badge._id)}
+                        disabled={actionLoading === badge._id + '_delete'}
+                        className="h-8 w-8 flex items-center justify-center border border-red-900/40 text-red-500/60 hover:bg-red-900 hover:text-artisan-light hover:border-red-900 transition-all disabled:opacity-30"
+                        title="Delete badge"
+                      >
+                        {actionLoading === badge._id + '_delete'
+                          ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          : <Trash2 className="w-3.5 h-3.5" />
+                        }
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  )
+}
 
 
 // ─── Page Sections Tab (Privacy, Shipping, Terms, Returns, FAQ) ───────────────
@@ -1014,6 +1377,7 @@ export default function AdminContent() {
   const TABS = [
     { id: 'stats', label: 'Hero Stats', icon: BarChart3 },
     { id: 'reviews', label: 'Testimonials', icon: MessageSquareQuote },
+    { id: 'badges', label: 'Certifications', icon: ShieldCheck },
     { id: 'privacy', label: 'Privacy Policy', icon: FileText },
     { id: 'shipping', label: 'Shipping Policy', icon: Truck },
     { id: 'terms', label: 'Terms & Conditions', icon: Scale },
@@ -1073,6 +1437,7 @@ export default function AdminContent() {
           >
             {activeTab === 'stats' && <StatsTab />}
             {activeTab === 'reviews' && <ReviewsTab />}
+            {activeTab === 'badges' && <BadgesTab />}
             {activeTab === 'privacy' && <PageSectionsTab slug="privacy" title="Privacy Policy" />}
             {activeTab === 'shipping' && <PageSectionsTab slug="shipping" title="Shipping Policy" />}
             {activeTab === 'terms' && <PageSectionsTab slug="terms" title="Terms & Conditions" />}

@@ -2,6 +2,7 @@ import Content from '../models/content.model.js';
 import Stat from '../models/stat.model.js';
 import Review from '../models/review.model.js';
 import Page from '../models/page.model.js';
+import Badge from '../models/badge.model.js';
 import ApiResponse from '../utils/ApiResponse.js';
 import asyncHandler from '../utils/asyncHandler.js';
 import ApiError from '../utils/ApiError.js';
@@ -70,3 +71,40 @@ export const getPublicPage = asyncHandler(async (req, res) => {
     new ApiResponse(200, page, 'Page content fetched successfully')
   );
 });
+
+// Public: Get active quality badges for product details page
+export const getPublicBadges = asyncHandler(async (req, res) => {
+  let badges = await Badge.find().sort({ order: 1, createdAt: 1 });
+  if (badges.length === 0) {
+    const DEFAULT_BADGES = [
+      { icon: 'ShieldCheck', title: 'ISO 13485', description: 'QUALITY CERTIFIED', order: 1, isActive: true },
+      { icon: 'Award', title: 'CE Standard', description: 'EU COMPLIANT', order: 2, isActive: true },
+      { icon: 'Info', title: 'FDA / CDSCO', description: 'REGISTERED DEV', order: 3, isActive: true },
+      { icon: 'Check', title: 'EO Sterile', description: '100% DECONTAMINATED', order: 4, isActive: true },
+      { icon: 'ShieldCheck', title: 'ISO 9001', description: 'PROCESS CERTIFIED', order: 5, isActive: true },
+      { icon: 'Award', title: 'GMP Certified', description: 'GOOD MFG PRACTICE', order: 6, isActive: true },
+    ];
+    badges = await Badge.insertMany(DEFAULT_BADGES);
+  }
+
+  // Find the visibility config
+  const configBadge = badges.find(b => b.title === '__BADGES_VISIBILITY__');
+  const sectionVisible = configBadge ? configBadge.description !== 'hidden' : true;
+
+  // Filter out the configuration record and inactive badges
+  const publicBadges = badges.filter(
+    b => b.title !== '__BADGES_VISIBILITY__' && b.isActive
+  );
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        sectionVisible,
+        badges: publicBadges,
+      },
+      'Badges fetched successfully'
+    )
+  );
+});
+

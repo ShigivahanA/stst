@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
+import * as LucideIcons from 'lucide-react'
 import {
    ArrowLeft,
    Star,
@@ -43,6 +44,22 @@ export default function ProductDetail() {
    const navigate = useNavigate()
    const [tool, setTool] = useState(null)
    const [loading, setLoading] = useState(true)
+   const [badgesData, setBadgesData] = useState({ sectionVisible: true, badges: [] })
+   const [loadingBadges, setLoadingBadges] = useState(true)
+
+   useEffect(() => {
+      const fetchBadges = async () => {
+         try {
+            const res = await api.get('/content/badges')
+            setBadgesData(res.data.data || { sectionVisible: true, badges: [] })
+         } catch (err) {
+            console.error('Failed to fetch quality badges', err)
+         } finally {
+            setLoadingBadges(false)
+         }
+      }
+      fetchBadges()
+   }, [])
    const [activeImage, setActiveImage] = useState(0)
    const [quantity, setQuantity] = useState(1)
    const [similarGear, setSimilarGear] = useState([])
@@ -584,42 +601,28 @@ export default function ProductDetail() {
                      </div>
                   </div>
 
-                 </div>
+               </div>
             </div>
 
             {/* Quality Certifications Badges Row */}
-            <div className="border border-artisan-light/10 bg-artisan-light/[0.01] p-6 rounded-xl">
-               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="flex items-center gap-3 p-3 bg-artisan-light/[0.005] border border-artisan-light/5 rounded-xl">
-                     <ShieldCheck className="w-5 h-5 text-green-500 shrink-0" />
-                     <div>
-                        <span className="text-[8px] font-mono text-artisan-light/35 uppercase block tracking-wider">ISO 13485</span>
-                        <span className="text-[9px] font-mono font-bold text-artisan-light uppercase">QUALITY CERTIFIED</span>
-                     </div>
-                  </div>
-                  <div className="flex items-center gap-3 p-3 bg-artisan-light/[0.005] border border-artisan-light/5 rounded-xl">
-                     <Award className="w-5 h-5 text-green-500 shrink-0" />
-                     <div>
-                        <span className="text-[8px] font-mono text-artisan-light/35 uppercase block tracking-wider">CE Standard</span>
-                        <span className="text-[9px] font-mono font-bold text-artisan-light uppercase">EU COMPLIANT</span>
-                     </div>
-                  </div>
-                  <div className="flex items-center gap-3 p-3 bg-artisan-light/[0.005] border border-artisan-light/5 rounded-xl">
-                     <Info className="w-5 h-5 text-green-500 shrink-0" />
-                     <div>
-                        <span className="text-[8px] font-mono text-artisan-light/35 uppercase block tracking-wider">FDA / CDSCO</span>
-                        <span className="text-[9px] font-mono font-bold text-artisan-light uppercase">REGISTERED DEV</span>
-                     </div>
-                  </div>
-                  <div className="flex items-center gap-3 p-3 bg-artisan-light/[0.005] border border-artisan-light/5 rounded-xl">
-                     <Check className="w-5 h-5 text-green-500 shrink-0" />
-                     <div>
-                        <span className="text-[8px] font-mono text-artisan-light/35 uppercase block tracking-wider">EO Sterile</span>
-                        <span className="text-[9px] font-mono font-bold text-artisan-light uppercase">100% DECONTAMINATED</span>
-                     </div>
+            {!loadingBadges && badgesData.sectionVisible && badgesData.badges && badgesData.badges.length > 0 && (
+               <div className="border border-artisan-light/10 bg-artisan-light/[0.01] p-6 rounded-xl">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                     {badgesData.badges.map((badge) => {
+                        const IconComponent = LucideIcons[badge.icon] || LucideIcons.ShieldCheck;
+                        return (
+                           <div key={badge._id} className="flex items-center gap-3 p-3 bg-artisan-light/[0.005] border border-artisan-light/5 rounded-xl">
+                              <IconComponent className="w-5 h-5 text-green-500 shrink-0" />
+                              <div>
+                                 <span className="text-[8px] font-mono text-artisan-light/35 uppercase block tracking-wider">{badge.title}</span>
+                                 <span className="text-[9px] font-mono font-bold text-artisan-light uppercase">{badge.description}</span>
+                              </div>
+                           </div>
+                        );
+                     })}
                   </div>
                </div>
-            </div>
+            )}
 
             {/* PINCODE SERVICEABILITY CHECKER ROW */}
             <div className="border border-artisan-light/10 bg-artisan-light/[0.01] p-6 rounded-xl space-y-4">
@@ -696,7 +699,7 @@ export default function ProductDetail() {
                            </div>
                            <div>
                               <span className="text-artisan-light/50 uppercase block text-[8px] tracking-wider">Payment Method</span>
-                              <span className="font-bold text-artisan-light uppercase">COD AVAILABLE</span>
+                              <span className="font-bold text-artisan-light uppercase">Online Payment</span>
                            </div>
                         </div>
 
