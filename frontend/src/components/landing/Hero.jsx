@@ -5,9 +5,39 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import api from '../../services/api'
 
+// Helper function to optimize image URLs dynamically for CDNs like Cloudinary and Unsplash
+const optimizeImageUrl = (url, width = 450) => {
+  if (!url) return '';
+  
+  // 1. Optimize Cloudinary URLs by injecting transformation parameters (f_auto, q_auto, width)
+  if (url.includes('res.cloudinary.com')) {
+    if (url.includes('/upload/') && !url.includes('/f_auto')) {
+      return url.replace('/upload/', `/upload/f_auto,q_auto,w_${width},c_limit/`);
+    }
+  }
+  
+  // 2. Optimize Unsplash URLs by modifying search parameters
+  if (url.includes('images.unsplash.com')) {
+    try {
+      const urlObj = new URL(url);
+      urlObj.searchParams.set('w', width.toString());
+      urlObj.searchParams.set('q', '70'); // Good balance of compression and visual clarity
+      urlObj.searchParams.set('auto', 'format');
+      urlObj.searchParams.set('fit', 'crop');
+      return urlObj.toString();
+    } catch (e) {
+      return url;
+    }
+  }
+  
+  return url;
+}
+
 // Sub-component for individual marquee cards to keep code clean and modular
 const MarqueeCard = ({ product }) => {
   const displayImage = product.image || product.images?.[0] || 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=800'
+  const optimizedImage = optimizeImageUrl(displayImage, 400);
+
   return (
     <Link
       to={`/product/${product._id}`}
@@ -18,7 +48,7 @@ const MarqueeCard = ({ product }) => {
         {/* Image Area */}
         <div className="relative aspect-[4/3] sm:aspect-video w-full overflow-hidden bg-artisan-dark/60 shrink-0">
           <img
-            src={displayImage}
+            src={optimizedImage}
             alt={product.name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out opacity-90 group-hover:opacity-100"
             draggable={false}
@@ -68,9 +98,10 @@ export default function Hero() {
     const fetchProducts = async () => {
       try {
         setLoading(true)
-        const res = await api.get('/listings', { params: { sort: '-averageRating' } })
+        // Limit query to top 12 products to reduce backend & payload size, then slice first 8 with images for marquee
+        const res = await api.get('/listings', { params: { sort: '-averageRating', limit: 12 } })
         const data = res.data.data || []
-        const withImages = data.filter(p => p.image || (p.images && p.images.length > 0))
+        const withImages = data.filter(p => p.image || (p.images && p.images.length > 0)).slice(0, 8)
         setProducts(withImages)
       } catch (err) {
         console.error('Failed to fetch hero products', err)
