@@ -71,10 +71,8 @@ export default function Categories() {
               onClick={() => handleCategoryClick(cat.name)}
               initial={{ opacity: 0, y: 20 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
-              whileHover={{ y: -6, scale: 1.01 }}
-              whileTap={{ scale: 0.98 }}
               transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1], delay: i * 0.05 }}
-              className={`group relative p-6 md:p-8 bg-white border border-artisan-light/10 rounded-2xl md:rounded-3xl flex flex-col items-start text-left overflow-hidden transition-all duration-300 shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:shadow-xl hover:bg-artisan-light col-span-1 md:col-span-3 ${cat.size}`}
+              className={`group relative p-6 md:p-8 bg-white border border-artisan-light/10 rounded-2xl md:rounded-3xl flex flex-col items-start text-left overflow-hidden hover:-translate-y-1.5 hover:scale-[1.01] active:scale-95 transition-all duration-300 shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:shadow-xl hover:bg-artisan-light col-span-1 md:col-span-3 ${cat.size}`}
             >
               <div className="w-full flex justify-between items-start mb-4 relative z-10">
                 <span className="text-[10px] font-mono font-bold text-artisan-grey uppercase tracking-widest bg-slate-50 px-2 py-0.5 rounded border border-slate-100 group-hover:bg-white/10 group-hover:border-white/10 group-hover:text-white transition-all duration-300">

@@ -15,6 +15,40 @@
 
   --font-display: 'Unbounded', system-ui, sans-serif;
   --font-body: 'Space Mono', monospace;
+
+  --animate-marquee-up: scroll-up 90s linear infinite;
+  --animate-marquee-down: scroll-down 90s linear infinite;
+  --animate-marquee-left: scroll-left 90s linear infinite;
+
+  @keyframes scroll-up {
+    0% {
+      transform: translateY(0);
+    }
+
+    100% {
+      transform: translateY(-50%);
+    }
+  }
+
+  @keyframes scroll-down {
+    0% {
+      transform: translateY(-50%);
+    }
+
+    100% {
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes scroll-left {
+    0% {
+      transform: translateX(0);
+    }
+
+    100% {
+      transform: translateX(-50%);
+    }
+  }
 }
 
 @layer base {
@@ -46,13 +80,33 @@
     letter-spacing: -0.02em;
   }
 
-  .font-display.text-\[15rem\] { font-size: clamp(5rem, 12vw, 9rem) !important; }
-  .font-display.text-\[10rem\] { font-size: clamp(4rem, 10vw, 7rem) !important; }
-  .font-display.text-9xl { font-size: clamp(3.5rem, 8vw, 6rem) !important; }
-  .font-display.text-8xl { font-size: clamp(3rem, 7vw, 5rem) !important; }
-  .font-display.text-7xl { font-size: clamp(2.5rem, 6vw, 4rem) !important; }
-  .font-display.text-6xl { font-size: clamp(2.25rem, 5vw, 3.5rem) !important; }
-  .font-display.text-5xl { font-size: clamp(2rem, 4vw, 2.75rem) !important; }
+  .font-display.text-\[15rem\] {
+    font-size: clamp(5rem, 12vw, 9rem) !important;
+  }
+
+  .font-display.text-\[10rem\] {
+    font-size: clamp(4rem, 10vw, 7rem) !important;
+  }
+
+  .font-display.text-9xl {
+    font-size: clamp(3.5rem, 8vw, 6rem) !important;
+  }
+
+  .font-display.text-8xl {
+    font-size: clamp(3rem, 7vw, 5rem) !important;
+  }
+
+  .font-display.text-7xl {
+    font-size: clamp(2.5rem, 6vw, 4rem) !important;
+  }
+
+  .font-display.text-6xl {
+    font-size: clamp(2.25rem, 5vw, 3.5rem) !important;
+  }
+
+  .font-display.text-5xl {
+    font-size: clamp(2rem, 4vw, 2.75rem) !important;
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -113,7 +167,7 @@
   margin-right: 2rem !important;
 }
 
-.mobile-desktop-mode #navbar-desktop-search > div {
+.mobile-desktop-mode #navbar-desktop-search>div {
   padding: 10px 16px !important;
   width: 100% !important;
 }

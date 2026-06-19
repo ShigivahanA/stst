@@ -1,17 +1,52 @@
 import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowRight, Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { ArrowRight, Loader2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import api from '../../services/api'
+
+// Sub-component for individual marquee cards to keep code clean and modular
+const MarqueeCard = ({ product }) => {
+  const displayImage = product.image || product.images?.[0]
+  return (
+    <Link 
+      to={`/product/${product._id}`}
+      className="block w-full"
+    >
+      <div className="w-full bg-artisan-dark border border-artisan-light/10 hover:border-artisan-grey hover:shadow-[0_15px_30px_rgba(37,36,34,0.06)] rounded-2xl p-4 sm:p-5 flex flex-col justify-between items-center text-center transition-all duration-500 relative group/card cursor-pointer">
+        <div className="w-full flex justify-between items-center text-[8px] font-mono text-artisan-light/35 uppercase tracking-wider mb-2">
+          <span>{product.category}</span>
+          <span>REF: {product._id?.slice(-4).toUpperCase()}</span>
+        </div>
+        
+        {/* Image Display */}
+        <div className="h-[90px] sm:h-[120px] md:h-[140px] w-full flex items-center justify-center overflow-hidden mb-3 select-none">
+          <img
+            src={displayImage}
+            alt={product.name}
+            className="max-h-full max-w-full object-contain drop-shadow-[0_8px_16px_rgba(37,36,34,0.05)] group-hover/card:scale-105 transition-transform duration-500"
+            draggable={false}
+          />
+        </div>
+
+        {/* Title and price */}
+        <div className="w-full">
+          <h3 className="text-[10px] sm:text-xs font-display font-black text-artisan-light uppercase tracking-tight truncate leading-tight">
+            {product.name}
+          </h3>
+          <span className="text-[9px] font-mono text-artisan-grey font-bold block mt-1">
+            ₹{(product.price !== undefined ? product.price : product.pricePerDay)?.toLocaleString()}
+          </span>
+        </div>
+      </div>
+    </Link>
+  )
+}
 
 export default function Hero() {
   const { user } = useAuth()
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [direction, setDirection] = useState(0)
-  const [isHovered, setIsHovered] = useState(false)
 
   // Fetch products for the showcase
   useEffect(() => {
@@ -31,56 +66,21 @@ export default function Hero() {
     fetchProducts()
   }, [])
 
-  const handleNext = () => {
-    if (products.length === 0) return
-    setDirection(1)
-    setCurrentIndex((prevIndex) => (prevIndex + 1) % products.length)
-  }
-
-  const handlePrev = () => {
-    if (products.length === 0) return
-    setDirection(-1)
-    setCurrentIndex((prevIndex) => (prevIndex - 1 + products.length) % products.length)
-  }
-
-  // Autoplay functionality
+  // Auto-refresh the page when screen size changes to rebuild marquee layouts dynamically
   useEffect(() => {
-    if (products.length === 0 || isHovered) return
-    const interval = setInterval(() => {
-      handleNext()
-    }, 4000)
-    return () => clearInterval(interval)
-  }, [products, isHovered, currentIndex])
-
-  const slideVariants = {
-    enter: (dir) => ({
-      x: dir > 0 ? 300 : -300,
-      opacity: 0,
-      scale: 0.95
-    }),
-    center: {
-      x: 0,
-      opacity: 1,
-      scale: 1,
-      transition: {
-        x: { type: 'spring', stiffness: 300, damping: 30 },
-        opacity: { duration: 0.35 },
-        scale: { duration: 0.35 }
-      }
-    },
-    exit: (dir) => ({
-      x: dir < 0 ? 300 : -300,
-      opacity: 0,
-      scale: 0.95,
-      transition: {
-        x: { type: 'spring', stiffness: 300, damping: 30 },
-        opacity: { duration: 0.25 },
-        scale: { duration: 0.25 }
-      }
-    })
-  }
-
-  const currentProduct = products[currentIndex]
+    let timeoutId
+    const handleResize = () => {
+      clearTimeout(timeoutId)
+      timeoutId = setTimeout(() => {
+        window.location.reload()
+      }, 400)
+    }
+    window.addEventListener('resize', handleResize)
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      clearTimeout(timeoutId)
+    }
+  }, [])
 
   return (
     <section
@@ -168,97 +168,65 @@ export default function Hero() {
 
           </div>
 
-          {/* Right Column: Interactive Product Showcase Carousel */}
-          <div className="col-span-1 lg:col-span-6 xl:col-span-7 w-full">
-            <div
-              className="relative w-full h-[280px] sm:h-[380px] lg:h-[500px] xl:h-[560px] flex items-center justify-center rounded-[24px] sm:rounded-[32px] border border-slate-100/80 overflow-hidden p-4 sm:p-8 group/carousel"
-              onMouseEnter={() => setIsHovered(true)}
-              onMouseLeave={() => setIsHovered(false)}
-            >
+          {/* Right Column: Interactive Product Showcase Marquee */}
+          <div className="col-span-1 lg:col-span-6 xl:col-span-7 w-full mt-6 sm:mt-8 lg:mt-0">
+            <div className="relative w-full h-[260px] sm:h-[300px] lg:h-[480px] xl:h-[560px] flex items-center justify-center rounded-[24px] sm:rounded-[32px] overflow-hidden p-1 group/marquee">
               {loading ? (
                 <div className="flex flex-col items-center justify-center gap-4 text-slate-400">
                   <Loader2 className="w-8 h-8 animate-spin text-artisan-grey" />
-                  <span className="text-xs font-mono tracking-widest uppercase">Loading Showcase...</span>
+                  <span className="text-xs font-mono tracking-widest uppercase">Loading Catalog...</span>
                 </div>
-              ) : products.length > 0 && currentProduct ? (
+              ) : products.length > 0 ? (
                 <>
-                  {/* Navigation Arrows */}
-                  <button
-                    onClick={handlePrev}
-                    className="absolute left-3 sm:left-6 z-30 p-2 sm:p-3.5 rounded-full backdrop-blur-md border border-white/40 text-slate-700 shadow-md hover:bg-white/80 hover:text-artisan-grey hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer opacity-100 lg:opacity-0 lg:group-hover/carousel:opacity-100"
-                    aria-label="Previous Product"
-                  >
-                    <ChevronLeft className="w-5 h-5" />
-                  </button>
+                  {/* Mobile & Tablet Layout: Single Horizontal Row Scrolling (when stacked vertically: below lg) */}
+                  <div className="flex lg:hidden overflow-hidden w-full h-full items-center relative">
+                    {/* Horizontal Fading Overlays */}
+                    <div className="absolute top-0 bottom-0 left-0 w-12 sm:w-20 bg-gradient-to-r from-[#fffcf2] to-transparent z-10 pointer-events-none" />
+                    <div className="absolute top-0 bottom-0 right-0 w-12 sm:w-20 bg-gradient-to-l from-[#fffcf2] to-transparent z-10 pointer-events-none" />
 
-                  <button
-                    onClick={handleNext}
-                    className="absolute right-3 sm:right-6 z-30 p-2 sm:p-3.5 rounded-full bg-white/40 backdrop-blur-md border border-white/40 text-slate-700 shadow-md hover:bg-white/80 hover:text-artisan-grey hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer opacity-100 lg:opacity-0 lg:group-hover/carousel:opacity-100"
-                    aria-label="Next Product"
-                  >
-                    <ChevronRight className="w-5 h-5" />
-                  </button>
-
-                  {/* Carousel Sliding Content */}
-                  <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
-                    <AnimatePresence initial={false} custom={direction} mode="popLayout">
-                      <motion.div
-                        key={currentIndex}
-                        custom={direction}
-                        variants={slideVariants}
-                        initial="enter"
-                        animate="center"
-                        exit="exit"
-                        className="absolute inset-0 flex items-center justify-center"
-                      >
-                        <Link
-                          to={`/product/${currentProduct._id}`}
-                          className="w-full h-full flex items-center justify-center p-8 sm:p-12 select-none"
-                          draggable={false}
-                        >
-                          <motion.img
-                            src={currentProduct.image || currentProduct.images?.[0]}
-                            alt={currentProduct.name}
-                            className="max-h-[160px] sm:max-h-[220px] lg:max-h-[280px] xl:max-h-[340px] w-auto object-contain drop-shadow-[0_15px_35px_rgba(0,26,112,0.06)]"
-                            draggable={false}
-                            animate={{ scale: isHovered ? 0.95 : 1 }}
-                            transition={{ duration: 0.4 }}
-                          />
-                        </Link>
-                      </motion.div>
-                    </AnimatePresence>
+                    <div className="flex flex-row gap-3 animate-marquee-left hover:[animation-play-state:paused] w-max py-4">
+                      {[...products, ...products].map((product, idx) => (
+                        <div key={`horiz-${product._id}-${idx}`} className="w-[220px] shrink-0">
+                          <MarqueeCard product={product} />
+                        </div>
+                      ))}
+                    </div>
                   </div>
 
-                  {/* Details Panel — Always Visible */}
-                  <motion.div
-                    key={`info-${currentIndex}`}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-                    className="absolute bottom-3 left-3 right-3 sm:bottom-6 sm:left-6 sm:right-6 z-20 backdrop-blur-md bg-white/85 border border-white/45 shadow-[0_15px_30px_rgba(0,0,0,0.05)] rounded-xl sm:rounded-2xl p-4 sm:p-6 text-left"
-                  >
-                    <div className="flex justify-between items-start gap-4 mb-2">
-                      <div>
-                        <span className="text-[9px] font-mono font-bold tracking-widest text-artisan-grey uppercase bg-blue-50 px-2.5 py-1 rounded-md border border-blue-100/80">
-                          {currentProduct.category}
-                        </span>
-                        <h3 className="text-sm sm:text-base font-display font-black text-artisan-light uppercase tracking-tight mt-1 sm:mt-2 leading-tight">
-                          {currentProduct.name}
-                        </h3>
+                  {/* Desktop Layout: Opposing Dual-Track Vertical Marquee (when side-by-side with text: lg and up) */}
+                  <div className="hidden lg:grid grid-cols-2 gap-3 sm:gap-4 h-full w-full relative">
+                    {/* Vertical Fading Overlays */}
+                    <div className="absolute top-0 left-0 right-0 h-16 sm:h-24 bg-gradient-to-b from-[#fffcf2] to-transparent z-10 pointer-events-none" />
+                    <div className="absolute bottom-0 left-0 right-0 h-16 sm:h-24 bg-gradient-to-t from-[#fffcf2] to-transparent z-10 pointer-events-none" />
+
+                    {/* Left Track (Scroll Up) */}
+                    <div className="relative h-full overflow-hidden flex flex-col group/track-up">
+                      <div className="flex flex-col gap-3 sm:gap-4 animate-marquee-up hover:[animation-play-state:paused] cursor-pointer">
+                        {[...products, ...products].map((product, idx) => (
+                          <div key={`left-${product._id}-${idx}`} className="w-full shrink-0">
+                            <MarqueeCard product={product} />
+                          </div>
+                        ))}
                       </div>
-                      <span className={`text-[9px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${currentProduct.availability?.toLowerCase().includes('in stock')
-                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-100'
-                        : 'bg-rose-50 text-rose-700 border border-rose-100'
-                        }`}>
-                        {currentProduct.availability || 'Available'}
-                      </span>
                     </div>
-                    <p className="text-[10px] sm:text-xs text-artisan-light/65 line-clamp-2 leading-relaxed">
-                      {currentProduct.desc || currentProduct.description || 'Premium surgical & medical equipment engineered for reliability.'}
-                    </p>
-                  </motion.div>
+
+                    {/* Right Track (Scroll Down) */}
+                    <div className="relative h-full overflow-hidden flex flex-col group/track-down">
+                      <div className="flex flex-col gap-3 sm:gap-4 animate-marquee-down hover:[animation-play-state:paused] cursor-pointer">
+                        {[...products].reverse().concat([...products].reverse()).map((product, idx) => (
+                          <div key={`right-${product._id}-${idx}`} className="w-full shrink-0">
+                            <MarqueeCard product={product} />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
                 </>
-              ) : null}
+              ) : (
+                <div className="flex flex-col items-center justify-center gap-4 text-slate-400">
+                  <span className="text-xs font-mono tracking-widest uppercase">No Products Available</span>
+                </div>
+              )}
             </div>
           </div>
 
