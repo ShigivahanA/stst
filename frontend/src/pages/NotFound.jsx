@@ -46,7 +46,7 @@ export default function NotFound() {
                   className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto"
                >
                   <Link
-                     to="/rent"
+                     to="/allproduct"
                      className="px-10 py-5 bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-widest hover:bg-artisan-grey transition-all flex items-center justify-center gap-4 text-xs"
                   >
                      <ArrowLeft className="w-4 h-4" />

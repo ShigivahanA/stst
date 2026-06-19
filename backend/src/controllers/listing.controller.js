@@ -71,12 +71,28 @@ export const getListings = asyncHandler(async (req, res) => {
   }
 
   if (keyword) {
+    const escapedKeyword = keyword.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+    const isObjectId = /^[0-9a-fA-F]{24}$/.test(keyword.trim());
     filter.$or = [
-      { name: { $regex: keyword, $options: 'i' } },
-      { desc: { $regex: keyword, $options: 'i' } },
-      { sku: { $regex: keyword, $options: 'i' } },
-      { brand: { $regex: keyword, $options: 'i' } }
+      { name: { $regex: escapedKeyword, $options: 'i' } },
+      { desc: { $regex: escapedKeyword, $options: 'i' } },
+      { sku: { $regex: escapedKeyword, $options: 'i' } },
+      { brand: { $regex: escapedKeyword, $options: 'i' } },
+      { category: { $regex: escapedKeyword, $options: 'i' } }
     ];
+    if (isObjectId) {
+      filter.$or.push({ _id: keyword.trim() });
+    } else {
+      filter.$or.push({
+        $expr: {
+          $regexMatch: {
+            input: { $toString: "$_id" },
+            regex: escapedKeyword,
+            options: "i"
+          }
+        }
+      });
+    }
   }
 
   // Handle both simplified 'price' query params and legacy 'pricePerDay'

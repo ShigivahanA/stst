@@ -19,11 +19,6 @@ const sitemapData = [
     title: 'Company Info',
     icon: LayoutGrid,
     links: [
-      { name: 'Our Makers', path: '/our-makers' },
-      { name: 'Maker Stories', path: '/maker-stories' },
-      { name: 'Safety & Trust', path: '/safety' },
-      { name: 'Press Room', path: '/press' },
-      { name: 'Insurance', path: '/insurance' },
       { name: 'FAQ', path: '/faq' },
     ]
   },
@@ -35,7 +30,6 @@ const sitemapData = [
       { name: 'Shopping Cart', path: '/cart' },
       { name: 'Wishlist', path: '/wishlist' },
       { name: 'Orders History', path: '/history' },
-      { name: 'List a Tool', path: '/list' },
     ]
   },
   {

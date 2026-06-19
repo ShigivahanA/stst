@@ -22,7 +22,8 @@ import {
    Phone,
    Truck,
    Check,
-   Share2
+   Share2,
+   X
 } from 'lucide-react'
 import api from '../services/api'
 import { useToast } from '../context/ToastContext'
@@ -157,9 +158,15 @@ export default function ProductDetail() {
    useEffect(() => {
       const savedPin = localStorage.getItem('checked_pincode')
       if (savedPin && /^\d{6}$/.test(savedPin)) {
+         setPincodeInput(savedPin)
          checkPincodeServiceability(savedPin)
+      } else {
+         setPincodeInput('')
+         setPincodeResult(null)
+         setPincodeError('')
       }
-   }, [])
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+   }, [id])
 
    useEffect(() => {
       const fetchToolDetails = async () => {
@@ -207,7 +214,7 @@ export default function ProductDetail() {
 
          } catch (err) {
             addToast('Failed to load product details', 'error')
-            navigate('/rent')
+            navigate('/allproduct')
          } finally {
             setLoading(false)
          }
@@ -637,20 +644,42 @@ export default function ProductDetail() {
                      </p>
                   </div>
                   <div className="flex items-center gap-2 max-w-xs w-full sm:w-auto">
-                     <input
-                        type="text"
-                        maxLength={6}
-                        placeholder="ENTER PINCODE"
-                        value={pincodeInput}
-                        onChange={(e) => {
-                           const val = e.target.value.replace(/\D/g, '')
-                           setPincodeInput(val)
-                           if (val.length === 6) {
-                              checkPincodeServiceability(val)
-                           }
-                        }}
-                        className="flex-1 sm:w-36 bg-artisan-light/5 border border-artisan-light/10 px-4 py-2 text-xs font-mono text-artisan-light uppercase tracking-widest outline-none focus:border-artisan-grey transition-colors placeholder:text-artisan-light/20 rounded-xl"
-                     />
+                     <div className="relative flex-1 sm:w-36 flex items-center">
+                        <input
+                           type="text"
+                           maxLength={6}
+                           placeholder="ENTER PINCODE"
+                           value={pincodeInput}
+                           onChange={(e) => {
+                              const val = e.target.value.replace(/\D/g, '')
+                              setPincodeInput(val)
+                              if (val.length === 6) {
+                                 checkPincodeServiceability(val)
+                              } else {
+                                 setPincodeResult(null)
+                                 setPincodeError('')
+                                 if (val.length === 0) {
+                                    localStorage.removeItem('checked_pincode')
+                                 }
+                              }
+                           }}
+                           className="w-full bg-artisan-light/5 border border-artisan-light/10 pl-4 pr-8 py-2 text-xs font-mono text-artisan-light uppercase tracking-widest outline-none focus:border-artisan-grey transition-colors placeholder:text-artisan-light/20 rounded-xl"
+                        />
+                        {pincodeInput && (
+                           <button
+                              onClick={() => {
+                                 setPincodeInput('')
+                                 setPincodeResult(null)
+                                 setPincodeError('')
+                                 localStorage.removeItem('checked_pincode')
+                              }}
+                              className="absolute right-3 text-artisan-light/40 hover:text-artisan-light transition-colors flex items-center justify-center p-0.5 cursor-pointer"
+                              title="Clear Pincode"
+                           >
+                              <X className="w-3.5 h-3.5" />
+                           </button>
+                        )}
+                     </div>
                      <button
                         onClick={() => checkPincodeServiceability(pincodeInput)}
                         disabled={checkingPincode}
@@ -1049,7 +1078,7 @@ export default function ProductDetail() {
                      {similarGear.map(t => (
                         <Link to={`/product/${t._id}`} key={t._id} className="group border border-artisan-light/10 bg-artisan-light/[0.02] p-3 hover:border-artisan-grey transition-all flex flex-col gap-3">
                            <div className="aspect-[4/3] bg-white overflow-hidden border border-artisan-light/5 flex items-center justify-center p-2">
-                              <img src={t.image || t.images?.[0]} alt={t.name || t.title} className="max-h-full max-w-full object-contain grayscale group-hover:grayscale-0 transition-all duration-500" />
+                              <img src={t.image || t.images?.[0]} alt={t.name || t.title} className="max-h-full max-w-full object-contain transition-all duration-500" />
                            </div>
                            <div className="space-y-1">
                               <span className="text-[8px] font-mono font-bold text-artisan-grey uppercase tracking-widest block">{t.category}</span>

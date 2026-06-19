@@ -15,18 +15,34 @@ import ConsentModal from './components/auth/ConsentModal'
 import { useToast } from './context/ToastContext'
 import api from './services/api'
 
-// Lazy loaded page components
-const Home = lazy(() => import('./pages/Home'))
-const Auth = lazy(() => import('./pages/Auth'))
-const ForgotPassword = lazy(() => import('./pages/ForgotPassword'))
-const AllProduct = lazy(() => import('./pages/AllProduct'))
-const ListTool = lazy(() => import('./pages/ListTool'))
-const ProductDetail = lazy(() => import('./pages/ProductDetail'))
-const Wishlist = lazy(() => import('./pages/Wishlist'))
-const Cart = lazy(() => import('./pages/Cart'))
-const Profile = lazy(() => import('./pages/Profile'))
-const OrdersHistory = lazy(() => import('./pages/OrdersHistory'))
-const OrderDetail = lazy(() => import('./pages/OrderDetail'))
+// Static imports for user-facing pages
+import Home from './pages/Home'
+import Auth from './pages/Auth'
+import ForgotPassword from './pages/ForgotPassword'
+import AllProduct from './pages/AllProduct'
+import ProductDetail from './pages/ProductDetail'
+import Wishlist from './pages/Wishlist'
+import Cart from './pages/Cart'
+import Profile from './pages/Profile'
+import OrdersHistory from './pages/OrdersHistory'
+import OrderDetail from './pages/OrderDetail'
+import Shipping from './pages/Shipping'
+import ReturnsAndRefunds from './pages/ReturnsAndRefunds'
+import NotFound from './pages/NotFound'
+import Categories from './pages/Categories'
+import BulkEnquiry from './pages/BulkEnquiry'
+import About from './pages/About'
+import Support from './pages/Support'
+import BookDemo from './pages/BookDemo'
+import FAQ from './pages/FAQ'
+import ResetPassword from './pages/ResetPassword'
+import VerifyEmail from './pages/VerifyEmail'
+import Privacy from './pages/Privacy'
+import Terms from './pages/Terms'
+import Sitemap from './pages/Sitemap'
+import Verification from './pages/Verification'
+
+// Lazy loaded page components for admin-facing pages
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'))
 const AdminUsers = lazy(() => import('./pages/AdminUsers'))
 const AdminUserDetail = lazy(() => import('./pages/AdminUserDetail'))
@@ -36,26 +52,11 @@ const AdminProductDetail = lazy(() => import('./pages/AdminProductDetail'))
 const AdminContent = lazy(() => import('./pages/AdminContent'))
 const AdminMarketing = lazy(() => import('./pages/AdminMarketing'))
 const AdminOrders = lazy(() => import('./pages/AdminOrders'))
-const Shipping = lazy(() => import('./pages/Shipping'))
-const ReturnsAndRefunds = lazy(() => import('./pages/ReturnsAndRefunds'))
-const NotFound = lazy(() => import('./pages/NotFound'))
-const Categories = lazy(() => import('./pages/Categories'))
-const BulkEnquiry = lazy(() => import('./pages/BulkEnquiry'))
-const OurMakers = lazy(() => import('./pages/OurMakers'))
-const MakerStories = lazy(() => import('./pages/MakerStories'))
-const SafetyTrust = lazy(() => import('./pages/SafetyTrust'))
-const About = lazy(() => import('./pages/About'))
-const Support = lazy(() => import('./pages/Support'))
-const BookDemo = lazy(() => import('./pages/BookDemo'))
-const PressRoom = lazy(() => import('./pages/PressRoom'))
-const Insurance = lazy(() => import('./pages/Insurance'))
-const FAQ = lazy(() => import('./pages/FAQ'))
-const ResetPassword = lazy(() => import('./pages/ResetPassword'))
-const VerifyEmail = lazy(() => import('./pages/VerifyEmail'))
-const Privacy = lazy(() => import('./pages/Privacy'))
-const Terms = lazy(() => import('./pages/Terms'))
-const Sitemap = lazy(() => import('./pages/Sitemap'))
-const Verification = lazy(() => import('./pages/Verification'))
+
+const RentRedirect = () => {
+  const location = useLocation()
+  return <Navigate to={`/allproduct${location.search}`} replace />
+}
 
 function App() {
   const { user, setUser, toggleWishlist, updateConsents } = useAuth()
@@ -172,16 +173,10 @@ function App() {
                     <Verification />
                   </ProtectedRoute>
                 } />
-                <Route path="/marketplace" element={<Navigate to="/allproduct" replace />} />
-                <Route path="/rent" element={<Navigate to="/allproduct" replace />} />
+                <Route path="/rent" element={<RentRedirect />} />
                 <Route path="/allproduct" element={<AllProduct />} />
                 <Route path="/bulk-enquiry" element={<BulkEnquiry />} />
                 <Route path="/book-demo" element={<BookDemo />} />
-                <Route path="/list" element={
-                  <ProtectedRoute>
-                    <ListTool />
-                  </ProtectedRoute>
-                } />
                 <Route path="/tool/:id" element={<ProductDetail />} />
                 <Route path="/product/:id" element={<ProductDetail />} />
                 <Route path="/wishlist" element={
@@ -257,15 +252,10 @@ function App() {
 
                 <Route path="/categories" element={<Categories />} />
                 <Route path="/how-it-works" element={<Navigate to="/categories" replace />} />
-                <Route path="/our-makers" element={<OurMakers />} />
-                <Route path="/maker-stories" element={<MakerStories />} />
                 <Route path="/shipping" element={<Shipping />} />
                 <Route path="/returns" element={<ReturnsAndRefunds />} />
-                <Route path="/safety" element={<SafetyTrust />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/support" element={<Support />} />
-                <Route path="/press" element={<PressRoom />} />
-                <Route path="/insurance" element={<Insurance />} />
                 <Route path="/faq" element={<FAQ />} />
                 <Route path="/the-craft" element={<Navigate to="/faq" replace />} />
                 <Route path="/resetpassword/:token" element={<ResetPassword />} />

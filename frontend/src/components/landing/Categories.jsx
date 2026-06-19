@@ -37,7 +37,7 @@ export default function Categories() {
   }, [])
 
   const handleCategoryClick = (categoryName) => {
-    navigate(`/rent?category=${categoryName}`)
+    navigate(`/allproduct?category=${encodeURIComponent(categoryName)}`)
   }
 
   return (

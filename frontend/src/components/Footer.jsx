@@ -47,7 +47,7 @@ export default function Footer() {
             <h4 className="text-xs font-mono font-bold text-artisan-grey uppercase tracking-[0.3em] mb-6">Quick Links</h4>
             <ul className="space-y-3">
               {[
-                { label: 'All Products', href: '/rent' },
+                { label: 'All Products', href: '/allproduct' },
                 { label: 'Categories', href: '/categories' },
                 { label: 'Book Demo', href: '/book-demo' },
                 { label: 'Bulk Order Enquiry', href: '/bulk-enquiry' },
