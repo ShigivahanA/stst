@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Calendar as CalendarIcon, Clock, User, Phone, Mail, FileText, Check, ArrowRight, Building, Loader2, ArrowLeft, CheckCircle2, ChevronDown, Download, Video } from 'lucide-react'
 import api from '../services/api'
 import { useToast } from '../context/ToastContext'
+import SEO from '../components/SEO'
 
 // Predefined available time slots
 const TIME_SLOTS = [
@@ -350,6 +351,12 @@ export default function BookDemo() {
 
   return (
     <div className="min-h-screen bg-artisan-dark bg-noise pt-32 pb-24 text-artisan-light">
+      <SEO
+        title="Schedule a Trial & Product Demonstration"
+        description="Book a virtual or in-store product demonstration with certified clinical technicians to test surgical beds, patient lifts, and wheelchairs at Stat Surgicals."
+        keywords={['book medical demo', 'equipment trial chennai', 'patient lift demonstration', 'wheelchair test drive']}
+        canonicalPath="/book-demo"
+      />
       <div className="container-custom max-w-5xl">
         {/* Back Link */}
         <div className="mb-8">

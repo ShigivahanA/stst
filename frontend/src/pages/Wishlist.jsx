@@ -12,6 +12,7 @@ import {
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import api from '../services/api'
+import SEO from '../components/SEO'
 
 export default function Wishlist() {
   const { user, toggleWishlist } = useAuth()
@@ -63,6 +64,7 @@ export default function Wishlist() {
 
   return (
     <div className="min-h-screen bg-artisan-dark bg-noise pt-24 md:pt-32 pb-24">
+      <SEO title="My Wishlist" robots="noindex, nofollow" />
       <div className="container-custom">
 
         {/* HEADER SECTION */}

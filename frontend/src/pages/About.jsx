@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { Users, Globe, Target, ShieldCheck, IndianRupee, Heart, Activity } from 'lucide-react'
+import SEO from '../components/SEO'
 
 const stats = [
    { label: 'Years of Experience', value: '10+' },
@@ -47,6 +48,12 @@ const fadeLeftVariants = {
 export default function About() {
    return (
       <div className="min-h-screen bg-artisan-dark bg-noise pt-24 md:pt-32 pb-24 relative overflow-hidden">
+         <SEO
+            title="About Us"
+            description="Learn about Stat Surgicals, India's leading distributor of wholesale surgical equipment, diagnostics tools, and rehabilitation aids with over 10 years of experience."
+            keywords={['about stat surgicals', 'medical supplier history', 'wholesale surgicals india', 'certified medical equipment']}
+            canonicalPath="/about"
+         />
          {/* Background Graphic Accents */}
          <div className="absolute inset-0 pointer-events-none overflow-hidden select-none z-0">
             {/* Glowing Orbs */}

@@ -15,6 +15,7 @@ import {
 import ToolCard from '../components/marketplace/ToolCard'
 import api from '../services/api'
 import { useAuth } from '../context/AuthContext'
+import SEO from '../components/SEO'
 
 const categories = ['All', 'Rehabilitation', 'Respiratory', 'Diagnostic Tools', 'Elder Care', 'Mother & Baby', 'Pain Relief', 'Wound Care']
 
@@ -343,7 +344,13 @@ export default function AllProduct() {
   }
 
   return (
-    <div className="min-h-screen bg-artisan-dark text-artisan-light font-display bg-noise relative flex flex-col pt-20 md:pt-24 lg:pt-28">
+    <div className="min-h-screen bg-artisan-dark text-artisan-light font-display bg-noise relative flex flex-col pt-16 md:pt-20 lg:pt-20">
+      <SEO
+        title={activeCategory !== 'All' ? `${activeCategory} Products` : 'Surgical Supplies & Medical Catalog'}
+        description={`Browse our premium selection of ${activeCategory !== 'All' ? activeCategory.toLowerCase() : 'surgical supplies, diagnostic equipment, and medical'} tools. Secure checkout and reliable delivery across India.`}
+        keywords={[activeCategory.toLowerCase(), 'surgical supplies catalog', 'buy medical tools online', 'medical equipment vendor']}
+        canonicalPath={activeCategory !== 'All' ? `/allproduct?category=${encodeURIComponent(activeCategory)}` : '/allproduct'}
+      />
 
       <div className="flex flex-col lg:flex-row flex-1">
 
@@ -353,7 +360,7 @@ export default function AllProduct() {
         </aside>
 
         {/* Main Content Area */}
-        <main className="flex-1 p-4 md:p-8 lg:p-12 overflow-x-hidden">
+        <main className="flex-1 p-4 md:p-8 lg:px-12 lg:py-8 overflow-x-hidden">
 
           <header className="mb-8 md:mb-16">
             <div className="flex flex-col gap-6 md:gap-12">
@@ -406,7 +413,7 @@ export default function AllProduct() {
           <div
             ref={containerRef}
             style={{ minHeight: containerHeight }}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 md:gap-8 pb-12 min-h-[400px]"
+            className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-8 pb-12 min-h-[400px]"
           >
             {loading ? (
               <div className="col-span-full flex flex-col items-center justify-center space-y-4 py-20">

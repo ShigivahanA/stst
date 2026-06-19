@@ -7,36 +7,51 @@ import api from '../../services/api'
 
 // Sub-component for individual marquee cards to keep code clean and modular
 const MarqueeCard = ({ product }) => {
-  const displayImage = product.image || product.images?.[0]
+  const displayImage = product.image || product.images?.[0] || 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=800'
   return (
-    <Link 
+    <Link
       to={`/product/${product._id}`}
-      className="block w-full"
+      className="block w-full outline-none"
     >
-      <div className="w-full bg-artisan-dark border border-artisan-light/10 hover:border-artisan-grey hover:shadow-[0_15px_30px_rgba(37,36,34,0.06)] rounded-2xl p-4 sm:p-5 flex flex-col justify-between items-center text-center transition-all duration-500 relative group/card cursor-pointer">
-        <div className="w-full flex justify-between items-center text-[8px] font-mono text-artisan-light/35 uppercase tracking-wider mb-2">
-          <span>{product.category}</span>
-          <span>REF: {product._id?.slice(-4).toUpperCase()}</span>
-        </div>
+      <div className="group flex flex-col bg-artisan-dark/40 backdrop-blur-sm border border-artisan-light/10 hover:border-artisan-light/30 transition-all duration-300 h-full rounded-2xl overflow-hidden hover:shadow-[0_8px_30px_rgba(235,94,40,0.05)] relative">
         
-        {/* Image Display */}
-        <div className="h-[90px] sm:h-[120px] md:h-[140px] w-full flex items-center justify-center overflow-hidden mb-3 select-none">
+        {/* Image Area */}
+        <div className="relative aspect-[4/3] sm:aspect-video w-full overflow-hidden bg-artisan-dark/60 shrink-0">
           <img
             src={displayImage}
             alt={product.name}
-            className="max-h-full max-w-full object-contain drop-shadow-[0_8px_16px_rgba(37,36,34,0.05)] group-hover/card:scale-105 transition-transform duration-500"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out opacity-90 group-hover:opacity-100"
             draggable={false}
           />
+          
+          {/* Top Overlay Badge */}
+          <div className="absolute top-2 inset-x-2 flex justify-between items-start pointer-events-none">
+            <span className="px-2 py-1 bg-artisan-dark/80 backdrop-blur-md text-[8px] font-mono text-artisan-light/80 border border-artisan-light/10 uppercase tracking-widest rounded-md">
+              {product.category}
+            </span>
+          </div>
         </div>
 
-        {/* Title and price */}
-        <div className="w-full">
-          <h3 className="text-[10px] sm:text-xs font-display font-black text-artisan-light uppercase tracking-tight truncate leading-tight">
-            {product.name}
-          </h3>
-          <span className="text-[9px] font-mono text-artisan-grey font-bold block mt-1">
-            ₹{(product.price !== undefined ? product.price : product.pricePerDay)?.toLocaleString()}
-          </span>
+        {/* Content Area */}
+        <div className="p-3 sm:p-4 flex-1 flex flex-col justify-between bg-gradient-to-b from-transparent to-artisan-dark/40">
+          <div className="mb-2">
+            <h3 className="text-xs sm:text-sm font-display font-bold uppercase tracking-tight text-artisan-light group-hover:text-artisan-grey transition-colors duration-300 line-clamp-2 leading-snug">
+              {product.name}
+            </h3>
+          </div>
+
+          <div className="pt-2 border-t border-artisan-light/5 flex items-center justify-between mt-auto">
+            <div className="flex flex-col">
+              <span className="text-[8px] font-mono text-artisan-light/40 uppercase tracking-widest mb-0.5">Price</span>
+              <span className="text-sm font-display font-extrabold text-artisan-light tracking-tighter leading-none">
+                ₹{(product.price !== undefined ? product.price : product.pricePerDay)?.toLocaleString()}
+              </span>
+            </div>
+            <div className="flex items-center gap-1 text-[9px] font-mono font-bold text-artisan-grey/90">
+              <span className="uppercase tracking-widest text-artisan-light/40">SKU:</span>
+              <span>{product.sku}</span>
+            </div>
+          </div>
         </div>
       </div>
     </Link>

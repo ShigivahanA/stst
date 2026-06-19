@@ -1,8 +1,10 @@
 import ForgotForm from '../components/auth/ForgotForm'
+import SEO from '../components/SEO'
 
 export default function ForgotPassword() {
   return (
     <div className="min-h-screen bg-artisan-dark flex flex-col lg:flex-row">
+      <SEO title="Forgot Password" robots="noindex, nofollow" />
       {/* Branding Side */}
       <div className="hidden lg:flex lg:w-1/2 bg-artisan-grey p-24 flex-col justify-between relative overflow-hidden">
         <div className="relative z-10">

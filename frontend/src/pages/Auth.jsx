@@ -3,6 +3,7 @@ import { useLocation, useNavigate, Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import LoginForm from '../components/auth/LoginForm'
 import SignupForm from '../components/auth/SignupForm'
+import SEO from '../components/SEO'
 
 export default function Auth() {
   const location = useLocation()
@@ -29,6 +30,10 @@ export default function Auth() {
 
   return (
     <div className="h-screen w-full bg-artisan-dark overflow-hidden flex flex-col lg:flex-row fixed inset-0">
+      <SEO
+        title={expandedSide === 'login' ? 'Sign In' : 'Sign Up'}
+        robots="noindex, nofollow"
+      />
 
       {/* LOGIN PANEL (Accordion Pane 01) */}
       <motion.div

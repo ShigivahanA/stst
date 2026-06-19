@@ -36,11 +36,9 @@ import Support from './pages/Support'
 import BookDemo from './pages/BookDemo'
 import FAQ from './pages/FAQ'
 import ResetPassword from './pages/ResetPassword'
-import VerifyEmail from './pages/VerifyEmail'
 import Privacy from './pages/Privacy'
 import Terms from './pages/Terms'
 import Sitemap from './pages/Sitemap'
-import Verification from './pages/Verification'
 
 // Lazy loaded page components for admin-facing pages
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'))
@@ -118,8 +116,7 @@ function App() {
   }, [user, setUser, toggleWishlist, updateConsents, addToast])
 
   const isAuthPage = ['/login', '/signup', '/forgot-password'].includes(location.pathname) ||
-    location.pathname.startsWith('/resetpassword/') ||
-    location.pathname.startsWith('/verifyemail/')
+    location.pathname.startsWith('/resetpassword/')
 
   const transitionKey = ['/login', '/signup'].includes(location.pathname)
     ? 'auth'
@@ -168,11 +165,6 @@ function App() {
                 <Route path="/login" element={<Auth />} />
                 <Route path="/signup" element={<Auth />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
-                <Route path="/verification" element={
-                  <ProtectedRoute>
-                    <Verification />
-                  </ProtectedRoute>
-                } />
                 <Route path="/rent" element={<RentRedirect />} />
                 <Route path="/allproduct" element={<AllProduct />} />
                 <Route path="/bulk-enquiry" element={<BulkEnquiry />} />
@@ -259,7 +251,6 @@ function App() {
                 <Route path="/faq" element={<FAQ />} />
                 <Route path="/the-craft" element={<Navigate to="/faq" replace />} />
                 <Route path="/resetpassword/:token" element={<ResetPassword />} />
-                <Route path="/verifyemail/:token" element={<VerifyEmail />} />
                 <Route path="/privacy" element={<Privacy />} />
                 <Route path="/terms" element={<Terms />} />
                 <Route path="/sitemap" element={<Sitemap />} />

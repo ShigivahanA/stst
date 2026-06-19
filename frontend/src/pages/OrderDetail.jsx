@@ -24,6 +24,7 @@ import api from '../services/api';
 import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
 import { downloadOrderReceipt } from '../utils/orderReceipt';
+import SEO from '../components/SEO';
 
 export default function OrderDetail() {
    const { id } = useParams();
@@ -221,6 +222,7 @@ export default function OrderDetail() {
 
    return (
       <div className="min-h-screen bg-artisan-dark bg-noise pt-24 md:pt-32 pb-24 text-artisan-light font-body">
+         <SEO title="Order Details" robots="noindex, nofollow" />
          <div className="container-custom max-w-5xl mx-auto space-y-8">
             
             {/* BACK LINK */}

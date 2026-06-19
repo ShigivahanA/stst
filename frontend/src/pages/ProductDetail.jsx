@@ -28,6 +28,7 @@ import {
 import api from '../services/api'
 import { useToast } from '../context/ToastContext'
 import { useAuth } from '../context/AuthContext'
+import SEO from '../components/SEO'
 
 const getYouTubeEmbedUrl = (url) => {
    if (!url) return '';
@@ -411,6 +412,14 @@ export default function ProductDetail() {
 
    return (
       <div className="min-h-screen bg-artisan-dark text-artisan-light font-body bg-noise selection:bg-artisan-grey selection:text-artisan-dark pt-28 pb-20">
+         <SEO
+            title={displayTitle}
+            description={displayDesc}
+            keywords={[tool.category, displayTitle, 'surgical equipment', 'medical instruments', tool.sku]}
+            ogType="product"
+            ogImage={displayImages[0]}
+            canonicalPath={`/product/${tool._id}`}
+         />
          <div className="container-custom max-w-5xl mx-auto space-y-10">
 
             {/* Top Breadcrumb/Back link */}

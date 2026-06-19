@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { Link, useNavigate } from 'react-router-dom'
-import { MapPin, Shield, ArrowUpRight, Star, Heart } from 'lucide-react'
+import { ArrowUpRight, Star, Heart } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../context/ToastContext'
 
@@ -33,80 +33,69 @@ export default function ToolCard({ tool, idx }) {
   }
 
   return (
-    <Link to={`/product/${tool._id}`} className="block h-full">
+    <Link to={`/product/${tool._id}`} className="block h-full outline-none">
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95 }}
         transition={{ duration: 0.4, delay: idx * 0.05 }}
-        className="group flex flex-col bg-artisan-dark/40 backdrop-blur-sm border border-artisan-light/10 hover:border-artisan-grey transition-colors duration-500 h-full relative rounded-xl"
+        className="group flex flex-col bg-artisan-dark/40 backdrop-blur-sm border border-artisan-light/10 hover:border-artisan-light/30 transition-all duration-300 h-full rounded-2xl overflow-hidden hover:shadow-[0_8px_30px_rgba(235,94,40,0.05)]"
       >
-        {/* Rating Badge */}
-        <div className="absolute top-4 right-4 z-10 flex items-center gap-1.5 px-2.5 py-1 bg-artisan-dark/80 backdrop-blur-md text-[9px] font-mono text-artisan-grey border border-artisan-light/10 rounded-md">
-          <Star className="w-3 h-3 fill-artisan-grey text-artisan-grey" />
-          <span>
-            {tool.averageRating || '0.0'} ({tool.numOfReviews || 0})
-          </span>
-        </div>
-
-        {/* Wishlist Button */}
-        <button
-          onClick={handleWishlist}
-          className={`absolute top-4 left-4 z-20 w-8 h-8 backdrop-blur-md border flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 ${isWishlisted ? 'bg-red-500/20 border-red-500 text-red-500' : 'bg-artisan-dark/80 border-artisan-light/10 text-artisan-light hover:text-artisan-grey'} rounded-full`}
-        >
-          <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-current' : ''}`} />
-        </button>
-
-        {/* Image Area */}
-        <div className="relative aspect-[16/11] overflow-hidden bg-artisan-dark rounded-t-xl">
+        {/* Image Area - Aspect Video for compactness */}
+        <div className="relative aspect-video w-full overflow-hidden bg-artisan-dark/60 shrink-0">
           <img
             src={displayImage}
             alt={tool.name || tool.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000 ease-out"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out opacity-90 group-hover:opacity-100"
           />
 
-          {/* Category Floating Label */}
-          <div className="absolute bottom-4 left-4 pointer-events-none">
-            <span className="px-2.5 py-1 bg-artisan-dark/80 backdrop-blur-md text-[8px] font-mono text-artisan-grey border border-artisan-light/10 uppercase tracking-widest pointer-events-auto rounded-md">
+          {/* Top Overlays */}
+          <div className="absolute top-3 inset-x-3 flex justify-between items-start pointer-events-none">
+            {/* Category Tag */}
+            <span className="px-2 py-1 bg-artisan-dark/80 backdrop-blur-md text-[9px] font-mono text-artisan-light/80 border border-artisan-light/10 uppercase tracking-widest rounded-md">
               {tool.category}
             </span>
+
+            {/* Actions: Wishlist */}
+            <div className="flex flex-col gap-2 pointer-events-auto items-end">
+              <button
+                onClick={handleWishlist}
+                className={`w-7 h-7 flex items-center justify-center backdrop-blur-md border rounded-full transition-all duration-300 ${isWishlisted ? 'bg-red-500/20 border-red-500 text-red-500' : 'bg-artisan-dark/60 border-artisan-light/10 text-artisan-light hover:bg-artisan-light/10 hover:text-white'}`}
+                aria-label="Toggle Wishlist"
+              >
+                <Heart className={`w-3.5 h-3.5 ${isWishlisted ? 'fill-current' : ''}`} />
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Content Area */}
-        <div className="p-6 flex-1 flex flex-col justify-between space-y-6">
-          <div className="space-y-4">
-            <div className="flex justify-between items-start">
-              <h3 className="text-xl md:text-2xl font-display font-extrabold uppercase tracking-tight text-artisan-light group-hover:text-artisan-grey transition-colors duration-500 flex-1 pr-4">
-                {tool.name || tool.title}
-              </h3>
-            </div>
-
-            <p className="text-xs text-artisan-light/40 line-clamp-2 leading-relaxed font-body">
+        <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between bg-gradient-to-b from-transparent to-artisan-dark/40">
+          <div className="mb-4">
+            <h3 className="text-base sm:text-lg font-display font-bold uppercase tracking-tight text-artisan-light group-hover:text-artisan-grey transition-colors duration-300 line-clamp-2 mb-1.5 leading-snug">
+              {tool.name || tool.title}
+            </h3>
+            
+            <p className="text-xs text-artisan-light/50 line-clamp-1 leading-relaxed font-body">
               {tool.desc || tool.description}
             </p>
           </div>
 
-          {/* Pricing & Action */}
-          <div className="pt-6 border-t border-artisan-light/5 flex items-center justify-between">
+          {/* Pricing & Rating */}
+          <div className="pt-3 border-t border-artisan-light/5 flex items-center justify-between mt-auto">
             <div className="flex flex-col">
-              <span className="text-2xl font-display font-extrabold text-artisan-light tracking-tighter">
+              <span className="text-[9px] font-mono text-artisan-light/40 uppercase tracking-widest mb-0.5">Price</span>
+              <span className="text-lg sm:text-xl font-display font-extrabold text-artisan-light tracking-tighter leading-none">
                 ₹{(tool.price !== undefined ? tool.price : tool.pricePerDay)?.toLocaleString()}
               </span>
             </div>
 
-            <div className="flex items-center gap-3 px-5 py-3 border border-artisan-light/10 group-hover:border-artisan-grey group-hover:bg-artisan-grey group-hover:text-artisan-dark transition-[color,background-color,border-color] duration-500 text-[10px] font-display font-bold uppercase tracking-widest rounded-xl">
-              View
-              <ArrowUpRight className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+            <div className="flex items-center gap-1 text-[11px] font-mono font-bold text-artisan-grey/90 group-hover:text-artisan-grey transition-colors duration-300">
+              <Star className="w-3 h-3 fill-current" />
+              <span>{tool.averageRating || '0.0'}</span>
             </div>
           </div>
         </div>
-
-        {/* Decorative Corner
-        <div className="absolute bottom-0 right-0 w-8 h-8 pointer-events-none">
-          <div className="absolute bottom-2 right-2 w-px h-2 bg-artisan-light/5 group-hover:bg-artisan-grey transition-colors" />
-          <div className="absolute bottom-2 right-2 h-px w-2 bg-artisan-light/5 group-hover:bg-artisan-grey transition-colors" />
-        </div> */}
       </motion.div>
     </Link>
   )

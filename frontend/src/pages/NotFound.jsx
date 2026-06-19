@@ -1,10 +1,12 @@
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { ArrowLeft, Hammer, AlertOctagon, HelpCircle } from 'lucide-react'
+import SEO from '../components/SEO'
 
 export default function NotFound() {
    return (
       <div className="h-screen bg-artisan-dark bg-noise flex items-center justify-center p-6 relative overflow-hidden">
+         <SEO title="Page Not Found" robots="noindex, nofollow" />
          {/* Background Decorative Element */}
          <div className="absolute inset-0 pointer-events-none opacity-[0.03] flex items-center justify-center">
             <span className="text-[50vw] font-display font-black select-none leading-none">404</span>

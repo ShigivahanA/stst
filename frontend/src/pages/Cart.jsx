@@ -24,6 +24,7 @@ import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import api from '../services/api'
 import { downloadOrderReceipt } from '../utils/orderReceipt'
+import SEO from '../components/SEO'
 
 export default function Cart() {
   const { user, setUser } = useAuth()
@@ -575,6 +576,7 @@ export default function Cart() {
 
   return (
     <div className="min-h-screen bg-artisan-dark bg-noise pt-24 md:pt-32 pb-24 text-artisan-light font-body">
+      <SEO title="Shopping Cart" robots="noindex, nofollow" />
       <div className="container-custom">
 
         {/* --- STEPPER (1-2-3) CENTERED AT THE TOP --- */}

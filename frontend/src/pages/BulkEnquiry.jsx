@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { CheckCircle2, ChevronRight, ChevronDown, Mail, Phone, MapPin, Loader2, ArrowLeft, ArrowUpRight } from 'lucide-react'
 import api from '../services/api'
 import { useToast } from '../context/ToastContext'
+import SEO from '../components/SEO'
 
 export default function BulkEnquiry() {
   const [searchParams] = useSearchParams()
@@ -127,6 +128,12 @@ export default function BulkEnquiry() {
 
   return (
     <div className="min-h-screen bg-artisan-dark bg-noise pt-32 pb-24 text-artisan-light">
+      <SEO
+        title="Bulk Orders & Institutional Sales"
+        description="Get wholesale pricing and custom quotes on volume orders of surgical supplies, respiratory devices, and medical instruments from Stat Surgicals."
+        keywords={['bulk medical supplies', 'wholesale hospital supplies', 'medical equipment distributor india', 'bulk surgical tools']}
+        canonicalPath="/bulk-enquiry"
+      />
       <div className="container-custom max-w-5xl">
         {/* Back Link */}
         <div className="mb-6">

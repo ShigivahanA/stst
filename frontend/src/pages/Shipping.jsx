@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Truck, Clock, Globe, ShieldCheck, Loader2 } from 'lucide-react'
 import api from '../services/api'
+import SEO from '../components/SEO'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -124,6 +125,12 @@ export default function Shipping() {
 
   return (
     <div className="min-h-screen bg-artisan-dark bg-noise pt-24 md:pt-32 pb-24 relative overflow-hidden">
+      <SEO
+        title="Shipping & Delivery Policy"
+        description="Review Stat Surgicals' shipping rates, package delivery timelines, and transit safety protocols across India."
+        keywords={['medical equipment shipping', 'surgical supplies delivery time', 'chennai clinic supplies shipping']}
+        canonicalPath="/shipping"
+      />
       {/* Background Graphic Accents */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden select-none z-0">
         <div className="absolute -top-40 right-1/4 w-[500px] h-[500px] rounded-full bg-artisan-grey/5 blur-[120px] mix-blend-multiply dark:mix-blend-screen animate-pulse" style={{ animationDuration: '8s' }} />

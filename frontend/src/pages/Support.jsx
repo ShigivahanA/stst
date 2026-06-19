@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Mail, MessageSquare, Phone, MapPin, Clock, ArrowRight, Navigation } from 'lucide-react'
 import { useToast } from '../context/ToastContext'
+import SEO from '../components/SEO'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -76,6 +77,12 @@ export default function Support() {
 
   return (
     <div className="min-h-screen bg-artisan-dark bg-noise pt-24 md:pt-32 pb-24 relative overflow-hidden">
+      <SEO
+        title="Contact Us & Customer Support"
+        description="Get in touch with Stat Surgicals' customer support team. Reach us via phone, email, WhatsApp, or visit our store in Pammal, Chennai."
+        keywords={['contact medical supplier', 'chennai surgical supplies phone number', 'stat surgicals address', 'customer service diagnostics']}
+        canonicalPath="/support"
+      />
       {/* Background Graphic Accents */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden select-none z-0">
         {/* Subtle glowing radial background */}

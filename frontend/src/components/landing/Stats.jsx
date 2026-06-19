@@ -174,7 +174,7 @@ export default function Stats() {
                     animation: ecg-sweep 2.5s linear infinite;
                   }
                 `}</style>
-                <svg className="w-full h-full" viewBox="0 0 200 40">
+                <svg className="w-full h-full" viewBox="0 0 200 40" preserveAspectRatio="none">
                   {/* Faint static background line */}
                   <path
                     d="M 0,20 L 40,20 L 50,20 L 55,5 L 60,35 L 65,20 L 70,20 L 80,20 L 90,20 L 95,0 L 100,40 L 105,20 L 110,20 L 120,20 L 160,20 L 170,20 L 175,5 L 180,35 L 185,20 L 200,20"

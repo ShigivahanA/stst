@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { ArrowRight, Home, LayoutGrid, ShoppingBag, ShieldCheck, Mail } from 'lucide-react'
+import SEO from '../components/SEO'
 
 const sitemapData = [
   {
@@ -79,6 +80,12 @@ export default function Sitemap() {
 
   return (
     <div className="min-h-screen bg-artisan-dark bg-noise pt-24 md:pt-32 pb-24 relative">
+      <SEO
+        title="Sitemap"
+        description="Navigate across all pages, policies, categories, and contact portals of Stat Surgicals easily."
+        keywords={['stat surgicals sitemap', 'medical catalog navigation', 'surgical shop pages']}
+        canonicalPath="/sitemap"
+      />
       {/* Background Graphic Accents */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden select-none z-0">
         <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] rounded-full bg-artisan-grey/5 blur-[140px] mix-blend-multiply dark:mix-blend-screen animate-pulse" style={{ animationDuration: '10s' }} />

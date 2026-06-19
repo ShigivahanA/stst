@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Scale, Shield, AlertTriangle, FileText, ChevronRight, Mail, MapPin, Globe, CheckSquare, Loader2 } from 'lucide-react'
 import api from '../services/api'
+import SEO from '../components/SEO'
 
 export default function Terms() {
   const [sections, setSections] = useState([])
@@ -134,6 +135,12 @@ export default function Terms() {
 
   return (
     <div className="min-h-screen bg-artisan-dark bg-noise pt-24 md:pt-32 pb-24 relative">
+      <SEO
+        title="Terms of Service"
+        description="Review the terms and conditions governing the purchase, rental, and usage of medical products from Stat Surgicals."
+        keywords={['medical equipment rental terms', 'surgical shop rules', 'stat surgicals contract']}
+        canonicalPath="/terms"
+      />
       {/* Background Graphic Accents */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden select-none z-0">
         <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] rounded-full bg-artisan-grey/5 blur-[140px] mix-blend-multiply dark:mix-blend-screen animate-pulse" style={{ animationDuration: '10s' }} />

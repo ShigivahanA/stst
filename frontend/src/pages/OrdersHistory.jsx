@@ -14,6 +14,7 @@ import {
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import api from '../services/api'
+import SEO from '../components/SEO'
 
 export default function OrdersHistory() {
   const { user } = useAuth()
@@ -64,6 +65,7 @@ export default function OrdersHistory() {
 
   return (
     <div className="min-h-screen bg-artisan-dark bg-noise pt-24 md:pt-32 pb-24 text-artisan-light font-body">
+      <SEO title="Order History" robots="noindex, nofollow" />
       <div className="container-custom">
         
         {/* HEADER & STATS */}

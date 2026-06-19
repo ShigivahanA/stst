@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Lock, ArrowRight, Hammer, Loader2, CheckCircle } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import SEO from '../components/SEO'
 
 export default function ResetPassword() {
   const { token } = useParams()
@@ -34,6 +35,7 @@ export default function ResetPassword() {
   if (success) {
     return (
       <div className="h-screen bg-artisan-dark flex items-center justify-center p-6">
+        <SEO title="Reset Password" robots="noindex, nofollow" />
         <div className="w-full max-w-md text-center space-y-8">
           <div className="w-20 h-20 bg-artisan-grey flex items-center justify-center mx-auto rounded-full">
             <CheckCircle className="w-10 h-10 text-artisan-dark" />
@@ -51,6 +53,7 @@ export default function ResetPassword() {
 
   return (
     <div className="h-screen bg-artisan-dark flex flex-col lg:flex-row fixed inset-0 overflow-hidden">
+      <SEO title="Reset Password" robots="noindex, nofollow" />
       <div className="hidden lg:flex lg:w-1/2 bg-artisan-grey p-24 flex-col justify-between">
         <h2 className="text-8xl xl:text-[10rem] font-display font-extrabold text-artisan-dark uppercase tracking-tighter leading-[0.8]">
           Secure <br />
