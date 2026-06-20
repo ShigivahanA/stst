@@ -161,13 +161,13 @@
 /* 1. Scale Logo */
 .mobile-desktop-mode header a.flex svg,
 .mobile-desktop-mode header a.flex img {
-  width: 32px !important;
-  height: 32px !important;
+  width: 48px !important;
+  height: 48px !important;
 }
 
 .mobile-desktop-mode header a.flex span {
-  font-size: 20px !important;
-  letter-spacing: 0.25em !important;
+  font-size: 24px !important;
+  letter-spacing: 0.15em !important;
 }
 
 /* 2. Scale Searchbar and center it without overlapping */

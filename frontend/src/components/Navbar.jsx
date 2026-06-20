@@ -257,7 +257,7 @@ export default function Navbar() {
         initial={{ y: 0 }}
         animate={{ y: (isVisible || isOpen) ? 0 : '-100%' }}
         transition={{ duration: 0.4, ease: [0.33, 1, 0.68, 1] }}
-        className={`fixed top-0 left-0 w-full z-[100] transition-all duration-300 ${isScrolled && !isOpen ? 'h-12 bg-artisan-dark/90 backdrop-blur-md' : 'h-16'
+        className={`fixed top-0 left-0 w-full z-[100] transition-all duration-300 ${isScrolled && !isOpen ? 'h-14 bg-artisan-dark/90 backdrop-blur-md' : 'h-16'
           }`}
       >
         <div className="container-custom h-full flex items-center justify-between border-b border-artisan-light/5">
@@ -275,8 +275,8 @@ export default function Navbar() {
               whileTap={{ scale: 0.98 }}
               className="flex items-center gap-2"
             >
-              <img src={logo} alt="STAT Logo" className="w-9 h-9 object-contain bg-gray-400 p-0.5 rounded-full transition-all duration-300 group-hover/logo:scale-110 group-hover/logo:shadow-[0_0_10px_#eb5e28]" />
-              <span className="text-[9px] min-[375px]:text-[10px] min-[410px]:text-[11px] sm:text-xs md:text-sm lg:text-base font-display font-bold uppercase tracking-[0.08em] min-[375px]:tracking-[0.12em] sm:tracking-[0.15em] md:tracking-[0.2em] whitespace-nowrap">
+              <img src={logo} alt="STAT Logo" className="w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 object-contain bg-gray-400 p-0.5 rounded-full transition-all duration-300 group-hover/logo:scale-110 group-hover/logo:shadow-[0_0_10px_#eb5e28]" />
+              <span className="text-xs min-[375px]:text-[13px] min-[410px]:text-sm sm:text-base md:text-lg lg:text-xl font-display font-bold uppercase tracking-[0.06em] min-[375px]:tracking-[0.08em] sm:tracking-[0.12em] md:tracking-[0.15em] whitespace-nowrap">
                 <span className="text-artisan-light">STAT</span>
                 <span className="text-artisan-grey ml-1.5 sm:ml-2">Surgical Supplies</span>
               </span>
