@@ -76,10 +76,10 @@ function StatCard({ stat, index, isInView, icon: IconComponent, idBadge }) {
     >
       {/* Blueprint grid background */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(235,94,40,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(235,94,40,0.02)_1px,transparent_1px)] bg-[size:12px_12px] opacity-20 pointer-events-none group-hover:opacity-40 transition-opacity duration-500" />
-      
+
       {/* HUD-like corner accent */}
-      <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-artisan-grey/25 group-hover:border-artisan-grey transition-colors duration-500" />
-      <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-artisan-grey/25 group-hover:border-artisan-grey transition-colors duration-500" />
+      <div className="absolute top-3 left-3 w-4 h-4 border-t-2 border-l-2 border-artisan-grey/25 group-hover:border-artisan-grey transition-colors duration-500 pointer-events-none rounded-xs" />
+      <div className="absolute bottom-3 right-3 w-4 h-4 border-b-2 border-r-2 border-artisan-grey/25 group-hover:border-artisan-grey transition-colors duration-500 pointer-events-none rounded-xs" />
 
       {/* Top row */}
       <div className="flex justify-between items-start w-full relative z-10">
@@ -141,10 +141,10 @@ export default function Stats() {
     <section ref={ref} className="bg-artisan-dark bg-noise border-b border-artisan-light/10 py-16 md:py-24 relative overflow-hidden flex flex-col justify-center">
       {/* Background Decorative Accent Grid */}
       <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[linear-gradient(to_right,rgba(37,36,34,0.1)_1px,transparent_1px),linear-gradient(to_bottom,rgba(37,36,34,0.1)_1px,transparent_1px)] bg-[size:40px_40px]" />
-      
+
       <div className="container-custom relative z-10 w-full">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
-          
+
           {/* Left Column: Title and clinical detail card */}
           <div className="lg:col-span-4 xl:col-span-5 flex flex-col space-y-8">
             <div className="space-y-3">
@@ -154,7 +154,7 @@ export default function Stats() {
                 <span className="text-outline">Advantage.</span>
               </h2>
             </div>
-            
+
             <p className="text-xs font-mono text-artisan-light/50 uppercase tracking-[0.2em] leading-relaxed">
               STAT Surgical Supplies delivers top-tier clinical machinery, diagnostic tools, and surgical consumables to hospitals, healthcare centers, and medical practitioners across India.
             </p>
@@ -199,7 +199,7 @@ export default function Stats() {
               </div>
             </div>
           </div>
-          
+
           {/* Right Column: 2x2 grid of modern stats cards */}
           <div className="lg:col-span-8 xl:col-span-7">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6">
@@ -218,7 +218,7 @@ export default function Stats() {
               })}
             </div>
           </div>
-          
+
         </div>
       </div>
     </section>

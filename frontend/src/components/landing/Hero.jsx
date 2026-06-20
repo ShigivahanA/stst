@@ -149,11 +149,16 @@ export default function Hero() {
   // Auto-refresh the page when screen size changes to rebuild marquee layouts dynamically
   useEffect(() => {
     let timeoutId
+    let lastWidth = window.innerWidth
     const handleResize = () => {
-      clearTimeout(timeoutId)
-      timeoutId = setTimeout(() => {
-        window.location.reload()
-      }, 400)
+      const currentWidth = window.innerWidth
+      if (currentWidth !== lastWidth) {
+        lastWidth = currentWidth
+        clearTimeout(timeoutId)
+        timeoutId = setTimeout(() => {
+          window.location.reload()
+        }, 400)
+      }
     }
     window.addEventListener('resize', handleResize)
     return () => {
