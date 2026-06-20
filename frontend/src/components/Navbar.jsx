@@ -331,7 +331,13 @@ export default function Navbar() {
                         )}
                         <div className="flex-1 min-w-0">
                           <p className="text-[10px] font-mono font-bold uppercase tracking-wider text-artisan-light truncate">{prod.name}</p>
-                          <p className="text-[8px] font-mono text-artisan-grey uppercase tracking-widest truncate">{prod.category} • ₹{prod.price}</p>
+                          <div className="flex items-center gap-1.5 text-[8px] font-mono text-artisan-grey uppercase tracking-widest truncate">
+                            <span>{prod.category} •</span>
+                            {prod.mrp !== undefined && prod.mrp > (prod.sellingPrice !== undefined ? prod.sellingPrice : prod.price) && (
+                              <span className="line-through text-artisan-light/20">₹{prod.mrp}</span>
+                            )}
+                            <span className="text-artisan-light/60">₹{prod.sellingPrice !== undefined ? prod.sellingPrice : prod.price}</span>
+                          </div>
                         </div>
                       </button>
                     ))}
@@ -472,7 +478,13 @@ export default function Navbar() {
                           )}
                           <div className="flex-1 min-w-0">
                             <p className="text-[10px] font-mono font-bold uppercase tracking-wider text-artisan-light truncate">{prod.name}</p>
-                            <p className="text-[8px] font-mono text-artisan-grey uppercase tracking-widest truncate">{prod.category} • ₹{prod.price}</p>
+                            <div className="flex items-center gap-1.5 text-[8px] font-mono text-artisan-grey uppercase tracking-widest truncate">
+                              <span>{prod.category} •</span>
+                              {prod.mrp !== undefined && prod.mrp > (prod.sellingPrice !== undefined ? prod.sellingPrice : prod.price) && (
+                                <span className="line-through text-artisan-light/20">₹{prod.mrp}</span>
+                              )}
+                              <span className="text-artisan-light/60">₹{prod.sellingPrice !== undefined ? prod.sellingPrice : prod.price}</span>
+                            </div>
                           </div>
                         </button>
                       ))}

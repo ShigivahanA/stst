@@ -24,7 +24,9 @@ export default function AdminNewProduct() {
    const [sku, setSku] = useState('')
    const [name, setName] = useState('')
    const [desc, setDesc] = useState('')
-   const [price, setPrice] = useState('')
+   const [mrp, setMrp] = useState('')
+   const [sellingPrice, setSellingPrice] = useState('')
+   const [tax, setTax] = useState('0')
    const [quantity, setQuantity] = useState('0')
    const [category, setCategory] = useState('Rehabilitation')
    const [customCategory, setCustomCategory] = useState('')
@@ -67,7 +69,10 @@ export default function AdminNewProduct() {
             sku: sku.trim().toUpperCase(),
             name: name.trim(),
             desc: desc.trim(),
-            price: parseFloat(price),
+            price: parseFloat(sellingPrice) * (1 + parseFloat(tax) / 100),
+            mrp: parseFloat(mrp),
+            sellingPrice: parseFloat(sellingPrice),
+            tax: parseFloat(tax),
             quantity: parseInt(quantity, 10),
             category: finalCategory,
             lowstockthreshold: parseInt(lowStockThreshold, 10),
@@ -220,18 +225,18 @@ export default function AdminNewProduct() {
                      />
                   </div>
 
-                  {/* Price, Qty, Low Threshold Grid */}
+                  {/* MRP, Selling Price, Tax Grid */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                     {/* Price */}
+                     {/* MRP */}
                      <div className="space-y-2">
                         <label className="text-[8px] font-mono text-artisan-light/40 uppercase tracking-widest block font-bold">
-                           Unit Price (₹) <span className="text-artisan-grey">*</span>
+                           MRP (₹) <span className="text-artisan-grey">*</span>
                         </label>
                         <input
                            type="number"
-                           value={price}
-                           onChange={(e) => setPrice(e.target.value)}
-                           placeholder="Price in INR"
+                           value={mrp}
+                           onChange={(e) => setMrp(e.target.value)}
+                           placeholder="MRP in INR"
                            min="0"
                            step="0.01"
                            className="w-full bg-artisan-light/[0.01] border border-artisan-light/10 p-4 text-xs sm:text-sm font-mono text-artisan-light tracking-widest outline-none focus:border-artisan-grey transition-all"
@@ -239,6 +244,43 @@ export default function AdminNewProduct() {
                         />
                      </div>
 
+                     {/* Selling Price */}
+                     <div className="space-y-2">
+                        <label className="text-[8px] font-mono text-artisan-light/40 uppercase tracking-widest block font-bold">
+                           Selling Price (₹) <span className="text-artisan-grey">*</span>
+                        </label>
+                        <input
+                           type="number"
+                           value={sellingPrice}
+                           onChange={(e) => setSellingPrice(e.target.value)}
+                           placeholder="Selling Price in INR"
+                           min="0"
+                           step="0.01"
+                           className="w-full bg-artisan-light/[0.01] border border-artisan-light/10 p-4 text-xs sm:text-sm font-mono text-artisan-light tracking-widest outline-none focus:border-artisan-grey transition-all"
+                           required
+                        />
+                     </div>
+
+                     {/* Tax */}
+                     <div className="space-y-2">
+                        <label className="text-[8px] font-mono text-artisan-light/40 uppercase tracking-widest block font-bold">
+                           Tax (%) <span className="text-artisan-grey">*</span>
+                        </label>
+                        <input
+                           type="number"
+                           value={tax}
+                           onChange={(e) => setTax(e.target.value)}
+                           placeholder="Tax % (e.g. 18)"
+                           min="0"
+                           step="0.01"
+                           className="w-full bg-artisan-light/[0.01] border border-artisan-light/10 p-4 text-xs sm:text-sm font-mono text-artisan-light tracking-widest outline-none focus:border-artisan-grey transition-all"
+                           required
+                        />
+                     </div>
+                  </div>
+
+                  {/* Qty, Low Threshold Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
                      {/* Quantity */}
                      <div className="space-y-2">
                         <label className="text-[8px] font-mono text-artisan-light/40 uppercase tracking-widest block font-bold">

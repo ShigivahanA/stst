@@ -6,6 +6,16 @@ export const createProduct = async (productBody) => {
   if (existingProduct) {
     throw new ApiError(400, `Product with SKU ${productBody.sku} already exists`);
   }
+
+  // Calculate final tax-inclusive price
+  const tax = productBody.tax !== undefined ? productBody.tax : 0;
+  const sellingPrice = productBody.sellingPrice !== undefined ? productBody.sellingPrice : (productBody.price || 0);
+  productBody.price = sellingPrice * (1 + tax / 100);
+
+  // Set default values for mrp and sellingPrice if not provided
+  if (productBody.mrp === undefined) productBody.mrp = sellingPrice;
+  if (productBody.sellingPrice === undefined) productBody.sellingPrice = sellingPrice;
+
   return await Product.create(productBody);
 };
 
@@ -64,6 +74,11 @@ export const updateProductById = async (id, updateBody) => {
       throw new ApiError(400, `Product with SKU ${updateBody.sku} already exists`);
     }
   }
+
+  // Update final price if sellingPrice or tax is updated
+  const tax = updateBody.tax !== undefined ? updateBody.tax : (product.tax || 0);
+  const sellingPrice = updateBody.sellingPrice !== undefined ? updateBody.sellingPrice : (product.sellingPrice || product.price || 0);
+  updateBody.price = sellingPrice * (1 + tax / 100);
 
   Object.assign(product, updateBody);
   await product.save();

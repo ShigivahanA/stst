@@ -43,6 +43,9 @@ const transformProductToListing = (p) => {
     },
     active: p.active,
     isActive: p.active, // legacy fallback
+    mrp: p.mrp || p.price || 0,
+    sellingPrice: p.sellingPrice || p.price || 0,
+    tax: p.tax || 0,
     createdAt: p.createdAt,
     updatedAt: p.updatedAt
   };
@@ -164,16 +167,24 @@ export const getListing = asyncHandler(async (req, res) => {
 });
 
 export const createListing = asyncHandler(async (req, res) => {
-  const { sku, name, desc, price, quantity, category, lowstockthreshold, active, image, title, description, pricePerDay, images, specifications } = req.body;
+  const { sku, name, desc, price, mrp, sellingPrice, tax, quantity, category, lowstockthreshold, active, image, title, description, pricePerDay, images, specifications } = req.body;
   const productImages = (images && images.length > 0)
     ? images
     : (image ? [{ url: image, publicId: 'legacy' }] : []);
+
+  const inputTax = tax !== undefined ? parseFloat(tax) : 0;
+  const inputSellingPrice = sellingPrice !== undefined ? parseFloat(sellingPrice) : parseFloat(price || pricePerDay || 100);
+  const calculatedPrice = inputSellingPrice * (1 + inputTax / 100);
+
   const newProduct = await Product.create({
     sku: sku || 'SKU-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
     name: name || title || 'Unnamed Product',
     desc: desc || description || '',
     category: category || 'Diagnostic Tools',
-    price: price !== undefined ? price : (pricePerDay || 100),
+    price: calculatedPrice,
+    mrp: mrp !== undefined ? parseFloat(mrp) : inputSellingPrice,
+    sellingPrice: inputSellingPrice,
+    tax: inputTax,
     quantity: quantity !== undefined ? quantity : 5,
     lowstockthreshold: lowstockthreshold !== undefined ? lowstockthreshold : 10,
     active: active !== undefined ? active : true,
@@ -184,20 +195,22 @@ export const createListing = asyncHandler(async (req, res) => {
 });
 
 export const updateListing = asyncHandler(async (req, res) => {
-  const { sku, name, desc, price, quantity, category, lowstockthreshold, active, image, isActive, title, description, pricePerDay, images, specifications } = req.body;
+  const { sku, name, desc, price, mrp, sellingPrice, tax, quantity, category, lowstockthreshold, active, image, isActive, title, description, pricePerDay, images, specifications } = req.body;
   const updateData = {};
   if (sku !== undefined) updateData.sku = sku;
   if (name !== undefined) updateData.name = name;
   if (title !== undefined && name === undefined) updateData.name = title;
   if (desc !== undefined) updateData.desc = desc;
   if (description !== undefined && desc === undefined) updateData.desc = description;
-  if (price !== undefined) updateData.price = price;
-  if (pricePerDay !== undefined && price === undefined) updateData.price = pricePerDay;
   if (quantity !== undefined) updateData.quantity = quantity;
   if (category !== undefined) updateData.category = category;
   if (lowstockthreshold !== undefined) updateData.lowstockthreshold = lowstockthreshold;
   if (active !== undefined) updateData.active = active;
   if (isActive !== undefined && active === undefined) updateData.active = isActive;
+  if (mrp !== undefined) updateData.mrp = parseFloat(mrp);
+  if (sellingPrice !== undefined) updateData.sellingPrice = parseFloat(sellingPrice);
+  if (tax !== undefined) updateData.tax = parseFloat(tax);
+
   if (images !== undefined) {
     updateData.images = images;
   } else if (image !== undefined) {
@@ -206,6 +219,15 @@ export const updateListing = asyncHandler(async (req, res) => {
   if (specifications !== undefined) {
     updateData.specifications = specifications;
   }
+
+  const product = await Product.findById(req.params.id);
+  if (!product) {
+    throw new ApiError(404, 'Listing not found');
+  }
+
+  const currentTax = tax !== undefined ? parseFloat(tax) : (product.tax || 0);
+  const currentSellingPrice = sellingPrice !== undefined ? parseFloat(sellingPrice) : (product.sellingPrice || product.price || 0);
+  updateData.price = currentSellingPrice * (1 + currentTax / 100);
 
   const updatedProduct = await Product.findByIdAndUpdate(req.params.id, updateData, { new: true });
   if (!updatedProduct) {

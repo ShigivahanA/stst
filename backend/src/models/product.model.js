@@ -28,6 +28,24 @@ const productSchema = new mongoose.Schema(
       required: [true, 'Price is required'],
       min: [0, 'Price cannot be negative'],
     },
+    mrp: {
+      type: Number,
+      required: [true, 'MRP is required'],
+      min: [0, 'MRP cannot be negative'],
+      default: 0,
+    },
+    sellingPrice: {
+      type: Number,
+      required: [true, 'Selling price is required'],
+      min: [0, 'Selling price cannot be negative'],
+      default: 0,
+    },
+    tax: {
+      type: Number,
+      required: [true, 'Tax percentage is required'],
+      min: [0, 'Tax percentage cannot be negative'],
+      default: 0,
+    },
     quantity: {
       type: Number,
       required: [true, 'Quantity is required'],

@@ -58,6 +58,9 @@ export default function AdminProductDetail() {
    const [editName, setEditName] = useState('')
    const [editDesc, setEditDesc] = useState('')
    const [editPrice, setEditPrice] = useState('')
+   const [editMrp, setEditMrp] = useState('')
+   const [editSellingPrice, setEditSellingPrice] = useState('')
+   const [editTax, setEditTax] = useState('')
    const [editCategory, setEditCategory] = useState('Rehabilitation')
    const [editCustomCategory, setEditCustomCategory] = useState('')
    const [editLowStockThreshold, setEditLowStockThreshold] = useState('10')
@@ -82,6 +85,9 @@ export default function AdminProductDetail() {
          setEditName(prodData.name)
          setEditDesc(prodData.desc || '')
          setEditPrice(prodData.price.toString())
+         setEditMrp((prodData.mrp !== undefined ? prodData.mrp : prodData.price).toString())
+         setEditSellingPrice((prodData.sellingPrice !== undefined ? prodData.sellingPrice : prodData.price).toString())
+         setEditTax((prodData.tax !== undefined ? prodData.tax : 0).toString())
          setEditLowStockThreshold(prodData.lowstockthreshold.toString())
          setEditImage(prodData.image || '')
          setEditActive(prodData.active)
@@ -156,7 +162,10 @@ export default function AdminProductDetail() {
             sku: editSku.trim().toUpperCase(),
             name: editName.trim(),
             desc: editDesc.trim(),
-            price: parseFloat(editPrice),
+            price: parseFloat(editSellingPrice) * (1 + parseFloat(editTax) / 100),
+            mrp: parseFloat(editMrp),
+            sellingPrice: parseFloat(editSellingPrice),
+            tax: parseFloat(editTax),
             category: finalCategory,
             lowstockthreshold: parseInt(editLowStockThreshold, 10),
             active: editActive,
@@ -519,14 +528,15 @@ export default function AdminProductDetail() {
                                  />
                               </div>
 
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                 {/* Price */}
+                              {/* MRP, Selling Price, Tax Grid */}
+                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                                 {/* MRP */}
                                  <div className="space-y-2">
-                                    <label className="text-[8px] font-mono text-artisan-light/40 uppercase tracking-widest block font-bold">Unit Price (₹)</label>
+                                    <label className="text-[8px] font-mono text-artisan-light/40 uppercase tracking-widest block font-bold">MRP (₹)</label>
                                     <input
                                        type="number"
-                                       value={editPrice}
-                                       onChange={(e) => setEditPrice(e.target.value)}
+                                       value={editMrp}
+                                       onChange={(e) => setEditMrp(e.target.value)}
                                        min="0"
                                        step="0.01"
                                        className="w-full bg-artisan-light/[0.01] border border-artisan-light/10 p-4 text-xs sm:text-sm font-mono text-artisan-light tracking-widest outline-none focus:border-artisan-grey transition-all"
@@ -534,6 +544,36 @@ export default function AdminProductDetail() {
                                     />
                                  </div>
 
+                                 {/* Selling Price */}
+                                 <div className="space-y-2">
+                                    <label className="text-[8px] font-mono text-artisan-light/40 uppercase tracking-widest block font-bold">Selling Price (₹)</label>
+                                    <input
+                                       type="number"
+                                       value={editSellingPrice}
+                                       onChange={(e) => setEditSellingPrice(e.target.value)}
+                                       min="0"
+                                       step="0.01"
+                                       className="w-full bg-artisan-light/[0.01] border border-artisan-light/10 p-4 text-xs sm:text-sm font-mono text-artisan-light tracking-widest outline-none focus:border-artisan-grey transition-all"
+                                       required
+                                    />
+                                 </div>
+
+                                 {/* Tax */}
+                                 <div className="space-y-2">
+                                    <label className="text-[8px] font-mono text-artisan-light/40 uppercase tracking-widest block font-bold">Tax (%)</label>
+                                    <input
+                                       type="number"
+                                       value={editTax}
+                                       onChange={(e) => setEditTax(e.target.value)}
+                                       min="0"
+                                       step="0.01"
+                                       className="w-full bg-artisan-light/[0.01] border border-artisan-light/10 p-4 text-xs sm:text-sm font-mono text-artisan-light tracking-widest outline-none focus:border-artisan-grey transition-all"
+                                       required
+                                    />
+                                 </div>
+                              </div>
+
+                              <div className="grid grid-cols-1 sm:grid-cols-1 gap-6 mt-6">
                                  {/* Low Stock Limit */}
                                  <div className="space-y-2">
                                     <label className="text-[8px] font-mono text-artisan-light/40 uppercase tracking-widest block font-bold">Low Stock Warning Trigger</label>

@@ -561,8 +561,13 @@ export default function ProductDetail() {
                         {displayTitle}
                      </h1>
                      <div className="flex items-baseline gap-2">
+                        {tool.mrp !== undefined && tool.mrp > (tool.sellingPrice !== undefined ? tool.sellingPrice : displayPrice) && (
+                           <span className="text-sm font-display font-medium line-through text-artisan-light/40">
+                              ₹{tool.mrp?.toLocaleString()}
+                           </span>
+                        )}
                         <span className="text-2xl font-display font-black text-artisan-light">
-                           ₹{displayPrice?.toLocaleString()}
+                           ₹{(tool.sellingPrice !== undefined ? tool.sellingPrice : displayPrice)?.toLocaleString()}
                         </span>
                      </div>
                   </div>
@@ -595,7 +600,7 @@ export default function ProductDetail() {
                            </button>
                         </div>
                         <span className="text-xs font-mono text-artisan-light/40 italic">
-                           Total: ₹{(displayPrice * quantity).toLocaleString()}
+                           Total: ₹{((tool.sellingPrice !== undefined ? tool.sellingPrice : displayPrice) * quantity).toLocaleString()}
                         </span>
                      </div>
                   </div>
@@ -1102,7 +1107,16 @@ export default function ProductDetail() {
                            <div className="space-y-1">
                               <span className="text-[8px] font-mono font-bold text-artisan-grey uppercase tracking-widest block">{t.category}</span>
                               <h4 className="text-xs font-display font-bold uppercase text-artisan-light tracking-tight line-clamp-1 group-hover:text-artisan-grey transition-colors">{t.name || t.title}</h4>
-                              <span className="text-[10px] font-mono font-bold text-artisan-light/60 uppercase tracking-widest">₹{(t.price !== undefined ? t.price : t.pricePerDay)?.toLocaleString()}</span>
+                              <div className="flex items-center gap-1.5 font-mono text-[10px] font-bold">
+                                 {t.mrp !== undefined && t.mrp > (t.sellingPrice !== undefined ? t.sellingPrice : t.price) && (
+                                    <span className="line-through text-artisan-light/30">
+                                       ₹{t.mrp?.toLocaleString()}
+                                    </span>
+                                 )}
+                                 <span className="text-artisan-light/60">
+                                    ₹{(t.sellingPrice !== undefined ? t.sellingPrice : (t.price !== undefined ? t.price : t.pricePerDay))?.toLocaleString()}
+                                 </span>
+                              </div>
                            </div>
                         </Link>
                      ))}
