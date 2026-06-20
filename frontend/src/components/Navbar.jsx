@@ -275,7 +275,7 @@ export default function Navbar() {
               whileTap={{ scale: 0.98 }}
               className="flex items-center gap-2"
             >
-              <img src={logo} alt="STAT Logo" className="w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 object-contain bg-gray-400 p-0.5 rounded-full transition-all duration-300 group-hover/logo:scale-110 group-hover/logo:shadow-[0_0_10px_#eb5e28]" />
+              <img src={logo} alt="STAT Logo" className="w-9 h-9 md:w-10.5 md:h-10.5 object-contain bg-gray-400 p-0.5 rounded-full transition-all duration-300 group-hover/logo:scale-110 group-hover/logo:shadow-[0_0_10px_#eb5e28]" />
               <span className="text-xs min-[375px]:text-[13px] min-[410px]:text-sm sm:text-base md:text-lg lg:text-xl font-display font-bold uppercase tracking-[0.06em] min-[375px]:tracking-[0.08em] sm:tracking-[0.12em] md:tracking-[0.15em] whitespace-nowrap">
                 <span className="text-artisan-light">STAT</span>
                 <span className="text-artisan-grey ml-1.5 sm:ml-2">Surgical Supplies</span>
