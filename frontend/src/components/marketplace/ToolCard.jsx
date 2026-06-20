@@ -130,13 +130,13 @@ export default function ToolCard({ tool, idx, showAddToCart = false }) {
             <div className="flex flex-col">
               <span className="text-[9px] font-mono text-artisan-light/40 uppercase tracking-widest mb-0.5">Price</span>
               <div className="flex items-baseline gap-1.5">
-                {tool.mrp !== undefined && tool.mrp > (tool.sellingPrice !== undefined ? tool.sellingPrice : tool.price) && (
+                {tool.mrp !== undefined && tool.mrp > (tool.price !== undefined ? tool.price : tool.pricePerDay) && (
                   <span className="text-xs font-display font-medium line-through text-artisan-light/30">
                     ₹{tool.mrp?.toLocaleString()}
                   </span>
                 )}
                 <span className="text-lg sm:text-xl font-display font-extrabold text-artisan-light tracking-tighter leading-none">
-                  ₹{(tool.sellingPrice !== undefined ? tool.sellingPrice : (tool.price !== undefined ? tool.price : tool.pricePerDay))?.toLocaleString()}
+                  ₹{(tool.price !== undefined ? tool.price : tool.pricePerDay)?.toLocaleString()}
                 </span>
               </div>
             </div>
