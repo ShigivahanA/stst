@@ -16,7 +16,8 @@ import {
    CheckCircle,
    Settings,
    KeyRound,
-   Pencil
+   Pencil,
+   ArrowLeft
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
@@ -308,6 +309,21 @@ export default function Profile() {
       <div className="min-h-screen bg-artisan-dark bg-noise pt-24 md:pt-32 pb-24 text-artisan-light font-body">
          <SEO title="My Account" robots="noindex, nofollow" />
          <div className="container-custom max-w-6xl mx-auto space-y-12 px-4">
+
+            {/* BACK LINK */}
+            <div>
+               <Link
+                  to={user?.role === 'admin' ? '/admin' : '/'}
+                  className="inline-flex items-center gap-3 group"
+               >
+                  <div className="w-8 h-8 border border-artisan-light/10 flex items-center justify-center group-hover:bg-artisan-light group-hover:text-artisan-dark transition-all rounded-full">
+                     <ArrowLeft className="w-4 h-4" />
+                  </div>
+                  <span className="text-[10px] font-mono font-bold text-artisan-light/40 uppercase tracking-[0.4em] group-hover:text-artisan-light transition-colors">
+                     {user?.role === 'admin' ? 'Back to Dashboard' : 'Back to Home'}
+                  </span>
+               </Link>
+            </div>
 
             {/* Header / Title block (UNCHANGED) */}
             <header className="space-y-4">

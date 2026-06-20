@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Shield, Lock, Eye, FileText, ChevronRight, Mail, MapPin, Globe, Loader2 } from 'lucide-react'
+import { Shield, Lock, Eye, FileText, ChevronRight, Mail, MapPin, Globe, Loader2, ArrowLeft } from 'lucide-react'
 import api from '../services/api'
 import SEO from '../components/SEO'
 
@@ -162,6 +163,21 @@ export default function Privacy() {
       </div>
 
       <div className="container-custom relative z-10">
+
+        {/* BACK LINK */}
+        <div className="mb-6">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-3 group"
+          >
+            <div className="w-8 h-8 border border-artisan-light/10 flex items-center justify-center group-hover:bg-artisan-light group-hover:text-artisan-dark transition-all rounded-full">
+              <ArrowLeft className="w-4 h-4" />
+            </div>
+            <span className="text-[10px] font-mono font-bold text-artisan-light/40 uppercase tracking-[0.4em] group-hover:text-artisan-light transition-colors">
+              Back to Home
+            </span>
+          </Link>
+        </div>
 
         {/* HERO HEADER */}
         <header className="mb-16 border-b border-artisan-light/10 pb-12">

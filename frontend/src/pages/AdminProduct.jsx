@@ -9,7 +9,8 @@ import {
    AlertTriangle,
    Settings,
    List,
-   LayoutGrid
+   LayoutGrid,
+   ArrowLeft
 } from 'lucide-react'
 import { useToast } from '../context/ToastContext'
 import api from '../services/api'
@@ -67,6 +68,21 @@ export default function AdminProduct() {
    return (
       <div className="min-h-screen bg-artisan-dark bg-noise pt-32 pb-24 text-artisan-light">
          <div className="container-custom">
+
+            {/* BACK LINK */}
+            <div className="mb-6">
+               <Link
+                  to="/admin"
+                  className="inline-flex items-center gap-3 group"
+               >
+                  <div className="w-8 h-8 border border-artisan-light/10 flex items-center justify-center group-hover:bg-artisan-light group-hover:text-artisan-dark transition-all rounded-full">
+                     <ArrowLeft className="w-4 h-4" />
+                  </div>
+                  <span className="text-[10px] font-mono font-bold text-artisan-light/40 uppercase tracking-[0.4em] group-hover:text-artisan-light transition-colors">
+                     Back to Dashboard
+                  </span>
+               </Link>
+            </div>
 
             {/* HEADER SECTION */}
             <div className="mb-12">

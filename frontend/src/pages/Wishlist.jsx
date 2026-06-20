@@ -8,7 +8,8 @@ import {
   ShoppingBag,
   ExternalLink,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  ArrowLeft
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
@@ -122,6 +123,21 @@ export default function Wishlist() {
     <div className="min-h-screen bg-artisan-dark bg-noise pt-24 md:pt-32 pb-24">
       <SEO title="My Wishlist" robots="noindex, nofollow" />
       <div className="container-custom">
+
+        {/* BACK LINK */}
+        <div className="mb-6">
+          <Link
+            to="/allproduct"
+            className="inline-flex items-center gap-3 group"
+          >
+            <div className="w-8 h-8 border border-artisan-light/10 flex items-center justify-center group-hover:bg-artisan-light group-hover:text-artisan-dark transition-all rounded-full">
+              <ArrowLeft className="w-4 h-4" />
+            </div>
+            <span className="text-[10px] font-mono font-bold text-artisan-light/40 uppercase tracking-[0.4em] group-hover:text-artisan-light transition-colors">
+              Back to Catalog
+            </span>
+          </Link>
+        </div>
 
         {/* HEADER SECTION */}
         <header className="mb-10 md:mb-16">

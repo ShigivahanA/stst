@@ -10,7 +10,8 @@ import {
   Loader2,
   PackageSearch,
   Package,
-  PackageX
+  PackageX,
+  ArrowLeft
 } from 'lucide-react'
 import ToolCard from '../components/marketplace/ToolCard'
 import api from '../services/api'
@@ -435,6 +436,21 @@ export default function AllProduct() {
 
         {/* Main Content Area */}
         <main className="flex-1 p-4 md:p-8 lg:px-12 lg:py-8 overflow-x-hidden">
+
+          {/* BACK LINK */}
+          <div className="mb-6">
+            <Link
+              to="/"
+              className="inline-flex items-center gap-3 group"
+            >
+              <div className="w-8 h-8 border border-artisan-light/10 flex items-center justify-center group-hover:bg-artisan-light group-hover:text-artisan-dark transition-all rounded-full">
+                <ArrowLeft className="w-4 h-4" />
+              </div>
+              <span className="text-[10px] font-mono font-bold text-artisan-light/40 uppercase tracking-[0.4em] group-hover:text-artisan-light transition-colors">
+                Back to Home
+              </span>
+            </Link>
+          </div>
 
           <header className="mb-8 md:mb-16">
             <div className="flex flex-col gap-6 md:gap-12">
