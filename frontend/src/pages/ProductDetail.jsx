@@ -257,22 +257,22 @@ export default function ProductDetail() {
          } catch (err) {
             if (err.name !== 'AbortError') {
                console.error('Error sharing:', err)
-               copyToClipboard(shareText)
+               copyLinkToClipboard(shareUrl)
             }
          }
       } else {
-         copyToClipboard(shareText)
+         copyLinkToClipboard(shareUrl)
       }
    }
 
-   const copyToClipboard = (text) => {
-      navigator.clipboard.writeText(text)
+   const copyLinkToClipboard = (url) => {
+      navigator.clipboard.writeText(url)
          .then(() => {
-            addToast('Product details and link copied to clipboard!', 'success')
+            addToast('Product link copied to clipboard!', 'success')
          })
          .catch((err) => {
-            console.error('Failed to copy text: ', err)
-            addToast('Failed to copy to clipboard', 'error')
+            console.error('Failed to copy link: ', err)
+            addToast('Failed to copy link to clipboard', 'error')
          })
    }
 
@@ -550,9 +550,9 @@ export default function ProductDetail() {
                   <div className="flex flex-wrap items-center gap-3 text-[10px] font-mono font-bold uppercase tracking-wider">
                      <span className="text-artisan-grey">{tool.category}</span>
                      <span className="w-1 h-1 bg-artisan-light/20 rounded-full" />
-                     <span className="text-green-600">
+                     {/* <span className="text-green-600">
                         {tool.availability || 'In Stock (20)'}
-                     </span>
+                     </span> */}
                   </div>
 
                   {/* Title & Price */}
