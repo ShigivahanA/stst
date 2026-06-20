@@ -19,7 +19,7 @@ export default function Footer() {
           <div className="lg:col-span-4 flex flex-col justify-between h-full">
             <div>
               <Link to="/" className="flex items-center gap-3 mb-6 group/logo">
-                <img src={logo} alt="STAT Logo" className="w-10 h-10 object-contain rounded-full bg-gray-400 p-0.5 transition-all duration-300 group-hover/logo:scale-110 group-hover/logo:shadow-[0_0_12px_#eb5e28]" />
+                <img src={logo} alt="STAT Logo" className="w-13 h-13 object-contain rounded-full bg-gray-400 p-0.5 transition-all duration-300 group-hover/logo:scale-110 group-hover/logo:shadow-[0_0_12px_#eb5e28]" />
                 <span className="text-2xl md:text-3xl font-display font-extrabold uppercase tracking-tighter">
                   <span className="text-artisan-dark">STAT</span>
                   <span className="text-artisan-grey ml-2">Surgical Supplies</span>
