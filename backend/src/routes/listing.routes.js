@@ -9,7 +9,7 @@ import {
   getListingStats,
   getLandingReviews
 } from '../controllers/listing.controller.js';
-import { verifyJWT } from '../middlewares/auth.middleware.js';
+import { verifyJWT, verifyOptionalJWT } from '../middlewares/auth.middleware.js';
 import validate from '../middlewares/validate.middleware.js';
 import {
   getProductReviews,
@@ -20,7 +20,7 @@ import productReviewValidation from '../validations/productReview.validation.js'
 
 const router = express.Router();
 
-router.get('/', getListings);
+router.get('/', verifyOptionalJWT, getListings);
 router.get('/categories', getListingCategories);
 router.get('/stats', getListingStats);
 router.get('/reviews/landing', getLandingReviews);
@@ -35,7 +35,7 @@ router.post(
   createProductReview
 );
 
-router.get('/:id', getListing);
+router.get('/:id', verifyOptionalJWT, getListing);
 
 router.post('/', verifyJWT, createListing);
 router.put('/:id', verifyJWT, updateListing);

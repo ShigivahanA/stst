@@ -354,8 +354,8 @@ export default function Navbar() {
               </button>
             )}
 
-            {/* Wishlist Link (if logged in) */}
-            {user && (
+            {/* Wishlist Link (if logged in and not admin) */}
+            {user && user.role !== 'admin' && (
               <Link
                 to="/wishlist"
                 className="relative p-2 text-artisan-light hover:text-artisan-grey transition-colors flex items-center justify-center"
@@ -371,8 +371,8 @@ export default function Navbar() {
               </Link>
             )}
 
-            {/* Cart Link (if logged in) */}
-            {user && (
+            {/* Cart Link (if logged in and not admin) */}
+            {user && user.role !== 'admin' && (
               <Link
                 to="/cart"
                 className="relative p-2 text-artisan-light hover:text-artisan-grey transition-colors flex items-center justify-center mr-1"

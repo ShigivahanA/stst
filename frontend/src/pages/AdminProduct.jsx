@@ -59,6 +59,21 @@ export default function AdminProduct() {
       fetchProducts()
    }, [])
 
+   const toggleProductStatus = async (productId, currentActive) => {
+      try {
+         // Optimistically update the UI
+         setProducts(prev => prev.map(p => p._id === productId ? { ...p, active: !currentActive } : p))
+         
+         await api.put(`/products/${productId}`, { active: !currentActive })
+         addToast(`Product status updated to ${!currentActive ? 'Active' : 'Disabled'}`, 'success')
+      } catch (err) {
+         console.error('Failed to toggle product status:', err)
+         addToast('Failed to update product status', 'error')
+         // Revert on error
+         setProducts(prev => prev.map(p => p._id === productId ? { ...p, active: currentActive } : p))
+      }
+   }
+
    const filteredProducts = products.filter(p => {
       return p.name.toLowerCase().includes(search.toLowerCase()) ||
          p.sku.toLowerCase().includes(search.toLowerCase()) ||
@@ -222,12 +237,16 @@ export default function AdminProduct() {
                                           </div>
                                        </td>
                                        <td className="px-6 py-8">
-                                          <div className="flex items-center gap-2">
+                                          <button
+                                             onClick={() => toggleProductStatus(product._id, product.active)}
+                                             className="flex items-center gap-2 px-2.5 py-1 bg-artisan-light/5 border border-artisan-light/10 hover:border-artisan-grey/50 transition-all rounded-full"
+                                             title={`Click to ${product.active ? 'Disable' : 'Activate'}`}
+                                          >
                                              <div className={`w-1.5 h-1.5 rounded-full ${product.active ? 'bg-green-500' : 'bg-red-500'}`} />
                                              <span className={`text-[9px] font-mono font-black uppercase tracking-widest ${product.active ? 'text-green-500' : 'text-red-500'}`}>
-                                                {product.active ? 'Active' : 'Inactive'}
+                                                {product.active ? 'Active' : 'Disabled'}
                                              </span>
-                                          </div>
+                                          </button>
                                        </td>
                                        <td className="px-6 py-8 text-right">
                                           <div className="flex justify-end">
@@ -278,12 +297,16 @@ export default function AdminProduct() {
                                        {product.sku}
                                     </span>
                                     <div className="flex items-center gap-2">
-                                       <span className={`text-[8px] font-mono font-black uppercase tracking-widest px-1.5 py-0.5 border ${product.active
-                                          ? 'border-green-500/20 text-green-500 bg-green-500/5'
-                                          : 'border-red-500/20 text-red-500 bg-red-500/5'
-                                          }`}>
-                                          {product.active ? 'Active' : 'Inactive'}
-                                       </span>
+                                       <button
+                                          onClick={() => toggleProductStatus(product._id, product.active)}
+                                          className={`text-[8px] font-mono font-black uppercase tracking-widest px-1.5 py-0.5 border transition-all ${product.active
+                                             ? 'border-green-500/20 text-green-500 bg-green-500/5 hover:bg-green-500/10'
+                                             : 'border-red-500/20 text-red-500 bg-red-500/5 hover:bg-red-500/10'
+                                             }`}
+                                          title={`Click to ${product.active ? 'Disable' : 'Activate'}`}
+                                       >
+                                          {product.active ? 'Active' : 'Disabled'}
+                                       </button>
                                        <span className="text-[8px] font-mono font-bold uppercase tracking-widest px-1.5 py-0.5 border border-artisan-light/10 text-artisan-light/45">
                                           {product.category}
                                        </span>
@@ -347,14 +370,18 @@ export default function AdminProduct() {
                                  <span className="text-[9px] font-mono text-artisan-grey font-bold tracking-tighter">
                                     {product.sku}
                                  </span>
-                                 <div className="flex items-center gap-2">
-                                    <span className={`text-[8px] font-mono font-black uppercase tracking-widest px-1.5 py-0.5 border ${product.active
-                                       ? 'border-green-500/20 text-green-500 bg-green-500/5'
-                                       : 'border-red-500/20 text-red-500 bg-red-500/5'
-                                       }`}>
-                                       {product.active ? 'Active' : 'Inactive'}
-                                    </span>
-                                 </div>
+                                  <div className="flex items-center gap-2">
+                                     <button
+                                        onClick={() => toggleProductStatus(product._id, product.active)}
+                                        className={`text-[8px] font-mono font-black uppercase tracking-widest px-1.5 py-0.5 border transition-all ${product.active
+                                           ? 'border-green-500/20 text-green-500 bg-green-500/5 hover:bg-green-500/10'
+                                           : 'border-red-500/20 text-red-500 bg-red-500/5 hover:bg-red-500/10'
+                                           }`}
+                                        title={`Click to ${product.active ? 'Disable' : 'Activate'}`}
+                                     >
+                                        {product.active ? 'Active' : 'Disabled'}
+                                     </button>
+                                  </div>
                               </div>
 
                               {/* Middle: Product info */}

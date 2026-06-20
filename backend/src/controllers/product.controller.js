@@ -1,6 +1,7 @@
 import * as productService from '../services/product.service.js';
 import ApiResponse from '../utils/ApiResponse.js';
 import asyncHandler from '../utils/asyncHandler.js';
+import ApiError from '../utils/ApiError.js';
 
 export const createProduct = asyncHandler(async (req, res) => {
   const product = await productService.createProduct(req.body);
@@ -11,7 +12,8 @@ export const createProduct = asyncHandler(async (req, res) => {
 
 export const getProducts = asyncHandler(async (req, res) => {
   const { page, limit, sortBy, sortOrder, category, search, all } = req.query;
-  const filter = all === 'true' ? {} : { active: true };
+  const isAdmin = req.user && req.user.role === 'admin';
+  const filter = (all === 'true' && isAdmin) ? {} : { active: true };
   const options = {
     page: page ? parseInt(page, 10) : 1,
     limit: limit ? parseInt(limit, 10) : 100,
@@ -29,6 +31,10 @@ export const getProducts = asyncHandler(async (req, res) => {
 
 export const getProduct = asyncHandler(async (req, res) => {
   const product = await productService.getProductById(req.params.id);
+  const isAdmin = req.user && req.user.role === 'admin';
+  if (!product || (!product.active && !isAdmin)) {
+    throw new ApiError(404, 'Product not found');
+  }
   return res
     .status(200)
     .json(new ApiResponse(200, product, 'Product fetched successfully'));

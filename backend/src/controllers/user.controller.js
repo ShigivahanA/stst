@@ -273,8 +273,8 @@ export const getWishlist = asyncHandler(async (req, res) => {
     throw new ApiError(404, 'User not found');
   }
 
-  // Filter out any products that may have been deleted
-  const activeItems = user.wishlist.filter((item) => item !== null);
+  // Filter out any products that may have been deleted or disabled
+  const activeItems = user.wishlist.filter((item) => item !== null && item.active !== false);
 
   return res
     .status(200)

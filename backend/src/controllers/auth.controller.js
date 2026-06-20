@@ -309,7 +309,8 @@ export const addToCart = asyncHandler(async (req, res) => {
   await user.save({ validateBeforeSave: false });
 
   const populatedUser = await User.findById(userId).populate('cart.product');
-  return res.status(200).json(new ApiResponse(200, populatedUser.cart, 'Item added to cart successfully'));
+  const activeCartItems = populatedUser.cart.filter(item => item.product && item.product.active !== false);
+  return res.status(200).json(new ApiResponse(200, activeCartItems, 'Item added to cart successfully'));
 });
 
 export const getCart = asyncHandler(async (req, res) => {
@@ -318,7 +319,8 @@ export const getCart = asyncHandler(async (req, res) => {
   if (!user) {
     throw new ApiError(404, 'User not found');
   }
-  return res.status(200).json(new ApiResponse(200, user.cart, 'Cart fetched successfully'));
+  const activeCartItems = user.cart.filter(item => item.product && item.product.active !== false);
+  return res.status(200).json(new ApiResponse(200, activeCartItems, 'Cart fetched successfully'));
 });
 
 export const clearCart = asyncHandler(async (req, res) => {

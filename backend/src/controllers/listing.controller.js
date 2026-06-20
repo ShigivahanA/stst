@@ -52,8 +52,11 @@ export const getListings = asyncHandler(async (req, res) => {
   const { category, keyword, sort, availability } = req.query;
   const filter = {};
 
-  if (req.query.owner) {
-    // Owner filter
+  const isAdmin = req.user && req.user.role === 'admin';
+  if (isAdmin) {
+    if (req.query.active !== undefined) {
+      filter.active = req.query.active === 'true';
+    }
   } else {
     filter.active = true;
   }
@@ -153,7 +156,8 @@ export const getListing = asyncHandler(async (req, res) => {
     product = allProducts.find(p => p._id.toString().toLowerCase().endsWith(idStr.toLowerCase()));
   }
 
-  if (!product) {
+  const isAdmin = req.user && req.user.role === 'admin';
+  if (!product || (!product.active && !isAdmin)) {
     throw new ApiError(404, 'Listing not found');
   }
   return res.status(200).json(new ApiResponse(200, transformProductToListing(product), 'Listing fetched successfully'));
@@ -220,6 +224,9 @@ export const deleteListing = asyncHandler(async (req, res) => {
 
 export const getListingCategories = asyncHandler(async (req, res) => {
   const counts = await Product.aggregate([
+    {
+      $match: { active: true }
+    },
     {
       $group: {
         _id: "$category",

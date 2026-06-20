@@ -287,7 +287,7 @@ export default function AdminProductDetail() {
                            ? 'border-green-500/20 text-green-500 bg-green-500/5'
                            : 'border-red-500/20 text-red-500 bg-red-500/5'
                         }`}>
-                        {product.active ? 'Active' : 'Inactive'}
+                        {product.active ? 'Active' : 'Disabled'}
                      </span>
                      {isLowStock && (
                         <span className="text-[8px] font-mono font-black uppercase tracking-widest px-2 py-0.5 border border-red-500/20 text-red-500 bg-red-500/5 flex items-center gap-1 animate-pulse">
