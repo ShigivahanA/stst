@@ -35,17 +35,7 @@ export const verifyPayment = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, order, 'Payment verified and order processed successfully'));
 });
 
-export const confirmCod = asyncHandler(async (req, res) => {
-  const { razorpayOrderId } = req.body;
 
-  const order = await orderService.confirmCodOrder({
-    razorpayOrderId,
-  });
-
-  return res
-    .status(200)
-    .json(new ApiResponse(200, order, 'COD Order confirmed successfully'));
-});
 
 export const webhook = asyncHandler(async (req, res) => {
   const signature = req.headers['x-razorpay-signature'];

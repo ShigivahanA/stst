@@ -15,10 +15,11 @@ import api from '../services/api'
 import SEO from '../components/SEO'
 
 export default function Wishlist() {
-  const { user, toggleWishlist } = useAuth()
+  const { user, setUser, toggleWishlist } = useAuth()
   const { addToast } = useToast()
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
+  const [addingId, setAddingId] = useState(null)
 
   const fetchWishlist = async () => {
     try {
@@ -48,6 +49,33 @@ export default function Wishlist() {
       addToast('Removed from wishlist', 'success')
     } catch (err) {
       addToast('Failed to remove item', 'error')
+    }
+  }
+
+  const handleAddToCart = async (productId) => {
+    if (!user) {
+      addToast('Please login to add items to cart', 'warning')
+      return
+    }
+    try {
+      setAddingId(productId)
+      const existingItem = user?.cart?.find(item => item.product === productId || item.product?._id === productId)
+      const newQty = existingItem ? existingItem.quantity + 1 : 1
+
+      const res = await api.post('/auth/cart', { productId, quantity: newQty })
+      const validCart = (res.data.data || []).filter(item => item.product)
+
+      setUser(prev => ({
+        ...prev,
+        cart: validCart
+      }))
+
+      addToast('Product added to cart successfully', 'success')
+    } catch (err) {
+      console.error('Failed to add to cart', err)
+      addToast('Failed to add to cart', 'error')
+    } finally {
+      setAddingId(null)
     }
   }
 
@@ -150,19 +178,36 @@ export default function Wishlist() {
                           </p>
                         )}
 
-                        <div className="pt-6 border-t border-artisan-light/5 flex items-center justify-between">
+                        <div className="pt-6 border-t border-artisan-light/5 flex items-center justify-between gap-2">
                           <div className="flex flex-col">
                             <span className="text-[8px] font-mono text-artisan-light/50 uppercase tracking-widest">Price</span>
-                            <span className="text-xl font-display font-black text-artisan-light tracking-tight">₹{item.price?.toLocaleString()}</span>
+                            <span className="text-lg md:text-xl font-display font-black text-artisan-light tracking-tight shrink-0">₹{item.price?.toLocaleString()}</span>
                           </div>
 
-                          <Link
-                            to={`/product/${item._id}`}
-                            className="flex items-center gap-3 px-6 py-3 bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-widest text-[10px] hover:bg-artisan-grey transition-all"
-                          >
-                            View
-                            <ArrowRight className="w-4 h-4" />
-                          </Link>
+                          <div className="flex items-center gap-2">
+                            <Link
+                              to={`/product/${item._id}`}
+                              className="flex items-center gap-2 px-4 py-2.5 bg-artisan-light/5 border border-artisan-light/20 text-artisan-light font-display font-black uppercase tracking-widest text-[9px] hover:bg-artisan-light hover:text-artisan-dark transition-all"
+                            >
+                              View
+                              <ArrowRight className="w-3.5 h-3.5" />
+                            </Link>
+
+                            <button
+                              onClick={() => handleAddToCart(item._id)}
+                              disabled={addingId === item._id}
+                              className="flex items-center gap-2 px-4 py-2.5 bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-widest text-[9px] hover:bg-artisan-grey transition-all disabled:opacity-50"
+                            >
+                              {addingId === item._id ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              ) : (
+                                <>
+                                  Add to Cart
+                                  <ShoppingBag className="w-3.5 h-3.5" />
+                                </>
+                              )}
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </motion.div>

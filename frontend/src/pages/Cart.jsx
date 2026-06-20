@@ -133,9 +133,8 @@ export default function Cart() {
   const serviceFee = Math.round(discountedSubtotal * 0.05) // 5% service/GST fee
   const shippingFee = discountedSubtotal > 5000 || discountedSubtotal === 0 ? 0 : 150 // Free shipping above ₹5,000
 
-  const [paymentMethod, setPaymentMethod] = useState('online') // 'online' or 'cod'
-  const codFee = 50
-  const orderTotal = discountedSubtotal + serviceFee + shippingFee + (paymentMethod === 'cod' ? codFee : 0)
+  const paymentMethod = 'online'
+  const orderTotal = discountedSubtotal + serviceFee + shippingFee
 
   // Real-time Stock Integrity Check
   const stockErrors = cartItems.filter(item => {
@@ -534,34 +533,7 @@ export default function Cart() {
     }
   }
 
-  const handleConfirmCod = async () => {
-    if (!razorpayOrderInfo) return
 
-    try {
-      setIsProcessing(true)
-      const { razorpayOrder } = razorpayOrderInfo
-
-      const verifyRes = await api.post('/orders/confirm-cod', {
-        razorpayOrderId: razorpayOrder.id
-      })
-
-      setCompletedOrder(verifyRes.data.data)
-      setOrderId(verifyRes.data.data._id.substring(verifyRes.data.data._id.length - 8).toUpperCase())
-
-      setUser(prev => ({
-        ...prev,
-        cart: []
-      }))
-
-      setCheckoutStep(4) // Success step
-      addToast('Order placed successfully with Cash on Delivery!', 'success')
-    } catch (err) {
-      console.error('COD confirmation failed', err)
-      addToast(err.response?.data?.message || 'Failed to place COD order.', 'error')
-    } finally {
-      setIsProcessing(false)
-    }
-  }
 
   if (loading) {
     return (
@@ -1204,66 +1176,24 @@ export default function Cart() {
                           </div>
 
                           <div className="space-y-6 bg-artisan-light/[0.005] border border-artisan-light/10 p-6 md:p-10 rounded-xl">
-                            {/* Payment Method Selector Grid */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                              {/* Option A: Pay Online */}
-                              <button
-                                type="button"
-                                onClick={() => setPaymentMethod('online')}
-                                className={`p-5 text-left border transition-all rounded-xl relative ${
-                                  paymentMethod === 'online'
-                                    ? 'bg-artisan-light/5 border-artisan-light'
-                                    : 'border-artisan-light/10 hover:border-artisan-light/30'
-                                }`}
-                              >
-                                <div className="flex items-center gap-3 mb-2">
-                                  <div className={`p-2 rounded-xl ${paymentMethod === 'online' ? 'bg-artisan-light text-artisan-dark' : 'bg-artisan-light/5 text-artisan-light/60'}`}>
-                                    <CreditCard className="w-5 h-5" />
-                                  </div>
-                                  <span className="text-xs font-mono font-bold uppercase tracking-wider text-artisan-light">Pay Online</span>
-                                </div>
-                                <p className="text-[9px] font-mono text-artisan-light/40 uppercase tracking-wider leading-relaxed">
+                            {/* Payment Info / Online Gateway details */}
+                            <div className="p-6 border border-artisan-light/10 bg-artisan-light/[0.01] rounded-xl flex items-start gap-4">
+                              <div className="p-2 rounded-xl bg-artisan-light text-artisan-dark">
+                                <CreditCard className="w-5 h-5" />
+                              </div>
+                              <div className="space-y-1 text-xs flex-1">
+                                <p className="font-mono font-bold uppercase tracking-wider text-artisan-light">Pay Online securely</p>
+                                <p className="text-[10px] text-artisan-light/40 uppercase tracking-wider leading-relaxed font-mono">
                                   Pay securely via cards, UPI, or netbanking using Razorpay.
                                 </p>
-                                {paymentMethod === 'online' && (
-                                  <div className="absolute top-4 right-4 w-3.5 h-3.5 bg-artisan-light rounded-full border-2 border-artisan-dark flex items-center justify-center">
-                                    <div className="w-1.5 h-1.5 bg-artisan-dark rounded-full" />
-                                  </div>
-                                )}
-                              </button>
-
-                              {/* Option B: Cash on Delivery */}
-                              <button
-                                type="button"
-                                onClick={() => setPaymentMethod('cod')}
-                                className={`p-5 text-left border transition-all rounded-xl relative ${
-                                  paymentMethod === 'cod'
-                                    ? 'bg-artisan-light/5 border-artisan-light'
-                                    : 'border-artisan-light/10 hover:border-artisan-light/30'
-                                }`}
-                              >
-                                <div className="flex items-center gap-3 mb-2">
-                                  <div className={`p-2 rounded-xl ${paymentMethod === 'cod' ? 'bg-artisan-light text-artisan-dark' : 'bg-artisan-light/5 text-artisan-light/60'}`}>
-                                    <Truck className="w-5 h-5" />
-                                  </div>
-                                  <span className="text-xs font-mono font-bold uppercase tracking-wider text-artisan-light">Cash on Delivery</span>
-                                </div>
-                                <p className="text-[9px] font-mono text-artisan-light/40 uppercase tracking-wider leading-relaxed">
-                                  Pay in cash upon delivery. COD fee of ₹50 applies.
-                                </p>
-                                {paymentMethod === 'cod' && (
-                                  <div className="absolute top-4 right-4 w-3.5 h-3.5 bg-artisan-light rounded-full border-2 border-artisan-dark flex items-center justify-center">
-                                    <div className="w-1.5 h-1.5 bg-artisan-dark rounded-full" />
-                                  </div>
-                                )}
-                              </button>
+                              </div>
                             </div>
 
-                            {/* Payment Summary & Dynamic Confirm Action Button */}
+                            {/* Payment Summary & Action Button */}
                             <div className="max-w-md mx-auto pt-6 border-t border-artisan-light/5 text-center space-y-6">
                               <div className="space-y-1">
                                 <span className="text-[10px] text-artisan-light/35 font-mono uppercase tracking-widest block">
-                                  {paymentMethod === 'cod' ? 'COD Billing Amount' : 'Online Billing Amount'}
+                                  Online Billing Amount
                                 </span>
                                 <span className="text-3xl font-display font-extrabold text-artisan-light tracking-tighter">
                                   ₹{orderTotal.toLocaleString()}
@@ -1271,44 +1201,30 @@ export default function Cart() {
                               </div>
 
                               <div className="flex flex-col gap-4">
-                                {paymentMethod === 'online' ? (
-                                  <>
-                                    <button
-                                      type="button"
-                                      onClick={handleRazorpayPayment}
-                                      disabled={isProcessing}
-                                      className="w-full py-4.5 bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-[0.3em] text-xs hover:bg-artisan-grey hover:text-artisan-light transition-all flex items-center justify-center gap-3 relative rounded-full"
-                                    >
-                                      Pay with Razorpay
-                                      <ArrowRight className="w-4 h-4" />
-                                    </button>
+                                <button
+                                  type="button"
+                                  onClick={handleRazorpayPayment}
+                                  disabled={isProcessing}
+                                  className="w-full py-4.5 bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-[0.3em] text-xs hover:bg-artisan-grey hover:text-artisan-light transition-all flex items-center justify-center gap-3 relative rounded-full"
+                                >
+                                  Pay with Razorpay
+                                  <ArrowRight className="w-4 h-4" />
+                                </button>
 
-                                    <div className="relative flex py-2 items-center">
-                                      <div className="flex-grow border-t border-artisan-light/5"></div>
-                                      <span className="flex-shrink mx-4 text-[8px] font-mono text-artisan-light/20 uppercase tracking-[0.4em]">Or</span>
-                                      <div className="flex-grow border-t border-artisan-light/5"></div>
-                                    </div>
+                                <div className="relative flex py-2 items-center">
+                                  <div className="flex-grow border-t border-artisan-light/5"></div>
+                                  <span className="flex-shrink mx-4 text-[8px] font-mono text-artisan-light/20 uppercase tracking-[0.4em]">Or</span>
+                                  <div className="flex-grow border-t border-artisan-light/5"></div>
+                                </div>
 
-                                    <button
-                                      type="button"
-                                      onClick={handleSimulatePayment}
-                                      disabled={isProcessing}
-                                      className="w-full py-4 border border-dashed border-red-500/35 text-red-500 font-mono font-bold uppercase tracking-[0.2em] text-[9px] hover:bg-red-500/[0.01] hover:border-red-500 transition-all flex items-center justify-center gap-2 rounded-full"
-                                    >
-                                      Simulate Online Payment (Dev Mode)
-                                    </button>
-                                  </>
-                                ) : (
-                                  <button
-                                    type="button"
-                                    onClick={handleConfirmCod}
-                                    disabled={isProcessing}
-                                    className="w-full py-4.5 bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-[0.3em] text-xs hover:bg-artisan-grey hover:text-artisan-light transition-all flex items-center justify-center gap-3 relative rounded-full"
-                                  >
-                                    Confirm COD Order
-                                    <Check className="w-4 h-4" />
-                                  </button>
-                                )}
+                                <button
+                                  type="button"
+                                  onClick={handleSimulatePayment}
+                                  disabled={isProcessing}
+                                  className="w-full py-4 border border-dashed border-red-500/35 text-red-500 font-mono font-bold uppercase tracking-[0.2em] text-[9px] hover:bg-red-500/[0.01] hover:border-red-500 transition-all flex items-center justify-center gap-2 rounded-full"
+                                >
+                                  Simulate Online Payment (Dev Mode)
+                                </button>
                               </div>
 
                               <p className="text-[8px] font-mono text-artisan-light/25 uppercase tracking-widest pt-2">
@@ -1397,12 +1313,7 @@ export default function Cart() {
                         )}
                       </span>
                     </div>
-                    {paymentMethod === 'cod' && (
-                      <div className="flex justify-between text-[9px] font-mono uppercase tracking-widest text-artisan-grey font-bold">
-                        <span>COD Handling Fee</span>
-                        <span>₹{codFee.toLocaleString()}</span>
-                      </div>
-                    )}
+
 
                     {shippingFee > 0 && itemsSubtotal > 0 && (
                       <div className="flex rounded-xl items-center gap-2 text-[7px] font-mono text-artisan-light/50 uppercase bg-artisan-light/[0.02] p-2 border border-artisan-light/5">
