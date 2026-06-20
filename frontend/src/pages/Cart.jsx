@@ -362,6 +362,7 @@ export default function Cart() {
 
   // Initiate checkout
   const handleInitiateCheckout = async () => {
+    if (isProcessing) return
     if (hasStockErrors) {
       addToast('Cannot checkout. Some items in your cart exceed available stock.', 'error')
       return
@@ -541,6 +542,26 @@ export default function Cart() {
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="w-12 h-12 text-artisan-grey animate-spin" />
           <span className="text-[10px] font-mono text-artisan-light/20 uppercase tracking-widest">Loading your cart...</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (user && user.role === 'admin') {
+    return (
+      <div className="min-h-screen bg-artisan-dark bg-noise flex items-center justify-center pt-24 md:pt-32 text-artisan-light">
+        <div className="max-w-md mx-auto text-center space-y-6 p-8 border border-artisan-light/15 bg-artisan-light/[0.01] rounded-xl">
+          <AlertCircle className="w-12 h-12 text-red-500 mx-auto" />
+          <h2 className="text-2xl font-display font-black uppercase tracking-tight">Access Denied</h2>
+          <p className="text-xs font-mono text-artisan-light/40 uppercase tracking-widest leading-relaxed">
+            Administrators are not permitted to use shopping carts or place order transactions. Please use a customer account.
+          </p>
+          <Link
+            to="/admin"
+            className="inline-block px-6 py-3 bg-artisan-light text-artisan-dark text-[9px] font-mono font-bold uppercase tracking-widest hover:bg-artisan-grey transition-all rounded-full cursor-pointer"
+          >
+            Go to Admin Dashboard
+          </Link>
         </div>
       </div>
     )
@@ -1271,7 +1292,8 @@ export default function Cart() {
                     {checkoutStep === 2 && (
                       <button
                         onClick={handleInitiateCheckout}
-                        className="w-full py-4 bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-[0.3em] text-xs hover:bg-artisan-grey transition-all flex items-center justify-center gap-3 rounded-full"
+                        disabled={isProcessing}
+                        className="w-full py-4 bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-[0.3em] text-xs hover:bg-artisan-grey transition-all flex items-center justify-center gap-3 rounded-full disabled:opacity-50 disabled:pointer-events-none"
                       >
                         Confirm Details
                         <ArrowRight className="w-4 h-4" />
@@ -1407,7 +1429,8 @@ export default function Cart() {
                       {checkoutStep === 2 && (
                         <button
                           onClick={handleInitiateCheckout}
-                          className="w-full py-4.5 rounded-full bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-[0.3em] text-xs hover:bg-artisan-grey transition-all flex items-center justify-center gap-3"
+                          disabled={isProcessing}
+                          className="w-full py-4.5 rounded-full bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-[0.3em] text-xs hover:bg-artisan-grey transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:pointer-events-none"
                         >
                           Confirm Details
                           <ArrowRight className="w-4 h-4" />

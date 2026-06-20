@@ -285,6 +285,11 @@ export default function ProductDetail() {
          return
       }
 
+      if (user.role === 'admin') {
+         addToast('Administrators are not permitted to save items in the wishlist', 'error')
+         return
+      }
+
       try {
          await contextToggleWishlist(id)
          addToast(!isWishlisted ? 'Added to wishlist' : 'Removed from wishlist', 'success')
@@ -299,6 +304,11 @@ export default function ProductDetail() {
          localStorage.setItem('pending_cart_action', JSON.stringify({ productId: tool._id, quantity }))
          localStorage.setItem('auth_redirect', `/product/${tool._id}`)
          navigate('/login')
+         return
+      }
+
+      if (user.role === 'admin') {
+         addToast('Administrators are not permitted to add items to cart', 'error')
          return
       }
 

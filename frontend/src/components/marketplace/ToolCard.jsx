@@ -1,16 +1,20 @@
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Link, useNavigate } from 'react-router-dom'
-import { ArrowUpRight, Star, Heart } from 'lucide-react'
+import { ArrowUpRight, Star, Heart, ShoppingBag, Loader2, Trash2 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../context/ToastContext'
+import api from '../../services/api'
 
-export default function ToolCard({ tool, idx }) {
-  const { user, toggleWishlist } = useAuth()
+export default function ToolCard({ tool, idx, showAddToCart = false }) {
+  const { user, setUser, toggleWishlist } = useAuth()
   const { addToast } = useToast()
   const navigate = useNavigate()
 
   const displayImage = tool.image || tool.images?.[0] || 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=800'
   const isWishlisted = user?.wishlist?.includes(tool._id)
+
+  const [isAdding, setIsAdding] = useState(false)
 
   const handleWishlist = async (e) => {
     e.preventDefault()
@@ -24,11 +28,55 @@ export default function ToolCard({ tool, idx }) {
       return
     }
 
+    if (user.role === 'admin') {
+      addToast('Administrators are not permitted to save items in the wishlist', 'error')
+      return
+    }
+
     try {
       await toggleWishlist(tool._id)
       addToast(isWishlisted ? 'Removed from wishlist' : 'Added to wishlist', 'success')
     } catch (err) {
       addToast('Failed to update collection', 'error')
+    }
+  }
+
+  const handleAddToCart = async (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    if (!user) {
+      addToast('Please login to add items to cart', 'info')
+      localStorage.setItem('pending_cart_action', JSON.stringify({ productId: tool._id, quantity: 1 }))
+      localStorage.setItem('auth_redirect', window.location.pathname)
+      navigate('/login')
+      return
+    }
+
+    if (user.role === 'admin') {
+      addToast('Administrators are not permitted to add items to cart', 'error')
+      return
+    }
+
+    try {
+      setIsAdding(true)
+      const existingItem = user?.cart?.find(item => item.product === tool._id || item.product?._id === tool._id)
+      const newQty = existingItem ? existingItem.quantity + 1 : 1
+
+      const res = await api.post('/auth/cart', { productId: tool._id, quantity: newQty })
+      const validCart = (res.data.data || []).filter(item => item.product)
+
+      setUser(prev => ({
+        ...prev,
+        cart: validCart
+      }))
+
+      addToast('Product added to cart successfully', 'success')
+    } catch (err) {
+      console.error('Failed to add to cart', err)
+      addToast('Failed to add to cart', 'error')
+    } finally {
+      setIsAdding(false)
     }
   }
 
@@ -49,17 +97,19 @@ export default function ToolCard({ tool, idx }) {
             <span className="px-2 py-1 bg-artisan-dark/80 backdrop-blur-md text-[9px] font-mono text-artisan-light/80 border border-artisan-light/10 uppercase tracking-widest rounded-md">
               {tool.category}
             </span>
-
+ 
             {/* Actions: Wishlist */}
-            <div className="flex flex-col gap-2 pointer-events-auto items-end">
-              <button
-                onClick={handleWishlist}
-                className={`w-7 h-7 flex items-center justify-center backdrop-blur-md border rounded-full transition-all duration-300 ${isWishlisted ? 'bg-red-500/20 border-red-500 text-red-500' : 'bg-artisan-dark/60 border-artisan-light/10 text-artisan-light hover:bg-artisan-light/10 hover:text-white'}`}
-                aria-label="Toggle Wishlist"
-              >
-                <Heart className={`w-3.5 h-3.5 ${isWishlisted ? 'fill-current' : ''}`} />
-              </button>
-            </div>
+            {!showAddToCart && (
+              <div className="flex flex-col gap-2 pointer-events-auto items-end">
+                <button
+                  onClick={handleWishlist}
+                  className={`w-7 h-7 flex items-center justify-center backdrop-blur-md border rounded-full transition-all duration-300 ${isWishlisted ? 'bg-red-500/20 border-red-500 text-red-500' : 'bg-artisan-dark/60 border-artisan-light/10 text-artisan-light hover:bg-artisan-light/10 hover:text-white'}`}
+                  aria-label="Toggle Wishlist"
+                >
+                  <Heart className={`w-3.5 h-3.5 ${isWishlisted ? 'fill-current' : ''}`} />
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -89,6 +139,35 @@ export default function ToolCard({ tool, idx }) {
               <span>{tool.averageRating || '0.0'}</span>
             </div>
           </div>
+
+          {showAddToCart && (
+            <div className="mt-4 pt-3 border-t border-artisan-light/5 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleAddToCart}
+                disabled={isAdding}
+                className="flex-1 h-10 bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-widest text-[9px] hover:bg-artisan-grey hover:text-artisan-light transition-all flex items-center justify-center gap-2 disabled:opacity-50 rounded-xl"
+              >
+                {isAdding ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <>
+                    Add to Cart
+                    <ShoppingBag className="w-3.5 h-3.5" />
+                  </>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={handleWishlist}
+                className="w-10 h-10 flex items-center justify-center border border-red-500/20 text-red-500 hover:bg-red-500/10 hover:border-red-500 transition-all shrink-0 rounded-full"
+                title="Remove from Wishlist"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </Link>

@@ -59,6 +59,8 @@ export default function OrderDetail() {
       }
    };
 
+
+
    // Initial fetch and polling interval (poll every 5 seconds to show simulated transit live!)
    useEffect(() => {
       fetchOrderDetails(true);
@@ -283,13 +285,14 @@ export default function OrderDetail() {
             </div>
 
             {/* ROW 1: DELIVERY TIMELINE (FULL-WIDTH) */}
-            {order.shippingTrackingNumber && (
-               <div className="p-6 border border-artisan-light/10 bg-artisan-light/[0.01] space-y-6 rounded-xl">
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-artisan-light/5 pb-3 gap-2">
-                     <h3 className="text-xs font-mono font-bold uppercase tracking-widest text-artisan-grey flex items-center gap-2">
-                        <Truck className="w-4 h-4 text-artisan-grey" />
-                        Delivery Timeline
-                     </h3>
+            <div className="p-6 border border-artisan-light/10 bg-artisan-light/[0.01] space-y-6 rounded-xl">
+               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-artisan-light/5 pb-3 gap-2">
+                  <h3 className="text-xs font-mono font-bold uppercase tracking-widest text-artisan-grey flex items-center gap-2">
+                     <Truck className="w-4 h-4 text-artisan-grey" />
+                     Delivery Timeline
+                  </h3>
+                  
+                  {order.shippingTrackingNumber ? (
                      <div className="flex items-center gap-2 font-mono text-[10px] text-artisan-light/40">
                         <span>COURIER SHIPPING</span>
                         <span>•</span>
@@ -302,79 +305,83 @@ export default function OrderDetail() {
                            {copied ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
                         </button>
                      </div>
-                  </div>
-
-                  {isCancelled ? (
-                     <div className="p-4 border border-red-500/20 bg-red-500/5 text-red-500 text-xs font-mono uppercase flex items-center gap-2 rounded-xl">
-                        <AlertTriangle className="w-4 h-4" />
-                        <span>Order delivery cancelled.</span>
-                     </div>
                   ) : (
-                     <div className="space-y-8 sm:space-y-0 sm:flex sm:justify-between relative py-2 isolate">
-                        {/* Horizontal timeline track background line on larger screens */}
-                        <div className="hidden sm:block absolute left-[10%] right-[10%] top-[15px] h-[3px] bg-artisan-light/20 -z-10 rounded-full" />
-                        
-                        {/* Horizontal flowing progress line on larger screens */}
-                        <div 
-                           className="hidden sm:block absolute left-[10%] top-[15px] h-[3px] bg-green-600 -z-10 transition-all duration-1000 ease-out rounded-full"
-                           style={{ width: `${(activeStepIndex / (steps.length - 1)) * 80}%` }}
-                        />
-
-                        {/* Vertical timeline track background line on mobile */}
-                        <div className="sm:hidden absolute left-4 top-4 bottom-4 w-[3px] bg-artisan-light/20 -z-10 rounded-full" />
-                        
-                        {/* Vertical flowing progress line on mobile */}
-                        <div 
-                           className="sm:hidden absolute left-4 top-4 w-[3px] bg-green-600 -z-10 transition-all duration-1000 ease-out rounded-full"
-                           style={{ height: `calc((100% - 32px) * ${activeStepIndex / (steps.length - 1)})` }}
-                        />
-
-                        {steps.map((step, idx) => {
-                           const completed = idx <= activeStepIndex;
-                           const active = idx === activeStepIndex;
-
-                           return (
-                              <div key={idx} className="flex sm:flex-col items-center gap-4 sm:gap-2 text-left sm:text-center flex-1 relative">
-                                 
-                                 {/* Step node indicator dot */}
-                                 <div className={`w-8 h-8 rounded-full border transition-all duration-500 flex items-center justify-center shrink-0 relative z-10 ${
-                                    completed 
-                                       ? active 
-                                          ? 'bg-artisan-grey border-artisan-grey scale-110 shadow-lg shadow-artisan-grey/25 text-artisan-dark font-black' 
-                                          : 'bg-green-600 border-green-600 text-white'
-                                       : 'bg-artisan-dark border-artisan-light/15 text-artisan-light/40'
-                                 }`}>
-                                    {completed && !active ? (
-                                       <Check className="w-4 h-4 text-artisan-dark font-black" />
-                                    ) : active ? (
-                                       <span className="w-2.5 h-2.5 rounded-full bg-artisan-dark animate-ping" />
-                                    ) : (
-                                       <span className="text-[10px] font-mono font-bold">{idx + 1}</span>
-                                    )}
-                                 </div>
-
-                                 <div className={`space-y-0.5 transition-opacity duration-300 ${completed ? 'opacity-100' : 'opacity-35'}`}>
-                                    <span className={`text-[10px] font-mono font-bold uppercase tracking-wider block ${active ? 'text-artisan-grey font-black' : 'text-artisan-light'}`}>
-                                       {step.label}
-                                    </span>
-                                    <p className="text-[8px] text-artisan-light/45 uppercase tracking-wide max-w-[120px] mx-auto leading-normal">
-                                       {step.desc}
-                                    </p>
-                                 </div>
-                              </div>
-                           );
-                        })}
-                     </div>
-                  )}
-
-                  {order.shippingStatus !== 'delivered' && !isCancelled && (
-                     <div className="p-3 border border-blue-500/20 bg-blue-500/5 text-blue-400 text-[9px] font-mono uppercase tracking-wider flex items-center gap-3 animate-pulse rounded-xl">
-                        <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" />
-                        <span>Live updates. Refreshing automatically.</span>
+                     <div className="flex items-center gap-2 font-mono text-[10px]">
+                        <span className="text-artisan-light/35 italic tracking-wide">Tracking ID will be shared once shipped</span>
                      </div>
                   )}
                </div>
-            )}
+
+               {isCancelled ? (
+                  <div className="p-4 border border-red-500/20 bg-red-500/5 text-red-500 text-xs font-mono uppercase flex items-center gap-2 rounded-xl">
+                     <AlertTriangle className="w-4 h-4" />
+                     <span>Order delivery cancelled.</span>
+                  </div>
+               ) : (
+                  <div className="space-y-8 sm:space-y-0 sm:flex sm:justify-between relative py-2 isolate">
+                     {/* Horizontal timeline track background line on larger screens */}
+                     <div className="hidden sm:block absolute left-[10%] right-[10%] top-[15px] h-[3px] bg-artisan-light/20 -z-10 rounded-full" />
+                     
+                     {/* Horizontal flowing progress line on larger screens */}
+                     <div 
+                        className="hidden sm:block absolute left-[10%] top-[15px] h-[3px] bg-green-600 -z-10 transition-all duration-1000 ease-out rounded-full"
+                        style={{ width: `${(activeStepIndex / (steps.length - 1)) * 80}%` }}
+                     />
+
+                     {/* Vertical timeline track background line on mobile */}
+                     <div className="sm:hidden absolute left-4 top-4 bottom-4 w-[3px] bg-artisan-light/20 -z-10 rounded-full" />
+                     
+                     {/* Vertical flowing progress line on mobile */}
+                     <div 
+                        className="sm:hidden absolute left-4 top-4 w-[3px] bg-green-600 -z-10 transition-all duration-1000 ease-out rounded-full"
+                        style={{ height: `calc((100% - 32px) * ${activeStepIndex / (steps.length - 1)})` }}
+                     />
+
+                     {steps.map((step, idx) => {
+                        const completed = idx <= activeStepIndex;
+                        const active = idx === activeStepIndex;
+
+                        return (
+                           <div key={idx} className="flex sm:flex-col items-center gap-4 sm:gap-2 text-left sm:text-center flex-1 relative">
+                              
+                              {/* Step node indicator dot */}
+                              <div className={`w-8 h-8 rounded-full border transition-all duration-500 flex items-center justify-center shrink-0 relative z-10 ${
+                                 completed 
+                                    ? active 
+                                       ? 'bg-artisan-grey border-artisan-grey scale-110 shadow-lg shadow-artisan-grey/25 text-artisan-dark font-black' 
+                                       : 'bg-green-600 border-green-600 text-white'
+                                    : 'bg-artisan-dark border-artisan-light/15 text-artisan-light/40'
+                              }`}>
+                                 {completed && !active ? (
+                                    <Check className="w-4 h-4 text-artisan-dark font-black" />
+                                 ) : active ? (
+                                    <span className="w-2.5 h-2.5 rounded-full bg-artisan-dark animate-ping" />
+                                 ) : (
+                                    <span className="text-[10px] font-mono font-bold">{idx + 1}</span>
+                                 )}
+                              </div>
+
+                              <div className={`space-y-0.5 transition-opacity duration-300 ${completed ? 'opacity-100' : 'opacity-35'}`}>
+                                 <span className={`text-[10px] font-mono font-bold uppercase tracking-wider block ${active ? 'text-artisan-grey font-black' : 'text-artisan-light'}`}>
+                                    {step.label}
+                                 </span>
+                                 <p className="text-[8px] text-artisan-light/45 uppercase tracking-wide max-w-[120px] mx-auto leading-normal">
+                                    {step.desc}
+                                 </p>
+                              </div>
+                           </div>
+                        );
+                     })}
+                  </div>
+               )}
+
+               {order.shippingStatus !== 'delivered' && !isCancelled && (
+                  <div className="p-3 border border-blue-500/20 bg-blue-500/5 text-blue-400 text-[9px] font-mono uppercase tracking-wider flex items-center gap-3 animate-pulse rounded-xl">
+                     <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" />
+                     <span>Live updates. Refreshing automatically.</span>
+                  </div>
+               )}
+            </div>
 
             {/* ROW 2: ORDER ITEMS & REVIEWS (FULL-WIDTH) */}
             <div className="p-6 border border-artisan-light/10 bg-artisan-light/[0.01] space-y-6 rounded-xl">
@@ -616,35 +623,33 @@ export default function OrderDetail() {
             </div>
 
             {/* ROW 4: TRACKING HISTORY (FULL-WIDTH) */}
-            {order.shippingTrackingNumber && (
-               <div className="p-6 border border-artisan-light/10 bg-artisan-light/[0.01] space-y-6 rounded-xl">
-                  <h3 className="text-xs font-mono font-bold uppercase tracking-widest text-artisan-grey border-b border-artisan-light/5 pb-3 flex items-center gap-2">
-                     <Clock className="w-4 h-4 text-artisan-grey" />
-                     Tracking History
-                  </h3>
-                  <div className="space-y-4">
-                     {!order.shippingHistory || order.shippingHistory.length === 0 ? (
-                        <p className="text-[9px] font-mono text-artisan-light/20 uppercase tracking-widest py-2">
-                           No tracking logs yet.
-                        </p>
-                     ) : (
-                        [...order.shippingHistory].reverse().map((log, idx) => (
-                           <div key={idx} className="p-3 border border-artisan-light/5 bg-artisan-light/[0.005] space-y-1 rounded-xl">
-                              <div className="flex justify-between items-center text-[8px] font-mono">
-                                 <span className="font-bold text-artisan-grey uppercase tracking-widest px-2 py-0.5 bg-artisan-light/5 border border-artisan-light/10 rounded-xl">
-                                    {log.status}
-                                 </span>
-                                 <span className="text-artisan-light/35">{new Date(log.timestamp).toLocaleString()}</span>
-                              </div>
-                              <p className="text-[10px] font-mono text-artisan-light/60 uppercase leading-relaxed pt-1">
-                                 {log.description}
-                              </p>
+            <div className="p-6 border border-artisan-light/10 bg-artisan-light/[0.01] space-y-6 rounded-xl">
+               <h3 className="text-xs font-mono font-bold uppercase tracking-widest text-artisan-grey border-b border-artisan-light/5 pb-3 flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-artisan-grey" />
+                  Tracking History
+               </h3>
+               <div className="space-y-4">
+                  {!order.shippingHistory || order.shippingHistory.length === 0 ? (
+                     <p className="text-[9px] font-mono text-artisan-light/20 uppercase tracking-widest py-2">
+                        No tracking logs yet.
+                     </p>
+                  ) : (
+                     [...order.shippingHistory].reverse().map((log, idx) => (
+                        <div key={idx} className="p-3 border border-artisan-light/5 bg-artisan-light/[0.005] space-y-1 rounded-xl">
+                           <div className="flex justify-between items-center text-[8px] font-mono">
+                              <span className="font-bold text-artisan-grey uppercase tracking-widest px-2 py-0.5 bg-artisan-light/5 border border-artisan-light/10 rounded-xl">
+                                 {log.status}
+                              </span>
+                              <span className="text-artisan-light/35">{new Date(log.timestamp).toLocaleString()}</span>
                            </div>
-                        ))
-                     )}
-                  </div>
+                           <p className="text-[10px] font-mono text-artisan-light/60 uppercase leading-relaxed pt-1">
+                              {log.description}
+                           </p>
+                        </div>
+                     ))
+                  )}
                </div>
-            )}
+            </div>
 
             {/* ROW 5: PAYMENT DETAILS (FULL-WIDTH) */}
             <div className="p-6 border border-artisan-light/10 bg-artisan-light/[0.01] space-y-4 rounded-xl">

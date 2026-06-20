@@ -239,7 +239,7 @@ export const verifyRazorpayPayment = async ({
     order.paymentStatus = 'paid';
     order.orderStatus = 'processing';
     order.shippingStatus = 'pending';
-    order.shippingTrackingNumber = `TRK${Math.floor(1000000000 + Math.random() * 9000000000)}`;
+    order.shippingTrackingNumber = '';
     order.shippingHistory = [
       {
         status: 'pending',
@@ -391,7 +391,13 @@ export const handleRazorpayWebhook = async (signature, rawBody) => {
 };
 
 export const getOrderHistory = async (userId) => {
-  return await Order.find({ user: userId }).populate('items.product', 'name sku price').sort('-createdAt');
+  return await Order.find({
+    user: userId,
+    $or: [
+      { paymentStatus: 'paid' },
+      { orderStatus: { $ne: 'pending' } }
+    ]
+  }).populate('items.product', 'name sku price').sort('-createdAt');
 };
 
 export const getOrderDetail = async (orderId, user) => {

@@ -43,6 +43,13 @@ export const authorizeRoles = (...roles) => {
   };
 };
 
+export const restrictAdmin = (req, res, next) => {
+  if (req.user && req.user.role === 'admin') {
+    throw new ApiError(403, 'Administrators are not allowed to perform this customer action.');
+  }
+  next();
+};
+
 export const verifyOptionalJWT = asyncHandler(async (req, res, next) => {
   try {
     const token =

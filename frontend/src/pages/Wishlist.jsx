@@ -7,12 +7,14 @@ import {
   ArrowRight,
   ShoppingBag,
   ExternalLink,
-  Loader2
+  Loader2,
+  AlertCircle
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import api from '../services/api'
 import SEO from '../components/SEO'
+import ToolCard from '../components/marketplace/ToolCard'
 
 export default function Wishlist() {
   const { user, setUser, toggleWishlist } = useAuth()
@@ -41,6 +43,12 @@ export default function Wishlist() {
       setLoading(false)
     }
   }, [user])
+
+  useEffect(() => {
+    if (user?.wishlist) {
+      setItems(prev => prev.filter(item => user.wishlist.includes(item._id)))
+    }
+  }, [user?.wishlist])
 
   const removeItem = async (productId) => {
     try {
@@ -85,6 +93,26 @@ export default function Wishlist() {
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="w-12 h-12 text-artisan-grey animate-spin" />
           <span className="text-[10px] font-mono text-artisan-light/20 uppercase tracking-widest">Loading your wishlist...</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (user && user.role === 'admin') {
+    return (
+      <div className="min-h-screen bg-artisan-dark bg-noise flex items-center justify-center pt-24 md:pt-32 text-artisan-light">
+        <div className="max-w-md mx-auto text-center space-y-6 p-8 border border-artisan-light/15 bg-artisan-light/[0.01] rounded-xl">
+          <AlertCircle className="w-12 h-12 text-red-500 mx-auto" />
+          <h2 className="text-2xl font-display font-black uppercase tracking-tight">Access Denied</h2>
+          <p className="text-xs font-mono text-artisan-light/40 uppercase tracking-widest leading-relaxed">
+            Administrators are not permitted to save items in the wishlist. Please use a customer account.
+          </p>
+          <Link
+            to="/admin"
+            className="inline-block px-6 py-3 bg-artisan-light text-artisan-dark text-[9px] font-mono font-bold uppercase tracking-widest hover:bg-artisan-grey transition-all rounded-full cursor-pointer"
+          >
+            Go to Admin Dashboard
+          </Link>
         </div>
       </div>
     )
@@ -138,78 +166,8 @@ export default function Wishlist() {
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.9, filter: 'blur(10px)' }}
                       transition={{ duration: 0.5, delay: idx * 0.1 }}
-                      className="group relative bg-artisan-light/[0.02] border border-artisan-light/10 hover:border-artisan-grey transition-all duration-700 overflow-hidden hover:grayscale"
                     >
-                      {/* Image Container */}
-                      <div className="relative aspect-[4/3] overflow-hidden">
-                        <img
-                          src={item.image || 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=800'}
-                          alt={item.name}
-                          className="w-full h-full object-cover group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000 "
-                        />
-                        <div className="absolute inset-0 bg-artisan-dark/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
-                          <button
-                            onClick={() => removeItem(item._id)}
-                            className="w-12 h-12 bg-red-500/90 text-white flex items-center justify-center hover:bg-red-600 transition-colors"
-                          >
-                            <Trash2 className="w-5 h-5" />
-                          </button>
-                        </div>
-
-                        {/* Category Badge */}
-                        <div className="absolute top-4 left-4">
-                          <span className="px-3 py-1 bg-artisan-dark text-[8px] font-mono font-bold text-artisan-light uppercase tracking-widest border border-artisan-light/10">
-                            {item.category}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Info Container */}
-                      <div className="p-6 md:p-8 space-y-6">
-                        <div className="flex justify-between items-start gap-4">
-                          <h3 className="text-xl md:text-2xl font-display font-extrabold uppercase tracking-tight text-artisan-light group-hover:text-artisan-grey transition-colors leading-tight">
-                            {item.name}
-                          </h3>
-                        </div>
-
-                        {item.desc && (
-                          <p className="text-xs text-artisan-light/40 line-clamp-2 leading-relaxed">
-                            {item.desc}
-                          </p>
-                        )}
-
-                        <div className="pt-6 border-t border-artisan-light/5 flex items-center justify-between gap-2">
-                          <div className="flex flex-col">
-                            <span className="text-[8px] font-mono text-artisan-light/50 uppercase tracking-widest">Price</span>
-                            <span className="text-lg md:text-xl font-display font-black text-artisan-light tracking-tight shrink-0">₹{item.price?.toLocaleString()}</span>
-                          </div>
-
-                          <div className="flex items-center gap-2">
-                            <Link
-                              to={`/product/${item._id}`}
-                              className="flex items-center gap-2 px-4 py-2.5 bg-artisan-light/5 border border-artisan-light/20 text-artisan-light font-display font-black uppercase tracking-widest text-[9px] hover:bg-artisan-light hover:text-artisan-dark transition-all"
-                            >
-                              View
-                              <ArrowRight className="w-3.5 h-3.5" />
-                            </Link>
-
-                            <button
-                              onClick={() => handleAddToCart(item._id)}
-                              disabled={addingId === item._id}
-                              className="flex items-center gap-2 px-4 py-2.5 bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-widest text-[9px] hover:bg-artisan-grey transition-all disabled:opacity-50"
-                            >
-                              {addingId === item._id ? (
-                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                              ) : (
-                                <>
-                                  Add to Cart
-                                  <ShoppingBag className="w-3.5 h-3.5" />
-                                </>
-                              )}
-                            </button>
-                          </div>
-                        </div>
-                      </div>
+                      <ToolCard tool={item} idx={idx} showAddToCart={true} />
                     </motion.div>
                   ))}
                 </div>

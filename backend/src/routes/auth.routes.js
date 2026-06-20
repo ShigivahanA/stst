@@ -13,7 +13,7 @@ import {
   verify2FA,
   googleLogin
 } from '../controllers/auth.controller.js';
-import { verifyJWT } from '../middlewares/auth.middleware.js';
+import { verifyJWT, restrictAdmin } from '../middlewares/auth.middleware.js';
 import { authLimiter } from '../middlewares/rateLimiter.middleware.js';
 import validate from '../middlewares/validate.middleware.js';
 import authValidation from '../validations/auth.validation.js';
@@ -33,8 +33,8 @@ router.post('/forgotpassword', forgotPassword);
 router.put('/resetpassword/:token', resetPassword);
 
 // Persistence Carts
-router.post('/cart', verifyJWT, addToCart);
-router.get('/cart', verifyJWT, getCart);
-router.delete('/cart', verifyJWT, clearCart);
+router.post('/cart', verifyJWT, restrictAdmin, addToCart);
+router.get('/cart', verifyJWT, restrictAdmin, getCart);
+router.delete('/cart', verifyJWT, restrictAdmin, clearCart);
 
 export default router;

@@ -122,7 +122,7 @@ export const getPendingListings = asyncHandler(async (req, res) => {
 
 // Update status for either an order or product
 export const updateListingStatus = asyncHandler(async (req, res) => {
-  const { status, orderStatus, shippingStatus } = req.body;
+  const { status, orderStatus, shippingStatus, shippingTrackingNumber } = req.body;
 
   // 1. Try finding and updating an Order
   const order = await Order.findById(req.params.id).populate('user');
@@ -131,6 +131,28 @@ export const updateListingStatus = asyncHandler(async (req, res) => {
 
     if (orderStatus) {
       order.orderStatus = orderStatus;
+    }
+
+    if (shippingTrackingNumber !== undefined && order.shippingTrackingNumber !== shippingTrackingNumber) {
+      order.shippingTrackingNumber = shippingTrackingNumber;
+      
+      // Automatically update shippingStatus to 'shipped' if it was 'pending' and tracking is now provided
+      if (shippingTrackingNumber && !shippingStatus && order.shippingStatus === 'pending') {
+        order.shippingStatus = 'shipped';
+        shippingChanged = true;
+
+        order.shippingHistory.push({
+          status: 'shipped',
+          description: `Order sterilized, packaged, and handed over to courier partner. Tracking ID: ${shippingTrackingNumber}`,
+          timestamp: new Date()
+        });
+      } else {
+        order.shippingHistory.push({
+          status: order.shippingStatus,
+          description: `Shipping tracking number updated to ${shippingTrackingNumber}`,
+          timestamp: new Date()
+        });
+      }
     }
 
     if (shippingStatus && order.shippingStatus !== shippingStatus) {
@@ -254,6 +276,7 @@ export const getBookings = asyncHandler(async (req, res) => {
       orderStatus: order.orderStatus,
       shippingStatus: order.shippingStatus,
       paymentStatus: order.paymentStatus,
+      shippingTrackingNumber: order.shippingTrackingNumber || '',
     };
   });
 

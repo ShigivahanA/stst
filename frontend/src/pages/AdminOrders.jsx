@@ -113,12 +113,22 @@ export default function AdminOrders() {
    const [actionLoading, setActionLoading] = useState(null)
    const [searchQuery, setSearchQuery] = useState('')
    const [filterStatus, setFilterStatus] = useState('all')
+   const [trackingInputs, setTrackingInputs] = useState({})
+   const [editingTrackingId, setEditingTrackingId] = useState(null)
 
    const fetchBookings = async () => {
       try {
          setLoading(true)
          const res = await api.get('/admin/bookings')
-         setBookings(res.data.data || [])
+         const data = res.data.data || []
+         setBookings(data)
+         
+         // Pre-populate trackingInputs with existing tracking numbers
+         const inputs = {}
+         data.forEach(b => {
+            inputs[b._id] = b.shippingTrackingNumber || ''
+         })
+         setTrackingInputs(inputs)
       } catch (err) {
          addToast('Failed to load orders', 'error')
       } finally {
@@ -129,6 +139,27 @@ export default function AdminOrders() {
    useEffect(() => {
       fetchBookings()
    }, [])
+
+   const handleUpdateTracking = async (id) => {
+      const trackingVal = trackingInputs[id] || ''
+      if (!trackingVal.trim()) {
+         addToast('Tracking ID cannot be empty', 'error')
+         return
+      }
+      try {
+         setActionLoading(id)
+         await api.put(`/admin/listings/${id}/status`, {
+            shippingTrackingNumber: trackingVal.trim()
+         })
+         addToast('Tracking ID updated', 'success')
+         setEditingTrackingId(null)
+         fetchBookings()
+      } catch (err) {
+         addToast('Update failed', 'error')
+      } finally {
+         setActionLoading(null)
+      }
+   }
 
    const handleStatusUpdate = async (id, status, orderStatus = null, shippingStatus = null) => {
       try {
@@ -307,7 +338,7 @@ export default function AdminOrders() {
                                     </div>
                                  </div>
 
-                                 {/* Bottom row: Status controls — both in same row */}
+                                 {/* Bottom row: Status controls */}
                                  <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4 pt-4 border-t border-artisan-light/5">
                                     <div className="flex flex-wrap items-end gap-4">
                                        <CustomDropdown
@@ -326,6 +357,50 @@ export default function AdminOrders() {
                                           icon={Truck}
                                           label="Shipping Status"
                                        />
+                                       {/* Tracking ID input/display next to Shipping Status */}
+                                       <div className="flex flex-col gap-1.5 relative">
+                                          <span className="text-[7px] font-mono text-artisan-light/40 uppercase tracking-wider font-bold">Tracking ID</span>
+                                          {!booking.shippingTrackingNumber || editingTrackingId === booking._id ? (
+                                             <div className="flex items-center gap-2 h-10">
+                                                <input
+                                                   type="text"
+                                                   value={trackingInputs[booking._id] || ''}
+                                                   onChange={(e) => setTrackingInputs(prev => ({ ...prev, [booking._id]: e.target.value }))}
+                                                   placeholder="ENTER TRACKING ID"
+                                                   className="bg-artisan-dark border border-artisan-light/10 text-artisan-light font-mono text-[9px] uppercase px-3 py-2 outline-none focus:border-artisan-grey/50 transition-colors rounded-xl h-10 w-44"
+                                                />
+                                                <button
+                                                   onClick={() => handleUpdateTracking(booking._id)}
+                                                   disabled={actionLoading === booking._id}
+                                                   className="h-10 px-4 bg-artisan-light hover:bg-artisan-grey disabled:bg-artisan-light/20 text-artisan-dark font-mono text-[9px] font-bold uppercase tracking-wider transition-all rounded-xl flex items-center justify-center cursor-pointer select-none"
+                                                >
+                                                   Share
+                                                </button>
+                                                {booking.shippingTrackingNumber && (
+                                                   <button
+                                                      onClick={() => setEditingTrackingId(null)}
+                                                      disabled={actionLoading === booking._id}
+                                                      className="h-10 px-4 border border-artisan-light/10 hover:border-artisan-light/20 text-artisan-light font-mono text-[9px] font-bold uppercase tracking-wider transition-all rounded-xl flex items-center justify-center cursor-pointer select-none"
+                                                   >
+                                                      Cancel
+                                                   </button>
+                                                )}
+                                             </div>
+                                          ) : (
+                                             <div className="flex items-center gap-3 h-10 bg-artisan-light/[0.02] border border-artisan-light/10 px-4 rounded-xl w-64 justify-between">
+                                                <span className="font-mono text-[9px] text-artisan-light/60 truncate uppercase font-bold">{booking.shippingTrackingNumber}</span>
+                                                <button
+                                                   onClick={() => {
+                                                      setEditingTrackingId(booking._id)
+                                                      setTrackingInputs(prev => ({ ...prev, [booking._id]: booking.shippingTrackingNumber }))
+                                                   }}
+                                                   className="text-artisan-grey hover:text-artisan-light font-mono text-[9px] font-bold uppercase tracking-wider cursor-pointer"
+                                                >
+                                                   Edit
+                                                </button>
+                                             </div>
+                                          )}
+                                       </div>
                                     </div>
 
                                     {/* Loading spinner */}

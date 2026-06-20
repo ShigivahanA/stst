@@ -1,5 +1,5 @@
 import express from 'express';
-import { verifyJWT } from '../middlewares/auth.middleware.js';
+import { verifyJWT, restrictAdmin } from '../middlewares/auth.middleware.js';
 import {
   updateDetails,
   addAddress,
@@ -27,8 +27,8 @@ router.put('/change-password', changePassword);
 router.post('/toggle-2fa', toggle2FA);
 router.put('/avatar', uploadAvatar);
 router.delete('/avatar', deleteAvatar);
-router.post('/wishlist/:productId', toggleWishlist);
-router.get('/wishlist', getWishlist);
+router.post('/wishlist/:productId', restrictAdmin, toggleWishlist);
+router.get('/wishlist', restrictAdmin, getWishlist);
 router.put('/consents', updateConsents);
 
 export default router;
