@@ -560,15 +560,20 @@ export default function ProductDetail() {
                      <h1 className="text-3xl lg:text-4xl font-display font-extrabold uppercase tracking-tight leading-tight text-artisan-light">
                         {displayTitle}
                      </h1>
-                     <div className="flex items-baseline gap-2">
-                        {tool.mrp !== undefined && tool.mrp > displayPrice && (
-                           <span className="text-sm font-display font-medium line-through text-artisan-light/40">
-                              ₹{tool.mrp?.toLocaleString()}
+                     <div className="flex flex-col gap-1">
+                        <div className="flex items-baseline gap-2">
+                           {tool.mrp !== undefined && tool.mrp > displayPrice && (
+                              <span className="text-sm font-display font-medium line-through text-artisan-light/40">
+                                 ₹{tool.mrp?.toLocaleString()}
+                              </span>
+                           )}
+                           <span className="text-2xl font-display font-black text-artisan-light">
+                              ₹{displayPrice?.toLocaleString()}
                            </span>
-                        )}
-                        <span className="text-2xl font-display font-black text-artisan-light">
-                           ₹{displayPrice?.toLocaleString()}
-                        </span>
+                        </div>
+                        <p className="text-[10px] font-mono text-artisan-grey uppercase tracking-widest mt-1">
+                           🤝 Ready to negotiate and get lower prices?
+                        </p>
                      </div>
                   </div>
 

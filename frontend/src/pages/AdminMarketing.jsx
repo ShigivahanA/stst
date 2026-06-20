@@ -270,6 +270,7 @@ function CouponsTab() {
   const [isAddingCoupon, setIsAddingCoupon] = useState(false)
   const [editingCouponId, setEditingCouponId] = useState(null)
   const [isProcessing, setIsProcessing] = useState(false)
+  const [couponMode, setCouponMode] = useState('promo') // 'promo' or 'manual'
   const [form, setForm] = useState({
     code: '',
     discountType: 'percentage',
@@ -326,24 +327,27 @@ function CouponsTab() {
     if (!form.discountValue || parseFloat(form.discountValue) <= 0) {
       errors.discountValue = 'Value must be greater than 0'
     }
-    if (form.discountType === 'percentage' && parseFloat(form.discountValue) > 100) {
-      errors.discountValue = 'Percentage cannot exceed 100%'
-    }
-    if (!form.validUntil) errors.validUntil = 'Expiration date is required'
-    else {
-      const expiry = new Date(form.validUntil)
-      if (expiry <= new Date() && !editingCouponId) {
-        errors.validUntil = 'Expiration date must be in the future'
+
+    if (couponMode === 'promo') {
+      if (form.discountType === 'percentage' && parseFloat(form.discountValue) > 100) {
+        errors.discountValue = 'Percentage cannot exceed 100%'
       }
-    }
-    if (form.usageLimit !== '' && parseInt(form.usageLimit) <= 0) {
-      errors.usageLimit = 'Limit must be at least 1'
-    }
-    if (form.minCartAmount !== '' && parseFloat(form.minCartAmount) < 0) {
-      errors.minCartAmount = 'Min cart amount cannot be negative'
-    }
-    if (form.maxDiscountAmount !== '' && parseFloat(form.maxDiscountAmount) < 0) {
-      errors.maxDiscountAmount = 'Max discount amount cannot be negative'
+      if (!form.validUntil) errors.validUntil = 'Expiration date is required'
+      else {
+        const expiry = new Date(form.validUntil)
+        if (expiry <= new Date() && !editingCouponId) {
+          errors.validUntil = 'Expiration date must be in the future'
+        }
+      }
+      if (form.usageLimit !== '' && parseInt(form.usageLimit) <= 0) {
+        errors.usageLimit = 'Limit must be at least 1'
+      }
+      if (form.minCartAmount !== '' && parseFloat(form.minCartAmount) < 0) {
+        errors.minCartAmount = 'Min cart amount cannot be negative'
+      }
+      if (form.maxDiscountAmount !== '' && parseFloat(form.maxDiscountAmount) < 0) {
+        errors.maxDiscountAmount = 'Max discount amount cannot be negative'
+      }
     }
 
     setFormErrors(errors)
@@ -356,7 +360,16 @@ function CouponsTab() {
 
     try {
       setIsProcessing(true)
-      const payload = {
+      const payload = couponMode === 'manual' ? {
+        code: form.code.trim().toUpperCase(),
+        discountType: 'flat',
+        discountValue: parseFloat(form.discountValue),
+        minCartAmount: 0,
+        maxDiscountAmount: null,
+        validUntil: new Date(Date.now() + 5 * 365 * 24 * 60 * 60 * 1000).toISOString(),
+        isActive: form.isActive,
+        usageLimit: 1
+      } : {
         code: form.code.trim().toUpperCase(),
         discountType: form.discountType,
         discountValue: parseFloat(form.discountValue),
@@ -391,6 +404,8 @@ function CouponsTab() {
 
   const handleEditStart = (coupon) => {
     setEditingCouponId(coupon._id)
+    const isManual = coupon.discountType === 'flat' && coupon.minCartAmount === 0 && coupon.usageLimit === 1;
+    setCouponMode(isManual ? 'manual' : 'promo')
     setForm({
       code: coupon.code,
       discountType: coupon.discountType,
@@ -417,6 +432,7 @@ function CouponsTab() {
       usageLimit: ''
     })
     setFormErrors({})
+    setCouponMode('promo')
   }
 
   const filteredCoupons = coupons.filter(coupon => {
@@ -490,7 +506,11 @@ function CouponsTab() {
             
             <div className="flex items-center justify-between border-b border-artisan-light/5 pb-4">
               <h3 className="text-xs font-mono font-bold uppercase tracking-[0.3em] text-artisan-grey">
-                {editingCouponId ? `Edit Coupon Code // #${editingCouponId.slice(-6).toUpperCase()}` : 'Create New Promotional Coupon'}
+                {editingCouponId
+                  ? `Edit Coupon Code // #${editingCouponId.slice(-6).toUpperCase()}`
+                  : couponMode === 'manual'
+                  ? 'Create Manual Discount'
+                  : 'Create New Promotional Coupon'}
               </h3>
               <button 
                 onClick={() => {
@@ -504,111 +524,165 @@ function CouponsTab() {
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Coupon Code */}
-                <div className="space-y-2">
-                  <label className="text-[8px] font-mono font-bold text-artisan-light/40 uppercase tracking-widest">Coupon Code *</label>
-                  <input
-                    type="text"
-                    placeholder="WELCOME10"
-                    value={form.code}
-                    onChange={(e) => setForm({ ...form, code: e.target.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase() })}
-                    className={`w-full bg-transparent border-b-2 outline-none text-xs font-mono pb-2 uppercase transition-colors ${formErrors.code ? 'border-red-500/50 focus:border-red-500' : 'border-artisan-light/10 focus:border-artisan-light'}`}
-                    disabled={!!editingCouponId}
-                  />
-                  {formErrors.code && <p className="text-[10px] font-mono text-red-500">{formErrors.code}</p>}
-                </div>
+            {/* Sub-tab Mode Selector */}
+            <div className="flex border-b border-artisan-light/5 gap-6 pb-2">
+              {[
+                { id: 'promo', label: 'Promotional Coupon' },
+                { id: 'manual', label: 'Manual Discount' }
+              ].map((mode) => (
+                <button
+                  key={mode.id}
+                  type="button"
+                  onClick={() => setCouponMode(mode.id)}
+                  className={`pb-2 border-b-2 font-mono text-[9px] font-bold uppercase tracking-widest transition-all ${
+                    couponMode === mode.id
+                      ? 'border-artisan-grey text-artisan-light'
+                      : 'border-transparent text-artisan-light/40 hover:text-artisan-light/60'
+                  }`}
+                >
+                  {mode.label}
+                </button>
+              ))}
+            </div>
 
-                {/* Discount Type */}
-                <div className="space-y-2">
-                  <label className="text-[8px] font-mono font-bold text-artisan-light/40 uppercase tracking-widest">Discount Type *</label>
-                  <div className="flex gap-2">
-                    {['percentage', 'flat'].map((type) => (
-                      <button
-                        key={type}
-                        type="button"
-                        onClick={() => setForm({ ...form, discountType: type })}
-                        className={`flex-1 py-1.5 text-[9px] font-mono font-bold uppercase tracking-widest border transition-all rounded-full ${form.discountType === type
-                          ? 'bg-artisan-light border-artisan-light text-artisan-dark'
-                          : 'border-artisan-light/10 text-artisan-light hover:border-artisan-light/35'
-                        }`}
-                      >
-                        {type === 'percentage' ? 'Percentage (%)' : 'Flat Cash (₹)'}
-                      </button>
-                    ))}
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {couponMode === 'manual' ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Coupon Code */}
+                  <div className="space-y-2">
+                    <label className="text-[8px] font-mono font-bold text-artisan-light/40 uppercase tracking-widest">Coupon Code *</label>
+                    <input
+                      type="text"
+                      placeholder="OFF500"
+                      value={form.code}
+                      onChange={(e) => setForm({ ...form, code: e.target.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase() })}
+                      className={`w-full bg-transparent border-b-2 outline-none text-xs font-mono pb-2 uppercase transition-colors ${formErrors.code ? 'border-red-500/50 focus:border-red-500' : 'border-artisan-light/10 focus:border-artisan-light'}`}
+                      disabled={!!editingCouponId}
+                    />
+                    {formErrors.code && <p className="text-[10px] font-mono text-red-500">{formErrors.code}</p>}
+                  </div>
+
+                  {/* Discount Value */}
+                  <div className="space-y-2">
+                    <label className="text-[8px] font-mono font-bold text-artisan-light/40 uppercase tracking-widest">Discount Value (₹) *</label>
+                    <input
+                      type="number"
+                      placeholder="500"
+                      value={form.discountValue}
+                      onChange={(e) => setForm({ ...form, discountValue: e.target.value })}
+                      className={`w-full bg-transparent border-b-2 outline-none text-xs font-mono pb-2 transition-colors ${formErrors.discountValue ? 'border-red-500/50 focus:border-red-500' : 'border-artisan-light/10 focus:border-artisan-light'}`}
+                    />
+                    {formErrors.discountValue && <p className="text-[10px] font-mono text-red-500">{formErrors.discountValue}</p>}
                   </div>
                 </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* Coupon Code */}
+                    <div className="space-y-2">
+                      <label className="text-[8px] font-mono font-bold text-artisan-light/40 uppercase tracking-widest">Coupon Code *</label>
+                      <input
+                        type="text"
+                        placeholder="WELCOME10"
+                        value={form.code}
+                        onChange={(e) => setForm({ ...form, code: e.target.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase() })}
+                        className={`w-full bg-transparent border-b-2 outline-none text-xs font-mono pb-2 uppercase transition-colors ${formErrors.code ? 'border-red-500/50 focus:border-red-500' : 'border-artisan-light/10 focus:border-artisan-light'}`}
+                        disabled={!!editingCouponId}
+                      />
+                      {formErrors.code && <p className="text-[10px] font-mono text-red-500">{formErrors.code}</p>}
+                    </div>
 
-                {/* Discount Value */}
-                <div className="space-y-2">
-                  <label className="text-[8px] font-mono font-bold text-artisan-light/40 uppercase tracking-widest">
-                    {form.discountType === 'percentage' ? 'Discount Percentage (%) *' : 'Discount Value (₹) *'}
-                  </label>
-                  <input
-                    type="number"
-                    placeholder={form.discountType === 'percentage' ? '10' : '500'}
-                    value={form.discountValue}
-                    onChange={(e) => setForm({ ...form, discountValue: e.target.value })}
-                    className={`w-full bg-transparent border-b-2 outline-none text-xs font-mono pb-2 transition-colors ${formErrors.discountValue ? 'border-red-500/50 focus:border-red-500' : 'border-artisan-light/10 focus:border-artisan-light'}`}
-                  />
-                  {formErrors.discountValue && <p className="text-[10px] font-mono text-red-500">{formErrors.discountValue}</p>}
-                </div>
-              </div>
+                    {/* Discount Type */}
+                    <div className="space-y-2">
+                      <label className="text-[8px] font-mono font-bold text-artisan-light/40 uppercase tracking-widest">Discount Type *</label>
+                      <div className="flex gap-2">
+                        {['percentage', 'flat'].map((type) => (
+                          <button
+                            key={type}
+                            type="button"
+                            onClick={() => setForm({ ...form, discountType: type })}
+                            className={`flex-1 py-1.5 text-[9px] font-mono font-bold uppercase tracking-widest border transition-all rounded-full ${form.discountType === type
+                              ? 'bg-artisan-light border-artisan-light text-artisan-dark'
+                              : 'border-artisan-light/10 text-artisan-light hover:border-artisan-light/35'
+                            }`}
+                          >
+                            {type === 'percentage' ? 'Percentage (%)' : 'Flat Cash (₹)'}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                {/* Minimum Subtotal */}
-                <div className="space-y-2">
-                  <label className="text-[8px] font-mono font-bold text-artisan-light/40 uppercase tracking-widest">Min Subtotal (₹)</label>
-                  <input
-                    type="number"
-                    placeholder="0"
-                    value={form.minCartAmount}
-                    onChange={(e) => setForm({ ...form, minCartAmount: e.target.value })}
-                    className={`w-full bg-transparent border-b-2 outline-none text-xs font-mono pb-2 transition-colors ${formErrors.minCartAmount ? 'border-red-500/50 focus:border-red-500' : 'border-artisan-light/10 focus:border-artisan-light'}`}
-                  />
-                  {formErrors.minCartAmount && <p className="text-[10px] font-mono text-red-500">{formErrors.minCartAmount}</p>}
-                </div>
+                    {/* Discount Value */}
+                    <div className="space-y-2">
+                      <label className="text-[8px] font-mono font-bold text-artisan-light/40 uppercase tracking-widest">
+                        {form.discountType === 'percentage' ? 'Discount Percentage (%) *' : 'Discount Value (₹) *'}
+                      </label>
+                      <input
+                        type="number"
+                        placeholder={form.discountType === 'percentage' ? '10' : '500'}
+                        value={form.discountValue}
+                        onChange={(e) => setForm({ ...form, discountValue: e.target.value })}
+                        className={`w-full bg-transparent border-b-2 outline-none text-xs font-mono pb-2 transition-colors ${formErrors.discountValue ? 'border-red-500/50 focus:border-red-500' : 'border-artisan-light/10 focus:border-artisan-light'}`}
+                      />
+                      {formErrors.discountValue && <p className="text-[10px] font-mono text-red-500">{formErrors.discountValue}</p>}
+                    </div>
+                  </div>
 
-                {/* Max Discount Capping */}
-                <div className="space-y-2">
-                  <label className="text-[8px] font-mono font-bold text-artisan-light/40 uppercase tracking-widest">Max Discount Cap (₹)</label>
-                  <input
-                    type="number"
-                    placeholder="No Limit"
-                    value={form.maxDiscountAmount}
-                    onChange={(e) => setForm({ ...form, maxDiscountAmount: e.target.value })}
-                    className={`w-full bg-transparent border-b-2 outline-none text-xs font-mono pb-2 transition-colors ${formErrors.maxDiscountAmount ? 'border-red-500/50 focus:border-red-500' : 'border-artisan-light/10 focus:border-artisan-light'}`}
-                    disabled={form.discountType === 'flat'}
-                  />
-                  {formErrors.maxDiscountAmount && <p className="text-[10px] font-mono text-red-500">{formErrors.maxDiscountAmount}</p>}
-                </div>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    {/* Minimum Subtotal */}
+                    <div className="space-y-2">
+                      <label className="text-[8px] font-mono font-bold text-artisan-light/40 uppercase tracking-widest">Min Subtotal (₹)</label>
+                      <input
+                        type="number"
+                        placeholder="0"
+                        value={form.minCartAmount}
+                        onChange={(e) => setForm({ ...form, minCartAmount: e.target.value })}
+                        className={`w-full bg-transparent border-b-2 outline-none text-xs font-mono pb-2 transition-colors ${formErrors.minCartAmount ? 'border-red-500/50 focus:border-red-500' : 'border-artisan-light/10 focus:border-artisan-light'}`}
+                      />
+                      {formErrors.minCartAmount && <p className="text-[10px] font-mono text-red-500">{formErrors.minCartAmount}</p>}
+                    </div>
 
-                {/* Expiry Date */}
-                <div className="space-y-2">
-                  <label className="text-[8px] font-mono font-bold text-artisan-light/40 uppercase tracking-widest">Valid Until *</label>
-                  <input
-                    type="date"
-                    value={form.validUntil}
-                    onChange={(e) => setForm({ ...form, validUntil: e.target.value })}
-                    className={`w-full bg-transparent border-b-2 outline-none text-xs font-mono pb-2 transition-colors ${formErrors.validUntil ? 'border-red-500/50 focus:border-red-500' : 'border-artisan-light/10 focus:border-artisan-light'}`}
-                  />
-                  {formErrors.validUntil && <p className="text-[10px] font-mono text-red-500">{formErrors.validUntil}</p>}
-                </div>
+                    {/* Max Discount Capping */}
+                    <div className="space-y-2">
+                      <label className="text-[8px] font-mono font-bold text-artisan-light/40 uppercase tracking-widest">Max Discount Cap (₹)</label>
+                      <input
+                        type="number"
+                        placeholder="No Limit"
+                        value={form.maxDiscountAmount}
+                        onChange={(e) => setForm({ ...form, maxDiscountAmount: e.target.value })}
+                        className={`w-full bg-transparent border-b-2 outline-none text-xs font-mono pb-2 transition-colors ${formErrors.maxDiscountAmount ? 'border-red-500/50 focus:border-red-500' : 'border-artisan-light/10 focus:border-artisan-light'}`}
+                        disabled={form.discountType === 'flat'}
+                      />
+                      {formErrors.maxDiscountAmount && <p className="text-[10px] font-mono text-red-500">{formErrors.maxDiscountAmount}</p>}
+                    </div>
 
-                {/* Usage Limit */}
-                <div className="space-y-2">
-                  <label className="text-[8px] font-mono font-bold text-artisan-light/40 uppercase tracking-widest">Usage Limit</label>
-                  <input
-                    type="number"
-                    placeholder="Unlimited"
-                    value={form.usageLimit}
-                    onChange={(e) => setForm({ ...form, usageLimit: e.target.value })}
-                    className={`w-full bg-transparent border-b-2 outline-none text-xs font-mono pb-2 transition-colors ${formErrors.usageLimit ? 'border-red-500/50 focus:border-red-500' : 'border-artisan-light/10 focus:border-artisan-light'}`}
-                  />
-                  {formErrors.usageLimit && <p className="text-[10px] font-mono text-red-500">{formErrors.usageLimit}</p>}
-                </div>
-              </div>
+                    {/* Expiry Date */}
+                    <div className="space-y-2">
+                      <label className="text-[8px] font-mono font-bold text-artisan-light/40 uppercase tracking-widest">Valid Until *</label>
+                      <input
+                        type="date"
+                        value={form.validUntil}
+                        onChange={(e) => setForm({ ...form, validUntil: e.target.value })}
+                        className={`w-full bg-transparent border-b-2 outline-none text-xs font-mono pb-2 transition-colors ${formErrors.validUntil ? 'border-red-500/50 focus:border-red-500' : 'border-artisan-light/10 focus:border-artisan-light'}`}
+                      />
+                      {formErrors.validUntil && <p className="text-[10px] font-mono text-red-500">{formErrors.validUntil}</p>}
+                    </div>
+
+                    {/* Usage Limit */}
+                    <div className="space-y-2">
+                      <label className="text-[8px] font-mono font-bold text-artisan-light/40 uppercase tracking-widest">Usage Limit</label>
+                      <input
+                        type="number"
+                        placeholder="Unlimited"
+                        value={form.usageLimit}
+                        onChange={(e) => setForm({ ...form, usageLimit: e.target.value })}
+                        className={`w-full bg-transparent border-b-2 outline-none text-xs font-mono pb-2 transition-colors ${formErrors.usageLimit ? 'border-red-500/50 focus:border-red-500' : 'border-artisan-light/10 focus:border-artisan-light'}`}
+                      />
+                      {formErrors.usageLimit && <p className="text-[10px] font-mono text-red-500">{formErrors.usageLimit}</p>}
+                    </div>
+                  </div>
+                </>
+              )}
 
               <div className="flex gap-3 pt-4 border-t border-artisan-light/5">
                 <button
