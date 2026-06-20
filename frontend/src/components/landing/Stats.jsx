@@ -158,20 +158,38 @@ export default function Stats() {
             <p className="text-xs font-mono text-artisan-light/50 uppercase tracking-[0.2em] leading-relaxed">
               STAT Surgical Supplies delivers top-tier clinical machinery, diagnostic tools, and surgical consumables to hospitals, healthcare centers, and medical practitioners across India.
             </p>
-
             {/* Premium Heartbeat/ECG Visual Component */}
-            <div className="p-6 border border-artisan-light/15 bg-white/20 backdrop-blur-sm rounded-2xl md:rounded-3xl relative overflow-hidden">
+            <div className="ecg-container p-6 border border-artisan-light/15 bg-white/20 backdrop-blur-sm rounded-2xl md:rounded-3xl relative overflow-hidden">
               <div className="absolute inset-0 bg-[linear-gradient(rgba(235,94,40,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(235,94,40,0.01)_1px,transparent_1px)] bg-[size:10px_10px]" />
-              <div className="relative z-10 w-full h-14 bg-artisan-light/5 border border-artisan-light/5 flex items-center justify-center rounded-xl p-2">
+              <div className="relative z-10 w-full h-14 bg-artisan-light/5 border border-artisan-light/5 flex items-center justify-center rounded-xl p-2 overflow-hidden">
                 <style>{`
                   @keyframes ecg-sweep {
                     0% { stroke-dashoffset: 500; }
                     100% { stroke-dashoffset: 0; }
                   }
+                  .ecg-container svg {
+                    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+                  }
+                  .ecg-container:hover svg {
+                    transform: scale(1.08);
+                  }
                   .ecg-pulse-line {
                     stroke-dasharray: 60, 440;
                     stroke-dashoffset: 500;
                     animation: ecg-sweep 2.5s linear infinite;
+                    transition: stroke-width 0.3s ease, filter 0.3s ease;
+                  }
+                  .ecg-container:hover .ecg-pulse-line {
+                    animation-duration: 1.1s; /* Energized heartbeat rate on hover */
+                    stroke-width: 2.5;
+                    filter: drop-shadow(0 0 3px #eb5e28) drop-shadow(0 0 8px #eb5e28);
+                  }
+                  .ecg-bg-line {
+                    transition: stroke 0.3s ease, stroke-width 0.3s ease, opacity 0.3s ease;
+                  }
+                  .ecg-container:hover .ecg-bg-line {
+                    stroke: rgba(235, 94, 40, 0.25);
+                    stroke-width: 2;
                   }
                 `}</style>
                 <svg className="w-full h-full" viewBox="0 0 200 40" preserveAspectRatio="none">
@@ -180,7 +198,7 @@ export default function Stats() {
                     d="M 0,20 L 40,20 L 50,20 L 55,5 L 60,35 L 65,20 L 70,20 L 80,20 L 90,20 L 95,0 L 100,40 L 105,20 L 110,20 L 120,20 L 160,20 L 170,20 L 175,5 L 180,35 L 185,20 L 200,20"
                     fill="none"
                     stroke="currentColor"
-                    className="text-artisan-grey/10"
+                    className="text-artisan-grey/10 ecg-bg-line"
                     strokeWidth="1.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"

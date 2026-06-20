@@ -159,7 +159,8 @@
 }
 
 /* 1. Scale Logo */
-.mobile-desktop-mode header a.flex svg {
+.mobile-desktop-mode header a.flex svg,
+.mobile-desktop-mode header a.flex img {
   width: 32px !important;
   height: 32px !important;
 }

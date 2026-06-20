@@ -4,6 +4,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { Activity, X, ArrowUpRight, Globe, MessageCircle, Camera, Mail, MapPin, Phone, LogOut, User as UserIcon, Search, Heart, ShoppingBag } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import api from '../services/api'
+import logo from '../assets/logo.webp'
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
@@ -263,7 +264,7 @@ export default function Navbar() {
           {/* Logo */}
           <Link
             to="/"
-            className="flex items-center gap-2 relative z-[110]"
+            className="flex items-center gap-2 relative z-[110] group/logo"
             onClick={() => {
               setIsOpen(false)
               setShowMobileSearch(false)
@@ -274,7 +275,7 @@ export default function Navbar() {
               whileTap={{ scale: 0.98 }}
               className="flex items-center gap-2"
             >
-              <Activity className="w-5 h-5 text-artisan-light" />
+              <img src={logo} alt="STAT Logo" className="w-8 h-8 object-contain rounded-full transition-all duration-300 group-hover/logo:scale-110 group-hover/logo:shadow-[0_0_10px_#eb5e28]" />
               <span className="text-sm font-display font-bold uppercase tracking-[0.2em]">
                 <span className="text-artisan-light">STAT</span>
                 <span className="text-artisan-grey ml-2 hidden sm:inline">Surgical Supplies</span>

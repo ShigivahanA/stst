@@ -192,7 +192,7 @@ export default function Hero() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#65A90D] opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-[#65A90D]"></span>
               </span>
-              <span className="text-[9px] font-mono uppercase tracking-[0.3em] font-bold text-artisan-grey">
+              <span className="text-[7px] sm:text-[9px] font-mono uppercase tracking-[0.2em] sm:tracking-[0.3em] font-bold text-artisan-grey whitespace-nowrap">
                 Trusted by Healthcare Professionals
               </span>
             </motion.div>
