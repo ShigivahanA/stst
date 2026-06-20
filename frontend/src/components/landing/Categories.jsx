@@ -40,6 +40,28 @@ export default function Categories() {
     navigate(`/allproduct?category=${encodeURIComponent(categoryName)}`)
   }
 
+  const headerVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.5, ease: 'easeOut' }
+    }
+  }
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 15 },
+    visible: (i) => ({
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.4,
+        ease: 'easeOut',
+        delay: i * 0.03
+      }
+    })
+  }
+
   return (
     <section id="categories" className="bg-artisan-dark bg-noise border-b-2 border-artisan-light min-h-screen flex flex-col">
       <div className="container-custom py-12 lg:py-16 flex flex-col flex-1">
@@ -47,9 +69,9 @@ export default function Categories() {
         {/* Header */}
         <div className="mb-4 lg:mb-6 flex flex-col md:flex-row md:items-end justify-between gap-3">
           <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={isInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.8 }}
+            initial="hidden"
+            animate={isInView ? "visible" : "hidden"}
+            variants={headerVariants}
             className="max-w-4xl"
           >
             <span className="text-xs font-mono font-bold uppercase tracking-[0.4em] text-artisan-grey mb-6 block">Product Range</span>
@@ -69,29 +91,30 @@ export default function Categories() {
             <motion.button
               key={cat.name}
               onClick={() => handleCategoryClick(cat.name)}
-              initial={{ opacity: 0, y: 20 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1], delay: i * 0.05 }}
-              className={`group relative p-6 md:p-8 bg-white border border-artisan-light/10 rounded-2xl md:rounded-3xl flex flex-col items-start text-left overflow-hidden hover:-translate-y-1.5 hover:scale-[1.01] active:scale-95 transition-all duration-300 shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:shadow-xl hover:bg-artisan-light col-span-1 md:col-span-3 ${cat.size}`}
+              custom={i}
+              initial="hidden"
+              animate={isInView ? "visible" : "hidden"}
+              variants={cardVariants}
+              className={`group relative p-6 md:p-8 bg-white border border-artisan-light/10 rounded-2xl md:rounded-3xl flex flex-col items-start text-left overflow-hidden hover:-translate-y-1 hover:scale-[1.005] active:scale-95 transition-[transform,background-color,border-color,box-shadow] duration-300 ease-out shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:shadow-xl hover:bg-artisan-light col-span-1 md:col-span-3 ${cat.size}`}
             >
               <div className="w-full flex justify-between items-start mb-4 relative z-10">
-                <span className="text-[10px] font-mono font-bold text-artisan-grey uppercase tracking-widest bg-slate-50 px-2 py-0.5 rounded border border-slate-100 group-hover:bg-white/10 group-hover:border-white/10 group-hover:text-white transition-all duration-300">
+                <span className="text-[10px] font-mono font-bold text-artisan-grey uppercase tracking-widest bg-slate-50 px-2 py-0.5 rounded border border-slate-100 group-hover:bg-white/10 group-hover:border-white/10 group-hover:text-white transition-[background-color,border-color,color] duration-300 ease-out">
                   Available — {counts[cat.name] || 0}
                 </span>
-                <ArrowUpRight className="w-5 h-5 md:w-6 md:h-6 text-artisan-light group-hover:text-artisan-dark group-hover:translate-x-1 group-hover:-translate-y-1 transition-[color,transform] duration-500" />
+                <ArrowUpRight className="w-5 h-5 md:w-6 md:h-6 text-artisan-light group-hover:text-artisan-dark group-hover:translate-x-1 group-hover:-translate-y-1 transition-[color,transform] duration-300 ease-out" />
               </div>
 
               <div className="relative z-10 w-full mt-2">
-                <h3 className="text-base sm:text-lg lg:text-xl font-display font-extrabold uppercase text-artisan-light group-hover:text-artisan-dark transition-colors duration-500 mb-1.5 leading-tight break-keep hyphens-none">
+                <h3 className="text-base sm:text-lg lg:text-xl font-display font-extrabold uppercase text-artisan-light group-hover:text-artisan-dark transition-colors duration-300 ease-out mb-1.5 leading-tight break-keep hyphens-none">
                   {cat.name}
                 </h3>
-                <p className="text-[10px] font-mono font-bold text-artisan-light/45 group-hover:text-artisan-dark/60 uppercase tracking-widest transition-colors duration-500">
+                <p className="text-[10px] font-mono font-bold text-artisan-light/45 group-hover:text-artisan-dark/60 uppercase tracking-widest transition-colors duration-300 ease-out">
                   {cat.desc}
                 </p>
               </div>
 
               {/* Hover Graphic Reveal (Scaled for mobile) */}
-              <div className="absolute -bottom-6 -right-6 md:-bottom-10 md:-right-10 text-8xl md:text-[10rem] font-display font-extrabold text-artisan-light/[0.02] group-hover:text-artisan-dark/[0.05] pointer-events-none transition-colors duration-500 uppercase">
+              <div className="absolute -bottom-6 -right-6 md:-bottom-10 md:-right-10 text-8xl md:text-[10rem] font-display font-extrabold text-artisan-light/[0.02] group-hover:text-artisan-dark/[0.05] pointer-events-none transition-colors duration-300 ease-out uppercase">
                 {cat.name.substring(0, 3)}
               </div>
             </motion.button>

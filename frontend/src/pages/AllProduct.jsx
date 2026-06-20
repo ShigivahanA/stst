@@ -205,11 +205,55 @@ function FilterContent({
   )
 }
 
+// Sub-component for individual tool card skeleton loading state
+const ToolCardSkeleton = () => {
+  return (
+    <div className="flex flex-col bg-artisan-dark/40 backdrop-blur-sm border border-artisan-light/15 h-full rounded-2xl overflow-hidden relative animate-strong-pulse">
+      {/* Image Area Placeholder */}
+      <div className="relative aspect-video w-full bg-artisan-light/10 shrink-0">
+        {/* Top Overlay Badge Placeholder */}
+        <div className="absolute top-3 left-3 flex items-start">
+          <div className="h-5 bg-artisan-light/15 rounded w-16" />
+        </div>
+        {/* Top Overlay Action Placeholder */}
+        <div className="absolute top-3 right-3 flex items-start">
+          <div className="w-7 h-7 bg-artisan-light/15 rounded-full" />
+        </div>
+      </div>
+
+      {/* Content Area Placeholder */}
+      <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between bg-gradient-to-b from-transparent to-artisan-dark/40">
+        <div className="mb-4 space-y-2">
+          {/* Title lines */}
+          <div className="h-4 bg-artisan-light/15 rounded w-5/6" />
+          <div className="h-4 bg-artisan-light/15 rounded w-2/3" />
+          {/* Description line */}
+          <div className="h-3 bg-artisan-light/10 rounded w-full mt-2" />
+        </div>
+
+        <div className="pt-3 border-t border-artisan-light/5 flex items-center justify-between mt-auto">
+          {/* Price */}
+          <div className="flex flex-col gap-1">
+            <div className="h-2.5 bg-artisan-light/10 rounded w-8" />
+            <div className="h-5 bg-artisan-light/15 rounded w-20" />
+          </div>
+          {/* Rating */}
+          <div className="flex items-center gap-1">
+            <div className="w-3.5 h-3.5 bg-artisan-light/15 rounded" />
+            <div className="h-3.5 bg-artisan-light/15 rounded w-6" />
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function AllProduct() {
   const { user } = useAuth()
   const [searchParams, setSearchParams] = useSearchParams()
   const initialCategory = searchParams.get('category') || 'All'
   const initialSearch = searchParams.get('search') || ''
+  const initialPage = Number(searchParams.get('page')) || 1
 
   const [tools, setTools] = useState([])
   const [loading, setLoading] = useState(true)
@@ -228,8 +272,9 @@ export default function AllProduct() {
   }
 
   // Paging Navigation States
-  const [navPage, setNavPage] = useState(1)
+  const [navPage, setNavPage] = useState(initialPage)
   const [totalFiltered, setTotalFiltered] = useState(0)
+  const isInitialMount = useRef(true)
 
   useEffect(() => {
     if (user) {
@@ -247,8 +292,10 @@ export default function AllProduct() {
   useEffect(() => {
     const category = searchParams.get('category') || 'All'
     const search = searchParams.get('search') || ''
+    const page = Number(searchParams.get('page')) || 1
     setActiveCategory(category)
     setSearchQuery(search)
+    setNavPage(page)
   }, [searchParams])
 
   const [isFilterOpen, setIsFilterOpen] = useState(false)
@@ -315,11 +362,38 @@ export default function AllProduct() {
   useEffect(() => {
     startLoading()
     const timer = setTimeout(() => {
-      setNavPage(1)
-      fetchTools(1)
+      const newParams = new URLSearchParams(searchParams)
+      newParams.set('category', activeCategory)
+      if (searchQuery) {
+        newParams.set('search', searchQuery)
+      } else {
+        newParams.delete('search')
+      }
+
+      if (isInitialMount.current) {
+        isInitialMount.current = false
+        fetchTools(navPage)
+      } else {
+        setNavPage(1)
+        newParams.set('page', '1')
+        fetchTools(1)
+      }
+
+      setSearchParams(newParams)
     }, 400)
     return () => clearTimeout(timer)
   }, [activeCategory, searchQuery, priceRange, sortBy, availability])
+
+  const handlePageChange = (pageNum) => {
+    setNavPage(pageNum)
+    fetchTools(pageNum)
+
+    const newParams = new URLSearchParams(searchParams)
+    newParams.set('page', pageNum.toString())
+    setSearchParams(newParams)
+
+    window.scrollTo({ top: 250, behavior: 'smooth' })
+  }
 
   useEffect(() => {
     fetchStats()
@@ -416,10 +490,9 @@ export default function AllProduct() {
             className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-8 pb-12 min-h-[400px]"
           >
             {loading ? (
-              <div className="col-span-full flex flex-col items-center justify-center space-y-4 py-20">
-                <Loader2 className="w-12 h-12 text-artisan-grey animate-spin" />
-                <span className="text-[10px] font-mono text-artisan-light/20 uppercase tracking-widest">Scanning inventory...</span>
-              </div>
+              Array.from({ length: 8 }).map((_, idx) => (
+                <ToolCardSkeleton key={`skeleton-${idx}`} />
+              ))
             ) : tools.length === 0 ? (
               <div className="col-span-full flex flex-col items-center justify-center space-y-6 py-20 border border-dashed border-artisan-light/10">
                 <PackageSearch className="w-16 h-16 text-artisan-light/5" />
@@ -440,11 +513,9 @@ export default function AllProduct() {
                 </button>
               </div>
             ) : (
-              <AnimatePresence mode="popLayout">
-                {tools.map((tool, idx) => (
-                  <ToolCard key={tool._id} tool={tool} idx={idx} />
-                ))}
-              </AnimatePresence>
+              tools.map((tool, idx) => (
+                <ToolCard key={tool._id} tool={tool} idx={idx} />
+              ))
             )}
           </div>
 
@@ -492,13 +563,8 @@ export default function AllProduct() {
                 {/* Previous Button */}
                 <button
                   disabled={navPage === 1 || loading}
-                  onClick={() => {
-                    const prevPage = navPage - 1;
-                    setNavPage(prevPage);
-                    fetchTools(prevPage);
-                    window.scrollTo({ top: 250, behavior: 'smooth' });
-                  }}
-                  className="px-4 py-2.5 border border-artisan-light/10 text-[9px] font-mono font-bold uppercase tracking-widest transition-all disabled:opacity-30 disabled:cursor-not-allowed hover:border-artisan-grey hover:text-artisan-grey text-artisan-light"
+                  onClick={() => handlePageChange(navPage - 1)}
+                  className="px-4 py-2.5 border rounded-xl border-artisan-light/10 text-[9px] font-mono font-bold uppercase tracking-widest transition-all disabled:opacity-30 disabled:cursor-not-allowed hover:border-artisan-grey hover:text-artisan-grey text-artisan-light"
                 >
                   PREV
                 </button>
@@ -511,12 +577,8 @@ export default function AllProduct() {
                     <button
                       key={pNum}
                       disabled={loading}
-                      onClick={() => {
-                        setNavPage(pNum);
-                        fetchTools(pNum);
-                        window.scrollTo({ top: 250, behavior: 'smooth' });
-                      }}
-                      className={`w-10 h-10 border text-[9px] font-mono font-bold transition-all ${isActive
+                      onClick={() => handlePageChange(pNum)}
+                      className={`w-10 h-10 border text-[9px] font-mono font-bold transition-all rounded-full ${isActive
                         ? 'bg-artisan-grey border-artisan-grey text-artisan-dark'
                         : 'border-artisan-light/10 text-artisan-light hover:border-artisan-grey hover:text-artisan-grey'
                         }`}
@@ -529,13 +591,8 @@ export default function AllProduct() {
                 {/* Next Button */}
                 <button
                   disabled={navPage === (Math.ceil(totalFiltered / 20) || 1) || loading}
-                  onClick={() => {
-                    const nextPage = navPage + 1;
-                    setNavPage(nextPage);
-                    fetchTools(nextPage);
-                    window.scrollTo({ top: 250, behavior: 'smooth' });
-                  }}
-                  className="px-4 py-2.5 border border-artisan-light/10 text-[9px] font-mono font-bold uppercase tracking-widest transition-all disabled:opacity-30 disabled:cursor-not-allowed hover:border-artisan-grey hover:text-artisan-grey text-artisan-light"
+                  onClick={() => handlePageChange(navPage + 1)}
+                  className="px-4 py-2.5 border rounded-xl border-artisan-light/10 text-[9px] font-mono font-bold uppercase tracking-widest transition-all disabled:opacity-30 disabled:cursor-not-allowed hover:border-artisan-grey hover:text-artisan-grey text-artisan-light"
                 >
                   NEXT
                 </button>

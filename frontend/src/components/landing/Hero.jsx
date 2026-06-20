@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { ArrowRight, Loader2 } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import api from '../../services/api'
@@ -85,6 +85,40 @@ const MarqueeCard = ({ product }) => {
         </div>
       </div>
     </Link>
+  )
+}
+
+// Sub-component for individual skeleton card to match the layout of MarqueeCard
+const MarqueeSkeleton = () => {
+  return (
+    <div className="flex flex-col bg-artisan-dark/40 backdrop-blur-sm border border-artisan-light/10 h-full rounded-2xl overflow-hidden relative animate-pulse w-full">
+      {/* Image Area Placeholder */}
+      <div className="relative aspect-[4/3] sm:aspect-video w-full bg-artisan-light/5 shrink-0">
+        {/* Top Overlay Badge Placeholder */}
+        <div className="absolute top-2 inset-x-2 flex justify-between items-start">
+          <div className="h-4 bg-artisan-light/10 rounded w-16" />
+        </div>
+      </div>
+
+      {/* Content Area Placeholder */}
+      <div className="p-3 sm:p-4 flex-1 flex flex-col justify-between bg-gradient-to-b from-transparent to-artisan-dark/40">
+        <div className="mb-2 space-y-2">
+          {/* Title lines */}
+          <div className="h-3.5 bg-artisan-light/10 rounded w-5/6" />
+          <div className="h-3 bg-artisan-light/10 rounded w-2/3" />
+        </div>
+
+        <div className="pt-2 border-t border-artisan-light/5 flex items-center justify-between mt-auto">
+          {/* Price */}
+          <div className="flex flex-col gap-1">
+            <div className="h-2 bg-artisan-light/5 rounded w-8" />
+            <div className="h-4 bg-artisan-light/10 rounded w-16" />
+          </div>
+          {/* SKU */}
+          <div className="h-3 bg-artisan-light/10 rounded w-12" />
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -218,10 +252,51 @@ export default function Hero() {
           <div className="col-span-1 lg:col-span-6 xl:col-span-7 w-full mt-6 sm:mt-8 lg:mt-0">
             <div className="relative w-full h-[260px] sm:h-[300px] lg:h-[480px] xl:h-[560px] flex items-center justify-center rounded-[24px] sm:rounded-[32px] overflow-hidden p-1 group/marquee">
               {loading ? (
-                <div className="flex flex-col items-center justify-center gap-4 text-slate-400">
-                  <Loader2 className="w-8 h-8 animate-spin text-artisan-grey" />
-                  <span className="text-xs font-mono tracking-widest uppercase">Loading Catalog...</span>
-                </div>
+                <>
+                  {/* Mobile & Tablet Layout Skeleton: Single Horizontal Row */}
+                  <div className="flex lg:hidden overflow-hidden w-full h-full items-center relative">
+                    {/* Horizontal Fading Overlays */}
+                    <div className="absolute top-0 bottom-0 left-0 w-12 sm:w-20 bg-gradient-to-r from-[#fffcf2] to-transparent z-10 pointer-events-none" />
+                    <div className="absolute top-0 bottom-0 right-0 w-12 sm:w-20 bg-gradient-to-l from-[#fffcf2] to-transparent z-10 pointer-events-none" />
+
+                    <div className="flex flex-row gap-3 animate-marquee-left w-max py-4">
+                      {[1, 2, 3, 4, 1, 2, 3, 4].map((val, idx) => (
+                        <div key={`skeleton-horiz-${idx}`} className="w-[220px] shrink-0">
+                          <MarqueeSkeleton />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Desktop Layout Skeleton: Dual-Track Columns */}
+                  <div className="hidden lg:grid grid-cols-2 gap-3 sm:gap-4 h-full w-full relative">
+                    {/* Vertical Fading Overlays */}
+                    <div className="absolute top-0 left-0 right-0 h-16 sm:h-24 bg-gradient-to-b from-[#fffcf2] to-transparent z-10 pointer-events-none" />
+                    <div className="absolute bottom-0 left-0 right-0 h-16 sm:h-24 bg-gradient-to-t from-[#fffcf2] to-transparent z-10 pointer-events-none" />
+
+                    {/* Left Column Skeletons */}
+                    <div className="relative h-full overflow-hidden flex flex-col group/track-up">
+                      <div className="flex flex-col gap-3 sm:gap-4 animate-marquee-up">
+                        {[1, 2, 3, 4, 1, 2, 3, 4].map((val, idx) => (
+                          <div key={`skeleton-left-${idx}`} className="w-full shrink-0">
+                            <MarqueeSkeleton />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Right Column Skeletons */}
+                    <div className="relative h-full overflow-hidden flex flex-col group/track-down">
+                      <div className="flex flex-col gap-3 sm:gap-4 animate-marquee-down">
+                        {[1, 2, 3, 4, 1, 2, 3, 4].map((val, idx) => (
+                          <div key={`skeleton-right-${idx}`} className="w-full shrink-0">
+                            <MarqueeSkeleton />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </>
               ) : products.length > 0 ? (
                 <>
                   {/* Mobile & Tablet Layout: Single Horizontal Row Scrolling (when stacked vertically: below lg) */}

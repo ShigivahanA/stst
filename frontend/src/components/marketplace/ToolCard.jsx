@@ -34,13 +34,7 @@ export default function ToolCard({ tool, idx }) {
 
   return (
     <Link to={`/product/${tool._id}`} className="block h-full outline-none">
-      <motion.div
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        transition={{ duration: 0.4, delay: idx * 0.05 }}
-        className="group flex flex-col bg-artisan-dark/40 backdrop-blur-sm border border-artisan-light/10 hover:border-artisan-light/30 transition-all duration-300 h-full rounded-2xl overflow-hidden hover:shadow-[0_8px_30px_rgba(235,94,40,0.05)]"
-      >
+      <div className="group flex flex-col bg-artisan-dark/40 backdrop-blur-sm border border-artisan-light/10 hover:border-artisan-light/30 transition-all duration-300 h-full rounded-2xl overflow-hidden hover:shadow-[0_8px_30px_rgba(235,94,40,0.05)]">
         {/* Image Area - Aspect Video for compactness */}
         <div className="relative aspect-video w-full overflow-hidden bg-artisan-dark/60 shrink-0">
           <img
@@ -96,7 +90,7 @@ export default function ToolCard({ tool, idx }) {
             </div>
           </div>
         </div>
-      </motion.div>
+      </div>
     </Link>
   )
 }
