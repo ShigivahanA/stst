@@ -264,7 +264,7 @@ export default function Navbar() {
           {/* Logo */}
           <Link
             to="/"
-            className="flex items-center gap-2 relative z-[110] group/logo"
+            className="flex items-center gap-2 relative z-[110] group/logo "
             onClick={() => {
               setIsOpen(false)
               setShowMobileSearch(false)
@@ -275,10 +275,10 @@ export default function Navbar() {
               whileTap={{ scale: 0.98 }}
               className="flex items-center gap-2"
             >
-              <img src={logo} alt="STAT Logo" className="w-8 h-8 object-contain rounded-full transition-all duration-300 group-hover/logo:scale-110 group-hover/logo:shadow-[0_0_10px_#eb5e28]" />
-              <span className="text-sm font-display font-bold uppercase tracking-[0.2em]">
+              <img src={logo} alt="STAT Logo" className="w-9 h-9 object-contain bg-gray-400 p-0.5 rounded-full transition-all duration-300 group-hover/logo:scale-110 group-hover/logo:shadow-[0_0_10px_#eb5e28]" />
+              <span className="text-[9px] min-[375px]:text-[10px] min-[410px]:text-[11px] sm:text-xs md:text-sm lg:text-base font-display font-bold uppercase tracking-[0.08em] min-[375px]:tracking-[0.12em] sm:tracking-[0.15em] md:tracking-[0.2em] whitespace-nowrap">
                 <span className="text-artisan-light">STAT</span>
-                <span className="text-artisan-grey ml-2 hidden sm:inline">Surgical Supplies</span>
+                <span className="text-artisan-grey ml-1.5 sm:ml-2">Surgical Supplies</span>
               </span>
             </motion.div>
           </Link>
@@ -290,14 +290,14 @@ export default function Navbar() {
               id="navbar-desktop-search"
               className="hidden md:flex items-center relative z-[110] mx-4"
             >
-              <div className="relative flex items-center border border-artisan-light/10 focus-within:border-artisan-grey transition-all duration-300 bg-white/40 backdrop-blur-sm px-3 py-1.5 rounded-sm">
-                <Search className="w-3.5 h-3.5 text-artisan-grey/60" />
+              <div className="relative flex items-center border border-artisan-light/10 focus-within:border-artisan-grey transition-all duration-300 bg-white/40 backdrop-blur-sm px-3 py-2 rounded-full">
+                <Search className="w-4 h-4 text-artisan-grey/60" />
                 <input
                   type="text"
                   placeholder={placeholderText}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-40 lg:w-66 focus:w-52 lg:focus:w-72 transition-all duration-300 bg-transparent pl-2 outline-none font-mono text-[9px] uppercase tracking-widest text-artisan-light placeholder:text-artisan-light/50"
+                  className="w-40 lg:w-66 focus:w-52 lg:focus:w-72 transition-all duration-300 bg-transparent rounded-full pl-2 outline-none font-mono text-[10px] uppercase tracking-widest text-artisan-light placeholder:text-artisan-light/50"
                 />
               </div>
 
