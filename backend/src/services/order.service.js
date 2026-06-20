@@ -124,9 +124,8 @@ export const createCheckoutOrder = async ({ userId, items, sessionId, conversion
     }
 
     const discountedSubtotal = Math.max(0, subtotal - discountAmount);
-    const serviceFee = Math.round(discountedSubtotal * 0.05); // 5% GST/Service fee
     const shippingFee = discountedSubtotal > 5000 || discountedSubtotal === 0 ? 0 : 150;
-    const finalTotalAmount = discountedSubtotal + serviceFee + shippingFee;
+    const finalTotalAmount = discountedSubtotal + shippingFee;
 
     // Create Razorpay order
     // Razorpay amount is in paise (1 INR = 100 paise)

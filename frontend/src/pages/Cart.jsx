@@ -130,11 +130,10 @@ export default function Cart() {
   const discountAmount = appliedCoupon ? appliedCoupon.discountAmount : 0
   const discountedSubtotal = Math.max(0, itemsSubtotal - discountAmount)
 
-  const serviceFee = Math.round(discountedSubtotal * 0.05) // 5% service/GST fee
   const shippingFee = discountedSubtotal > 5000 || discountedSubtotal === 0 ? 0 : 150 // Free shipping above ₹5,000
 
   const paymentMethod = 'online'
-  const orderTotal = discountedSubtotal + serviceFee + shippingFee
+  const orderTotal = discountedSubtotal + shippingFee
 
   // Real-time Stock Integrity Check
   const stockErrors = cartItems.filter(item => {
@@ -646,7 +645,7 @@ export default function Cart() {
                     Download Invoice Receipt
                   </button>
                 )}
-                
+
                 <div className="grid grid-cols-2 gap-3 w-full">
                   <Link
                     to="/history"
@@ -1321,10 +1320,7 @@ export default function Cart() {
                         <span>-₹{discountAmount.toLocaleString()}</span>
                       </div>
                     )}
-                    <div className="flex justify-between text-[9px] font-mono uppercase tracking-widest">
-                      <span className="text-artisan-light/45">Tax & Service Fee (5%)</span>
-                      <span className="text-artisan-light font-bold">₹{serviceFee.toLocaleString()}</span>
-                    </div>
+
                     <div className="flex justify-between text-[9px] font-mono uppercase tracking-widest">
                       <span className="text-artisan-light/45">Shipping</span>
                       <span className="text-artisan-light font-bold">
@@ -1446,7 +1442,7 @@ export default function Cart() {
                     <CheckCircle2 className="w-4 h-4 text-green-500" />
                     <span>Quality Guaranteed</span>
                   </div>
-                  <p className="text-[8px] font-mono text-artisan-light/20 uppercase tracking-wide leading-relaxed">
+                  <p className="text-[8px] font-mono text-artisan-light uppercase tracking-wide leading-relaxed">
                     We check all surgical and medical items to guarantee their quality before shipping.
                   </p>
                 </div>
