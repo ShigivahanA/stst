@@ -264,7 +264,7 @@ export default function Navbar() {
           {/* Logo */}
           <Link
             to="/"
-            className="flex items-center gap-2 relative z-[110] group/logo "
+            className="flex items-center gap-2 relative z-[110] group/logo shrink-0"
             onClick={() => {
               setIsOpen(false)
               setShowMobileSearch(false)
@@ -275,32 +275,32 @@ export default function Navbar() {
               whileTap={{ scale: 0.98 }}
               className="flex items-center gap-2"
             >
-              <img src={logo} alt="STAT Logo" className="w-9 h-9 md:w-10.5 md:h-10.5 object-contain bg-gray-400 p-0.5 rounded-full transition-all duration-300 group-hover/logo:scale-110 group-hover/logo:shadow-[0_0_10px_#eb5e28]" />
-              <span className="text-xs min-[375px]:text-[13px] min-[410px]:text-sm sm:text-base md:text-lg lg:text-xl font-display font-bold uppercase tracking-[0.06em] min-[375px]:tracking-[0.08em] sm:tracking-[0.12em] md:tracking-[0.15em] whitespace-nowrap">
+              <img src={logo} alt="STAT Logo" className="w-9 h-9 md:w-10.5 md:h-10.5 object-contain bg-gray-400 p-0.5 rounded-full transition-all duration-300 group-hover/logo:scale-110 group-hover/logo:shadow-[0_0_10px_#eb5e28] shrink-0" />
+              <span className="hidden sm:inline-block text-xs sm:text-sm md:text-lg lg:text-xl font-display font-bold uppercase tracking-[0.08em] sm:tracking-[0.12em] md:tracking-[0.15em] whitespace-nowrap">
                 <span className="text-artisan-light">STAT</span>
-                <span className="text-artisan-grey ml-1.5 sm:ml-2">Surgical Supplies</span>
+                <span className="hidden lg:inline text-artisan-grey ml-1.5 sm:ml-2">Surgical Supplies</span>
               </span>
             </motion.div>
           </Link>
-
+ 
           {/* Desktop/Tablet Centered Search Bar */}
           {!isAllProductsPage && (
             <form
               onSubmit={handleSearchSubmit}
               id="navbar-desktop-search"
-              className="hidden md:flex items-center relative z-[110] mx-4"
+              className="hidden md:flex items-center relative z-[110] mx-4 flex-1 max-w-[200px] lg:max-w-xs xl:max-w-md"
             >
-              <div className="relative flex items-center border border-artisan-light/10 focus-within:border-artisan-grey transition-all duration-300 bg-white/40 backdrop-blur-sm px-3 py-2 rounded-full">
-                <Search className="w-4 h-4 text-artisan-grey/60" />
+              <div className="relative flex items-center border border-artisan-light/10 focus-within:border-artisan-grey transition-all duration-300 bg-white/40 backdrop-blur-sm px-3 py-2 rounded-full w-full">
+                <Search className="w-4 h-4 text-artisan-grey/60 shrink-0" />
                 <input
                   type="text"
                   placeholder={placeholderText}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-40 lg:w-66 focus:w-52 lg:focus:w-72 transition-all duration-300 bg-transparent rounded-full pl-2 outline-none font-mono text-[10px] uppercase tracking-widest text-artisan-light placeholder:text-artisan-light/50"
+                  className="w-full transition-all duration-300 bg-transparent rounded-full pl-2 outline-none font-mono text-[10px] uppercase tracking-widest text-artisan-light placeholder:text-artisan-light/50"
                 />
               </div>
-
+ 
               {/* Recommendations Dropdown */}
               <AnimatePresence>
                 {recommendations.length > 0 && (
@@ -346,9 +346,9 @@ export default function Navbar() {
               </AnimatePresence>
             </form>
           )}
-
+ 
           {/* Header Action Controls */}
-          <div className="flex items-center gap-3 relative z-[110]">
+          <div className="flex items-center gap-3 relative z-[110] shrink-0">
             {/* Mobile Search Toggle */}
             {!isAllProductsPage && (
               <button
@@ -369,9 +369,8 @@ export default function Navbar() {
               >
                 <Heart className="w-4.5 h-4.5" />
                 {wishlistCount > 0 && (
-                  <span className="absolute top-1.5 right-1.5 flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-[14px] flex items-center justify-center bg-artisan-grey text-artisan-dark text-[8px] font-mono font-bold rounded-full px-1">
+                    {wishlistCount}
                   </span>
                 )}
               </Link>
