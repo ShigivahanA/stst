@@ -998,44 +998,46 @@ export default function Profile() {
             </div>
 
             {/* Quick Navigation and Links Footer */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-8 border-t border-artisan-light/5">
-               <MotionLink
-                  to="/history"
-                  className="py-4 border-2 border-artisan-light text-artisan-light font-mono font-bold uppercase tracking-widest text-[10px] flex items-center justify-center gap-3 rounded-full cursor-pointer"
-                  initial={{ y: 0, boxShadow: "0 6px 0 0 #252422" }}
-                  whileHover={{
-                     y: -2,
-                     boxShadow: "0 8px 0 0 #252422",
-                     backgroundColor: "rgba(37, 36, 34, 0.04)"
-                  }}
-                  whileTap={{
-                     y: 6,
-                     boxShadow: "0 0px 0 0 #252422"
-                  }}
-                  transition={{ type: "spring", stiffness: 600, damping: 18 }}
-               >
-                  <History className="w-4 h-4" />
-                  Order History
-               </MotionLink>
-               <MotionLink
-                  to="/allproduct"
-                  className="py-4 bg-artisan-light text-artisan-dark font-mono font-bold uppercase tracking-widest text-[10px] flex items-center justify-center gap-3 rounded-full border border-black cursor-pointer"
-                  initial={{ y: 0, boxShadow: "0 6px 0 0 #000000" }}
-                  whileHover={{
-                     y: -2,
-                     boxShadow: "0 8px 0 0 #000000",
-                     backgroundColor: "#eb5e28"
-                  }}
-                  whileTap={{
-                     y: 6,
-                     boxShadow: "0 0px 0 0 #000000"
-                  }}
-                  transition={{ type: "spring", stiffness: 600, damping: 18 }}
-               >
-                  <ShoppingBag className="w-4 h-4" />
-                  Browse Products
-               </MotionLink>
-            </div>
+            {user.role !== 'admin' && (
+               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-8 border-t border-artisan-light/5">
+                  <MotionLink
+                     to="/history"
+                     className="py-4 border-2 border-artisan-light text-artisan-light font-mono font-bold uppercase tracking-widest text-[10px] flex items-center justify-center gap-3 rounded-full cursor-pointer"
+                     initial={{ y: 0, boxShadow: "0 6px 0 0 #252422" }}
+                     whileHover={{
+                        y: -2,
+                        boxShadow: "0 8px 0 0 #252422",
+                        backgroundColor: "rgba(37, 36, 34, 0.04)"
+                     }}
+                     whileTap={{
+                        y: 6,
+                        boxShadow: "0 0px 0 0 #252422"
+                     }}
+                     transition={{ type: "spring", stiffness: 600, damping: 18 }}
+                  >
+                     <History className="w-4 h-4" />
+                     Order History
+                  </MotionLink>
+                  <MotionLink
+                     to="/allproduct"
+                     className="py-4 bg-artisan-light text-artisan-dark font-mono font-bold uppercase tracking-widest text-[10px] flex items-center justify-center gap-3 rounded-full border border-black cursor-pointer"
+                     initial={{ y: 0, boxShadow: "0 6px 0 0 #000000" }}
+                     whileHover={{
+                        y: -2,
+                        boxShadow: "0 8px 0 0 #000000",
+                        backgroundColor: "#eb5e28"
+                     }}
+                     whileTap={{
+                        y: 6,
+                        boxShadow: "0 0px 0 0 #000000"
+                     }}
+                     transition={{ type: "spring", stiffness: 600, damping: 18 }}
+                  >
+                     <ShoppingBag className="w-4 h-4" />
+                     Browse Products
+                  </MotionLink>
+               </div>
+            )}
 
          </div>
       </div>

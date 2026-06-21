@@ -83,7 +83,7 @@ function CustomDropdown({ value, options, onChange, disabled, icon: Icon, label 
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -4, scale: 0.97 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute top-full left-0 mt-1.5 w-48 bg-[#1a1a1a] border border-artisan-light/10 rounded-xl shadow-2xl shadow-black/40 z-50 overflow-hidden py-1"
+                  className="absolute top-full left-0 mt-1.5 w-48 bg-artisan-dark border border-artisan-light/15 rounded-xl shadow-xl z-50 overflow-hidden py-1"
                >
                   {options.map((opt) => (
                      <button

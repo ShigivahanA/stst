@@ -160,10 +160,11 @@ export default function Navbar() {
   const wishlistCount = user?.wishlist?.length || 0
   const MENU_LINKS = user?.role === 'admin'
     ? [
-      { id: '01', title: 'Manage Users', href: '/admin/users' },
-      { id: '02', title: 'Content', href: '/admin/content' },
-      { id: '03', title: 'Promos & Enquiries', href: '/admin/marketing' },
-      { id: '04', title: 'Products', href: '/admin/products' },
+      { id: '01', title: 'Admin Hub', href: '/admin' },
+      { id: '02', title: 'Manage Users', href: '/admin/users' },
+      { id: '03', title: 'Content', href: '/admin/content' },
+      { id: '04', title: 'Promos & Enquiries', href: '/admin/marketing' },
+      { id: '05', title: 'Products', href: '/admin/products' },
     ]
     : [
       { id: '01', title: 'Products', href: '/allproduct' },
@@ -571,25 +572,14 @@ export default function Navbar() {
                   <div className="flex flex-col gap-3">
                     {user ? (
                       <>
-                        {user.role !== 'admin' ? (
-                          <Link
-                            to="/profile"
-                            onClick={() => setIsOpen(false)}
-                            className="w-full py-4 px-6 border border-artisan-light text-sm font-bold uppercase tracking-widest hover:bg-artisan-light hover:text-artisan-dark transition-all duration-300 text-center flex items-center justify-center gap-4"
-                          >
-                            <UserIcon className="w-4 h-4" />
-                            View Profile
-                          </Link>
-                        ) : (
-                          <Link
-                            to="/admin"
-                            onClick={() => setIsOpen(false)}
-                            className="w-full py-4 px-6 border border-artisan-light text-sm font-bold uppercase tracking-widest hover:bg-artisan-light hover:text-artisan-dark transition-all duration-300 text-center flex items-center justify-center gap-4"
-                          >
-                            <Activity className="w-4 h-4" />
-                            Admin Hub
-                          </Link>
-                        )}
+                        <Link
+                          to="/profile"
+                          onClick={() => setIsOpen(false)}
+                          className="w-full py-4 px-6 border border-artisan-light text-sm font-bold uppercase tracking-widest hover:bg-artisan-light hover:text-artisan-dark transition-all duration-300 text-center flex items-center justify-center gap-4"
+                        >
+                          <UserIcon className="w-4 h-4" />
+                          View Profile
+                        </Link>
                         <button
                           onClick={handleLogout}
                           className="w-full py-4 px-6 bg-artisan-grey text-artisan-dark text-sm font-bold uppercase tracking-widest hover:opacity-90 transition-all duration-300 text-center flex items-center justify-center gap-4"
