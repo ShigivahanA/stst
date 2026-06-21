@@ -20,7 +20,22 @@ let server;
 
 // Connect to MongoDB first, then start server
 connectDB()
-  .then(() => {
+  .then(async () => {
+    // Run background migration for user password flag
+    try {
+      const User = (await import('./models/user.model.js')).default;
+      await User.updateMany(
+        { hasPassword: { $exists: false }, password: { $exists: true, $ne: null, $ne: "" } },
+        { $set: { hasPassword: true } }
+      );
+      await User.updateMany(
+        { hasPassword: { $exists: false } },
+        { $set: { hasPassword: false } }
+      );
+    } catch (migErr) {
+      logger.error(`Migration error for user hasPassword flag: ${migErr.message}`);
+    }
+
     server = app.listen(PORT, () => {
       logger.info(`Server running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
       // Start background cart scheduler

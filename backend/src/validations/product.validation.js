@@ -27,6 +27,7 @@ const createProduct = {
       Joi.object().keys({
         url: Joi.string().required(),
         publicId: Joi.string().required(),
+        _id: Joi.string().allow('').optional(),
       })
     ).max(6).default([]),
     specifications: Joi.array().items(
@@ -37,6 +38,7 @@ const createProduct = {
         extra: Joi.any()
       })
     ).default([]),
+    priceDisplayMode: Joi.string().valid('display_price', 'contact_us').default('display_price'),
   }),
 };
 
@@ -63,6 +65,7 @@ const updateProduct = {
       Joi.object().keys({
         url: Joi.string().required(),
         publicId: Joi.string().required(),
+        _id: Joi.string().allow('').optional(),
       })
     ).max(6),
     specifications: Joi.array().items(
@@ -73,6 +76,7 @@ const updateProduct = {
         extra: Joi.any()
       })
     ),
+    priceDisplayMode: Joi.string().valid('display_price', 'contact_us'),
   }).min(1),
 };
 

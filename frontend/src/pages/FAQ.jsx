@@ -5,6 +5,8 @@ import { Search, Truck, RotateCcw, Package, CreditCard, ArrowRight, HelpCircle, 
 import api from '../services/api'
 import SEO from '../components/SEO'
 
+const MotionLink = motion.create ? motion.create(Link) : motion(Link)
+
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -58,7 +60,7 @@ function AccordionItem({ question, answer, isOpen, onToggle }) {
             transition={{ duration: 0.4, ease: [0.33, 1, 0.68, 1] }}
             className="overflow-hidden"
           >
-            <p className="text-xs font-mono text-artisan-light/50 uppercase tracking-widest leading-relaxed pt-4">
+            <p className="text-xs font-mono text-artisan-light/50 tracking-widest leading-relaxed pt-4">
               {answer}
             </p>
           </motion.div>
@@ -252,7 +254,7 @@ export default function FAQ() {
                 </motion.span>
               </span>
             </h1>
-            <p className="text-lg md:text-xl text-artisan-light/40 font-display font-medium uppercase tracking-widest leading-relaxed max-w-2xl">
+            <p className="text-lg md:text-xl text-artisan-light/40 font-display font-medium tracking-widest leading-relaxed max-w-2xl">
               Find instant answers regarding shipping, order tracking, returns, quality control, and payment protocols.
             </p>
           </div>
@@ -273,7 +275,7 @@ export default function FAQ() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="TYPE KEYWORDS OR QUESTIONS..."
-                className="w-full bg-transparent outline-none text-base font-display font-bold uppercase text-artisan-light placeholder:text-artisan-light/5"
+                className="w-full bg-transparent outline-none text-base font-display font-bold text-artisan-light placeholder:text-artisan-light/5"
               />
             </div>
             <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-artisan-light/10" />
@@ -297,8 +299,8 @@ export default function FAQ() {
                       key={cat.category}
                       onClick={() => setActiveCategory(cat.category)}
                       className={`relative flex items-center justify-between px-6 py-4 border transition-all duration-500 shrink-0 text-left group overflow-hidden rounded-full ${isActive
-                          ? 'border-artisan-grey text-artisan-dark font-bold'
-                          : 'border-artisan-light/10 text-artisan-light/60 hover:border-artisan-grey hover:text-artisan-light'
+                        ? 'border-artisan-grey text-artisan-dark font-bold'
+                        : 'border-artisan-light/10 text-artisan-light/60 hover:border-artisan-grey hover:text-artisan-light'
                         }`}
                     >
                       {isActive && (
@@ -375,18 +377,29 @@ export default function FAQ() {
             <h3 className="text-xl sm:text-2xl font-display font-extrabold uppercase text-artisan-light tracking-tight">
               Can't find what you're looking for?
             </h3>
-            <p className="text-xs font-mono text-artisan-light/40 uppercase tracking-wider leading-relaxed">
+            <p className="text-xs font-mono text-artisan-light/40 tracking-wider leading-relaxed">
               Our customer support team is here to help with any questions you may have.
             </p>
           </div>
 
-          <Link
+          <MotionLink
             to="/support"
-            className="relative z-10 shrink-0 px-8 py-4 bg-artisan-grey text-artisan-dark font-display font-extrabold uppercase tracking-[0.4em] text-[10px] hover:bg-artisan-light hover:text-artisan-dark transition-all duration-300 flex items-center gap-3 group rounded-full"
+            className="relative z-10 shrink-0 px-8 py-4 bg-artisan-grey text-artisan-dark font-display font-extrabold uppercase tracking-[0.4em] text-[10px] flex items-center gap-3 group rounded-full border border-black cursor-pointer"
+            initial={{ y: 0, boxShadow: "0 6px 0 0 #9c350b" }}
+            whileHover={{ 
+              y: -2,
+              boxShadow: "0 8px 0 0 #000000",
+              backgroundColor: "#252422"
+            }}
+            whileTap={{ 
+              y: 6,
+              boxShadow: "0 0px 0 0 #000000"
+            }}
+            transition={{ type: "spring", stiffness: 600, damping: 18 }}
           >
             <span>Contact Support</span>
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1.5 transition-transform duration-300" />
-          </Link>
+          </MotionLink>
         </motion.div>
 
       </div>

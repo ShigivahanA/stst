@@ -5,10 +5,22 @@ import { CheckCircle2, ChevronRight, ChevronDown, Mail, Phone, MapPin, Loader2, 
 import api from '../services/api'
 import { useToast } from '../context/ToastContext'
 import SEO from '../components/SEO'
+import { useAuth } from '../context/AuthContext'
+
+const WhatsAppIcon = (props) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    {...props}
+  >
+    <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.717-1.458L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.37 9.864-9.799.002-2.63-1.023-5.101-2.885-6.965C16.528 2.028 14.07 1.001 11.93 1.001c-5.438 0-9.863 4.372-9.867 9.802-.001 1.73.473 3.424 1.378 4.921l-.947 3.46 3.553-.93zm10.224-4.881c-.272-.137-1.61-.795-1.86-.886-.25-.092-.432-.137-.61.137-.182.273-.706.886-.865 1.068-.158.182-.317.205-.59.069-.272-.137-1.15-.424-2.19-1.354-.809-.722-1.354-1.616-1.513-1.889-.159-.273-.018-.42.119-.556.123-.121.272-.318.41-.477.136-.159.182-.272.272-.455.092-.181.046-.341-.023-.478-.069-.136-.61-1.477-.836-2.023-.22-.528-.464-.456-.63-.463-.164-.007-.353-.008-.542-.008-.189 0-.497.07-.757.353-.26.284-.993.971-.993 2.37 0 1.399 1.018 2.748 1.16 2.93.143.183 2.002 3.059 4.85 4.286.677.292 1.206.467 1.618.597.68.217 1.3.187 1.79.114.545-.081 1.61-.659 1.838-1.263.228-.604.228-1.121.16-1.23-.07-.107-.25-.172-.523-.309z" />
+  </svg>
+)
 
 export default function BulkEnquiry() {
   const [searchParams] = useSearchParams()
   const { addToast } = useToast()
+  const { user } = useAuth()
   const initialProductId = searchParams.get('productId') || ''
 
   // Form states
@@ -79,6 +91,15 @@ export default function BulkEnquiry() {
     }
     fetchProducts()
   }, [initialProductId])
+
+  // Autofetch user details if logged in (for regular users/customers only, not admins)
+  useEffect(() => {
+    if (user && user.role !== 'admin') {
+      if (user.name) setName(user.name)
+      if (user.email) setEmail(user.email)
+      if (user.phone) setPhone(user.phone)
+    }
+  }, [user])
 
   // Update product ID when selection changes
   const handleProductChange = (e) => {
@@ -190,14 +211,68 @@ export default function BulkEnquiry() {
                 </div>
 
                 {/* Contact support details */}
-                <div className="space-y-3 font-mono text-[10px] uppercase tracking-widest">
-                  <div className="flex items-center gap-3 text-artisan-light/50">
-                    <Phone className="w-4 h-4 text-artisan-grey" />
-                    <span>Call or WhatsApp: +91 86086 78828</span>
+                <div className="space-y-6">
+                  <div className="pt-2">
+                    <motion.a
+                      href="mailto:statsurgicalsupplies@gmail.com"
+                      className="w-full px-6 py-4 border-2 border-artisan-light text-artisan-light font-display font-extrabold tracking-widest text-[10px] flex items-center justify-center gap-3 cursor-pointer rounded-full"
+                      initial={{ y: 0, boxShadow: "0 6px 0 0 #252422" }}
+                      whileHover={{
+                        y: -2,
+                        boxShadow: "0 8px 0 0 #252422",
+                        backgroundColor: "rgba(37, 36, 34, 0.04)"
+                      }}
+                      whileTap={{
+                        y: 6,
+                        boxShadow: "0 0px 0 0 #252422"
+                      }}
+                      transition={{ type: "spring", stiffness: 600, damping: 18 }}
+                    >
+                      <Mail className="w-4 h-4 text-artisan-grey" />
+                      statsurgicalsupplies@gmail.com
+                    </motion.a>
                   </div>
-                  <div className="flex items-center gap-3 text-artisan-light/50">
-                    <Mail className="w-4 h-4 text-artisan-grey" />
-                    <span>Email: statsurgicalsupplies@gmail.com</span>
+
+                  <div className="flex flex-col sm:flex-row gap-4 pt-2">
+                    <motion.a
+                      href="tel:+918608678828"
+                      className="flex-1 px-6 py-4 bg-artisan-light text-artisan-dark font-display font-extrabold uppercase tracking-widest text-[10px] flex items-center justify-center gap-3 cursor-pointer rounded-full border border-black"
+                      initial={{ y: 0, boxShadow: "0 6px 0 0 #000000" }}
+                      whileHover={{
+                        y: -2,
+                        boxShadow: "0 8px 0 0 #000000",
+                        backgroundColor: "#eb5e28"
+                      }}
+                      whileTap={{
+                        y: 6,
+                        boxShadow: "0 0px 0 0 #000000"
+                      }}
+                      transition={{ type: "spring", stiffness: 600, damping: 18 }}
+                    >
+                      <Phone className="w-4 h-4" />
+                      Call Support
+                    </motion.a>
+
+                    <motion.a
+                      href="https://wa.me/918608678828"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 px-6 py-4 bg-[#128c7e] text-white font-display font-extrabold uppercase tracking-widest text-[10px] flex items-center justify-center gap-3 cursor-pointer rounded-full border border-[#0b544c]"
+                      initial={{ y: 0, boxShadow: "0 6px 0 0 #075e54" }}
+                      whileHover={{
+                        y: -2,
+                        boxShadow: "0 8px 0 0 #075e54",
+                        backgroundColor: "#159c8d"
+                      }}
+                      whileTap={{
+                        y: 6,
+                        boxShadow: "0 0px 0 0 #075e54"
+                      }}
+                      transition={{ type: "spring", stiffness: 600, damping: 18 }}
+                    >
+                      <WhatsAppIcon className="w-4 h-4" />
+                      WhatsApp Us
+                    </motion.a>
                   </div>
                 </div>
               </div>
@@ -212,28 +287,28 @@ export default function BulkEnquiry() {
                   {/* Two-column contact details */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div className="space-y-1.5">
-                      <label className="text-[8px] font-mono font-bold text-artisan-light/40 uppercase tracking-widest block">
+                      <label className="text-[8px] font-mono font-bold text-artisan-grey uppercase tracking-widest block">
                         Your Name *
                       </label>
                       <input
                         type="text"
                         value={name}
                         onChange={e => setName(e.target.value)}
-                        placeholder="Dr. Shigivahan"
+                        placeholder="Charan Vivek"
                         required
                         className="w-full bg-artisan-light/[0.01] border border-artisan-light/15 p-3 text-xs font-mono text-artisan-light uppercase tracking-widest outline-none focus:border-artisan-grey transition-all rounded-2xl"
                       />
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-[8px] font-mono font-bold text-artisan-light/40 uppercase tracking-widest block">
+                      <label className="text-[8px] font-mono font-bold text-artisan-grey uppercase tracking-widest block">
                         Email *
                       </label>
                       <input
                         type="email"
                         value={email}
                         onChange={e => setEmail(e.target.value)}
-                        placeholder="shigivahan@gmail.com"
+                        placeholder="statsurgicalsupplies@gmail.com"
                         required
                         className="w-full bg-artisan-light/[0.01] border border-artisan-light/15 p-3 text-xs font-mono text-artisan-light lowercase outline-none focus:border-artisan-grey transition-all rounded-2xl"
                       />
@@ -242,45 +317,45 @@ export default function BulkEnquiry() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div className="space-y-1.5">
-                      <label className="text-[8px] font-mono font-bold text-artisan-light/40 uppercase tracking-widest block">
+                      <label className="text-[8px] font-mono font-bold text-artisan-grey uppercase tracking-widest block">
                         Phone Number *
                       </label>
                       <input
                         type="tel"
                         value={phone}
                         onChange={e => setPhone(e.target.value)}
-                        placeholder="+91 98765 43210"
+                        placeholder="+91 86086 78828"
                         required
                         className="w-full bg-artisan-light/[0.01] border border-artisan-light/15 p-3 text-xs font-mono text-artisan-light uppercase tracking-widest outline-none focus:border-artisan-grey transition-all rounded-2xl"
                       />
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-[8px] font-mono font-bold text-artisan-light/40 uppercase tracking-widest block">
+                      <label className="text-[8px] font-mono font-bold text-artisan-grey uppercase tracking-widest block">
                         Hospital or Company Name (Optional)
                       </label>
                       <input
                         type="text"
                         value={organization}
                         onChange={e => setOrganization(e.target.value)}
-                        placeholder="Apollo Specialty Hospitals"
+                        placeholder="STAT Specialty Hospitals"
                         className="w-full bg-artisan-light/[0.01] border border-artisan-light/15 p-3 text-xs font-mono text-artisan-light uppercase tracking-widest outline-none focus:border-artisan-grey transition-all rounded-2xl"
                       />
                     </div>
                   </div>
 
                   {/* Product Selector */}
-                  <div className="space-y-1.5 relative" ref={productRef}>
-                    <label className="text-[8px] font-mono font-bold text-artisan-light/40 uppercase tracking-widest block">
-                      Select Product
-                    </label>
-                    {loadingProducts ? (
-                      <div className="flex items-center gap-2 py-3">
-                        <Loader2 className="w-3.5 h-3.5 animate-spin text-artisan-grey" />
-                        <span className="text-[10px] font-mono text-artisan-light/35 uppercase">Loading catalog...</span>
-                      </div>
-                    ) : (
-                      <>
+                  <div className="relative" ref={productRef}>
+                    <div className="space-y-1.5">
+                      <label className="text-[8px] font-mono font-bold text-artisan-grey uppercase tracking-widest block">
+                        Select Product
+                      </label>
+                      {loadingProducts ? (
+                        <div className="flex items-center gap-2 py-3">
+                          <Loader2 className="w-3.5 h-3.5 animate-spin text-artisan-grey" />
+                          <span className="text-[10px] font-mono text-artisan-light/35 uppercase">Loading catalog...</span>
+                        </div>
+                      ) : (
                         <button
                           type="button"
                           onClick={() => {
@@ -295,52 +370,54 @@ export default function BulkEnquiry() {
                           </span>
                           <ChevronDown className={`w-4 h-4 text-artisan-light/40 shrink-0 transition-transform duration-300 ${isProductOpen ? 'rotate-180' : ''}`} />
                         </button>
+                      )}
+                    </div>
 
-                        <AnimatePresence>
-                          {isProductOpen && (
-                            <motion.div
-                              initial={{ opacity: 0, y: -10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              exit={{ opacity: 0, y: -10 }}
-                              transition={{ duration: 0.2 }}
-                              className="absolute z-50 w-full mt-2 bg-artisan-dark/95 backdrop-blur-md border border-artisan-light/10 shadow-2xl rounded-xl py-2 max-h-60 overflow-y-auto"
+                    {!loadingProducts && (
+                      <AnimatePresence>
+                        {isProductOpen && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ duration: 0.2 }}
+                            className="absolute top-full left-0 z-50 w-full mt-2 bg-artisan-dark/95 backdrop-blur-md border border-artisan-light/10 shadow-2xl rounded-xl py-2 max-h-60 overflow-y-auto"
+                          >
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setProductId('')
+                                setProductName('')
+                                setIsProductOpen(false)
+                              }}
+                              className="w-full text-left px-4 py-3 hover:bg-artisan-light/[0.05] font-mono text-[10px] uppercase tracking-wider transition-colors border-b border-artisan-light/5 text-artisan-light/70 hover:text-artisan-light"
                             >
+                              -- Other Product / General Enquiry --
+                            </button>
+                            {productsList.map((p) => (
                               <button
+                                key={p._id}
                                 type="button"
                                 onClick={() => {
-                                  setProductId('')
-                                  setProductName('')
+                                  setProductId(p._id)
+                                  setProductName(p.name)
                                   setIsProductOpen(false)
                                 }}
-                                className="w-full text-left px-4 py-3 hover:bg-artisan-light/[0.05] font-mono text-[10px] uppercase tracking-wider transition-colors border-b border-artisan-light/5 text-artisan-light/70 hover:text-artisan-light"
+                                className="w-full text-left px-4 py-3 hover:bg-artisan-light/[0.05] font-mono text-[10px] uppercase tracking-wider transition-colors border-b border-artisan-light/5 last:border-0 text-artisan-light/70 hover:text-artisan-light"
                               >
-                                -- Other Product / General Enquiry --
+                                {p.name}
                               </button>
-                              {productsList.map((p) => (
-                                <button
-                                  key={p._id}
-                                  type="button"
-                                  onClick={() => {
-                                    setProductId(p._id)
-                                    setProductName(p.name)
-                                    setIsProductOpen(false)
-                                  }}
-                                  className="w-full text-left px-4 py-3 hover:bg-artisan-light/[0.05] font-mono text-[10px] uppercase tracking-wider transition-colors border-b border-artisan-light/5 last:border-0 text-artisan-light/70 hover:text-artisan-light"
-                                >
-                                  {p.name}
-                                </button>
-                              ))}
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </>
+                            ))}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     )}
                   </div>
 
                   {/* Quantity and Budget row */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                     <div className="space-y-1.5">
-                      <label className="text-[8px] font-mono font-bold text-artisan-light/40 uppercase tracking-widest block">
+                      <label className="text-[8px] font-mono font-bold text-artisan-grey uppercase tracking-widest block">
                         Quantity *
                       </label>
                       <input
@@ -353,24 +430,26 @@ export default function BulkEnquiry() {
                       />
                     </div>
 
-                    <div className="space-y-1.5 relative" ref={budgetRef}>
-                      <label className="text-[8px] font-mono font-bold text-artisan-light/40 uppercase tracking-widest block">
-                        Estimated Budget
-                      </label>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsBudgetOpen(!isBudgetOpen)
-                          setIsProductOpen(false)
-                          setIsTimelineOpen(false)
-                        }}
-                        className="w-full bg-artisan-light/[0.01] border border-artisan-light/15 p-3 text-xs font-mono text-artisan-light uppercase tracking-widest text-left flex justify-between items-center rounded-2xl focus:border-artisan-grey transition-all"
-                      >
-                        <span className="truncate pr-4">
-                          {budget}
-                        </span>
-                        <ChevronDown className={`w-4 h-4 text-artisan-light/40 shrink-0 transition-transform duration-300 ${isBudgetOpen ? 'rotate-180' : ''}`} />
-                      </button>
+                    <div className="relative" ref={budgetRef}>
+                      <div className="space-y-1.5">
+                        <label className="text-[8px] font-mono font-bold text-artisan-grey uppercase tracking-widest block">
+                          Estimated Budget
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsBudgetOpen(!isBudgetOpen)
+                            setIsProductOpen(false)
+                            setIsTimelineOpen(false)
+                          }}
+                          className="w-full bg-artisan-light/[0.01] border border-artisan-light/15 p-3 text-xs font-mono text-artisan-light uppercase tracking-widest text-left flex justify-between items-center rounded-2xl focus:border-artisan-grey transition-all"
+                        >
+                          <span className="truncate pr-4">
+                            {budget}
+                          </span>
+                          <ChevronDown className={`w-4 h-4 text-artisan-light/40 shrink-0 transition-transform duration-300 ${isBudgetOpen ? 'rotate-180' : ''}`} />
+                        </button>
+                      </div>
 
                       <AnimatePresence>
                         {isBudgetOpen && (
@@ -379,7 +458,7 @@ export default function BulkEnquiry() {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -10 }}
                             transition={{ duration: 0.2 }}
-                            className="absolute z-50 w-full mt-2 bg-artisan-dark/95 backdrop-blur-md border border-artisan-light/10 shadow-2xl rounded-xl py-2 max-h-60 overflow-y-auto"
+                            className="absolute top-full left-0 z-50 w-full mt-2 bg-artisan-dark/95 backdrop-blur-md border border-artisan-light/10 shadow-2xl rounded-xl py-2 max-h-60 overflow-y-auto"
                           >
                             {[
                               'Under ₹50,000',
@@ -404,24 +483,26 @@ export default function BulkEnquiry() {
                       </AnimatePresence>
                     </div>
 
-                    <div className="space-y-1.5 relative" ref={timelineRef}>
-                      <label className="text-[8px] font-mono font-bold text-artisan-light/40 uppercase tracking-widest block">
-                        When do you need it?
-                      </label>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsTimelineOpen(!isTimelineOpen)
-                          setIsProductOpen(false)
-                          setIsBudgetOpen(false)
-                        }}
-                        className="w-full bg-artisan-light/[0.01] border border-artisan-light/15 p-3 text-xs font-mono text-artisan-light uppercase tracking-widest text-left flex justify-between items-center rounded-2xl focus:border-artisan-grey transition-all"
-                      >
-                        <span className="truncate pr-4">
-                          {timeline}
-                        </span>
-                        <ChevronDown className={`w-4 h-4 text-artisan-light/40 shrink-0 transition-transform duration-300 ${isTimelineOpen ? 'rotate-180' : ''}`} />
-                      </button>
+                    <div className="relative" ref={timelineRef}>
+                      <div className="space-y-1.5">
+                        <label className="text-[8px] font-mono font-bold text-artisan-grey uppercase tracking-widest block">
+                          When do you need it?
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsTimelineOpen(!isTimelineOpen)
+                            setIsProductOpen(false)
+                            setIsBudgetOpen(false)
+                          }}
+                          className="w-full bg-artisan-light/[0.01] border border-artisan-light/15 p-3 text-xs font-mono text-artisan-light uppercase tracking-widest text-left flex justify-between items-center rounded-2xl focus:border-artisan-grey transition-all"
+                        >
+                          <span className="truncate pr-4">
+                            {timeline}
+                          </span>
+                          <ChevronDown className={`w-4 h-4 text-artisan-light/40 shrink-0 transition-transform duration-300 ${isTimelineOpen ? 'rotate-180' : ''}`} />
+                        </button>
+                      </div>
 
                       <AnimatePresence>
                         {isTimelineOpen && (
@@ -430,7 +511,7 @@ export default function BulkEnquiry() {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -10 }}
                             transition={{ duration: 0.2 }}
-                            className="absolute z-50 w-full mt-2 bg-artisan-dark/95 backdrop-blur-md border border-artisan-light/10 shadow-2xl rounded-xl py-2 max-h-60 overflow-y-auto"
+                            className="absolute top-full left-0 z-50 w-full mt-2 bg-artisan-dark/95 backdrop-blur-md border border-artisan-light/10 shadow-2xl rounded-xl py-2 max-h-60 overflow-y-auto"
                           >
                             {[
                               'Immediate',
@@ -458,7 +539,7 @@ export default function BulkEnquiry() {
 
                   {/* Requirements Textarea */}
                   <div className="space-y-1.5">
-                    <label className="text-[8px] font-mono font-bold text-artisan-light/40 uppercase tracking-widest block">
+                    <label className="text-[8px] font-mono font-bold text-artisan-grey uppercase tracking-widest block">
                       What do you need? (Please describe your order) *
                     </label>
                     <textarea
@@ -473,13 +554,24 @@ export default function BulkEnquiry() {
 
                   {/* Submit Button */}
                   <div className="pt-2">
-                    <button
+                    <motion.button
                       type="submit"
                       disabled={submitting}
-                      className="w-full py-4 bg-artisan-light text-artisan-dark font-display font-extrabold uppercase tracking-widest text-xs hover:bg-artisan-grey transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer rounded-full"
+                      className="w-full py-4 bg-artisan-light text-artisan-dark font-display font-extrabold uppercase tracking-widest text-xs flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer rounded-full border border-black"
+                      initial={{ y: 0, boxShadow: submitting ? "0 0px 0 0 #000000" : "0 6px 0 0 #000000" }}
+                      whileHover={submitting ? {} : {
+                        y: -2,
+                        boxShadow: "0 8px 0 0 #000000",
+                        backgroundColor: "#eb5e28"
+                      }}
+                      whileTap={submitting ? {} : {
+                        y: 6,
+                        boxShadow: "0 0px 0 0 #000000"
+                      }}
+                      transition={{ type: "spring", stiffness: 600, damping: 18 }}
                     >
                       {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Submit Bulk Enquiry'}
-                    </button>
+                    </motion.button>
                   </div>
                 </form>
               </div>

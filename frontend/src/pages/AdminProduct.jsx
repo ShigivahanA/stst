@@ -215,7 +215,7 @@ export default function AdminProduct() {
                                        </td>
                                        <td className="px-6 py-8">
                                           <div className="flex items-center gap-4">
-                                             <ProductImage src={product.image} alt={product.name} className="w-12 h-12" />
+                                             <ProductImage src={product.image || product.images?.[0]?.url} alt={product.name} className="w-12 h-12" />
                                              <div className="flex flex-col min-w-0">
                                                 <span className="text-md font-display font-black text-artisan-light uppercase tracking-tight group-hover:text-artisan-grey transition-colors truncate">{product.name}</span>
                                                 <span className="text-[8px] font-mono text-artisan-light/35 uppercase tracking-widest mt-0.5">{product.category}</span>
@@ -315,7 +315,7 @@ export default function AdminProduct() {
 
                                  {/* Middle: Product info */}
                                  <div className="flex items-center gap-4 min-w-0">
-                                    <ProductImage src={product.image} alt={product.name} className="w-14 h-14" />
+                                    <ProductImage src={product.image || product.images?.[0]?.url} alt={product.name} className="w-14 h-14" />
                                     <div className="flex flex-col min-w-0 flex-1">
                                        <span className="text-md font-display font-black text-artisan-light uppercase tracking-tight group-hover:text-artisan-grey transition-colors truncate">
                                           {product.name}
@@ -386,7 +386,7 @@ export default function AdminProduct() {
 
                               {/* Middle: Product info */}
                               <div className="flex items-center gap-4 min-w-0">
-                                 <ProductImage src={product.image} alt={product.name} className="w-12 h-12" />
+                                 <ProductImage src={product.image || product.images?.[0]?.url} alt={product.name} className="w-12 h-12" />
                                  <div className="flex flex-col min-w-0 flex-1">
                                     <span className="text-md font-display font-black text-artisan-light uppercase tracking-tight truncate">
                                        {product.name}

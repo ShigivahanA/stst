@@ -15,6 +15,11 @@ const userSchema = new mongoose.Schema(
       required: [true, 'Email is required'],
       trim: true,
     },
+    phone: {
+      type: String,
+      trim: true,
+      default: '',
+    },
     emailHash: {
       type: String,
       unique: true,
@@ -113,6 +118,10 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    hasPassword: {
+      type: Boolean,
+      default: false,
+    },
     twoFactorOtp: {
       type: String,
     },
@@ -166,7 +175,7 @@ const userSchema = new mongoose.Schema(
 // ---------------------------------------------------------------------------
 
 // Fields to encrypt on the user document
-const ENCRYPTED_USER_FIELDS = ['name', 'email'];
+const ENCRYPTED_USER_FIELDS = ['name', 'email', 'phone'];
 // Fields to encrypt on each address subdocument
 const ENCRYPTED_ADDRESS_FIELDS = ['doorNumber', 'secondLine', 'landmark', 'city', 'state', 'pincode'];
 
@@ -229,6 +238,8 @@ userSchema.pre('save', async function (next) {
   if (this.isModified('password')) {
     this.password = await bcrypt.hash(this.password, 10);
   }
+
+  this.hasPassword = !!this.password;
 
   // Encrypt PII fields
   encryptUserFields(this);

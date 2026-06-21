@@ -144,7 +144,7 @@ export default function About() {
                               transition={{ duration: 0.8, delay: 0.15, ease: [0.33, 1, 0.68, 1] }}
                               className="block text-outline"
                            >
-                              SURGICALS.
+                              SURGICAL SUPPLIES
                            </motion.span>
                         </span>
                      </h1>

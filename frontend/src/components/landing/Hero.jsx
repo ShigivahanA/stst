@@ -227,12 +227,22 @@ export default function Hero() {
             >
               <Link to="/allproduct" className="flex-1 sm:flex-initial">
                 <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full sm:w-auto px-6 py-3.5 sm:px-8 sm:py-4 bg-artisan-grey text-white font-display font-bold uppercase tracking-widest text-[10px] hover:bg-artisan-light transition-all duration-300 relative group overflow-hidden rounded-xl"
+                  className="w-full sm:w-auto px-6 py-3.5 sm:px-8 sm:py-4 bg-artisan-grey text-artisan-dark font-display font-black uppercase tracking-widest text-[10px] border border-artisan-light rounded-full cursor-pointer flex items-center justify-center"
+                  initial={{ y: 0, boxShadow: "0 6px 0 0 #252422" }}
+                  whileHover={{ 
+                     y: -2,
+                     boxShadow: "0 8px 0 0 #252422",
+                     backgroundColor: "#fffcf2",
+                     color: "#252422",
+                     borderColor: "#252422"
+                  }}
+                  whileTap={{ 
+                     y: 6,
+                     boxShadow: "0 0px 0 0 #252422"
+                  }}
+                  transition={{ type: "spring", stiffness: 600, damping: 18 }}
                 >
-                  <span className="relative z-10">Browse Products</span>
-                  <div className="absolute inset-0 bg-artisan-light translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                  Browse Products
                 </motion.button>
               </Link>
 
@@ -241,9 +251,20 @@ export default function Hero() {
                 className="flex-1 sm:flex-initial"
               >
                 <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full sm:w-auto px-6 py-3.5 sm:px-8 sm:py-4 border border-artisan-light text-artisan-light font-display font-bold uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 hover:bg-artisan-light hover:text-white transition-all duration-300 rounded-full"
+                  className="w-full sm:w-auto px-6 py-3.5 sm:px-8 sm:py-4 bg-artisan-dark text-artisan-light font-display font-black uppercase tracking-widest text-[10px] border border-artisan-light rounded-full flex items-center justify-center gap-2 cursor-pointer"
+                  initial={{ y: 0, boxShadow: "0 6px 0 0 #252422" }}
+                  whileHover={{ 
+                     y: -2,
+                     boxShadow: "0 8px 0 0 #252422",
+                     backgroundColor: "#eb5e28",
+                     color: "#fffcf2",
+                     borderColor: "#eb5e28"
+                  }}
+                  whileTap={{ 
+                     y: 6,
+                     boxShadow: "0 0px 0 0 #252422"
+                  }}
+                  transition={{ type: "spring", stiffness: 600, damping: 18 }}
                 >
                   {user ? (user.role === 'admin' ? 'Admin Hub' : 'Profile') : 'Join Us'}
                   <ArrowRight className="w-3.5 h-3.5" />

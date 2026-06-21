@@ -34,6 +34,7 @@ export default function AdminNewProduct() {
    const [image, setImage] = useState('')
    const [uploadedImages, setUploadedImages] = useState([])
    const [active, setActive] = useState(true)
+   const [priceDisplayMode, setPriceDisplayMode] = useState('display_price')
    const [specifications, setSpecifications] = useState([{ type: 'key_value', label: '', value: '', extra: {} }])
 
    const handleSubmit = async (e) => {
@@ -77,8 +78,12 @@ export default function AdminNewProduct() {
             category: finalCategory,
             lowstockthreshold: parseInt(lowStockThreshold, 10),
             active: active,
+            priceDisplayMode: priceDisplayMode,
             image: image, // Primary image url
-            images: uploadedImages, // Array of { url, publicId }
+            images: uploadedImages.map(img => ({
+               url: img.url,
+               publicId: img.publicId
+            })), // Array of { url, publicId }
             specifications: specsPayload
          }
 
@@ -276,6 +281,41 @@ export default function AdminNewProduct() {
                            className="w-full bg-artisan-light/[0.01] border border-artisan-light/10 p-4 text-xs sm:text-sm font-mono text-artisan-light tracking-widest outline-none focus:border-artisan-grey transition-all"
                            required
                         />
+                     </div>
+                  </div>
+
+                  {/* Price Display Configuration */}
+                  <div className="space-y-3 mt-6">
+                     <label className="text-[8px] font-mono text-artisan-light/40 uppercase tracking-widest block font-bold">
+                        Price Display Mode <span className="text-artisan-grey">*</span>
+                     </label>
+                     <div className="flex flex-col gap-3 sm:flex-row sm:gap-6 pt-1">
+                        <label className="flex items-center gap-2 cursor-pointer select-none">
+                           <input
+                              type="radio"
+                              name="priceDisplayMode"
+                              value="display_price"
+                              checked={priceDisplayMode === 'display_price'}
+                              onChange={(e) => setPriceDisplayMode(e.target.value)}
+                              className="w-4 h-4 rounded-full border-artisan-light/10 bg-artisan-light/5 text-artisan-grey focus:ring-0 cursor-pointer"
+                           />
+                           <span className="text-[10px] font-mono text-artisan-light/60 uppercase tracking-wider">
+                              Display Price publicly
+                           </span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer select-none">
+                           <input
+                              type="radio"
+                              name="priceDisplayMode"
+                              value="contact_us"
+                              checked={priceDisplayMode === 'contact_us'}
+                              onChange={(e) => setPriceDisplayMode(e.target.value)}
+                              className="w-4 h-4 rounded-full border-artisan-light/10 bg-artisan-light/5 text-artisan-grey focus:ring-0 cursor-pointer"
+                           />
+                           <span className="text-[10px] font-mono text-artisan-light/60 uppercase tracking-wider">
+                              Hide Price & Show "Contact Us"
+                           </span>
+                        </label>
                      </div>
                   </div>
 

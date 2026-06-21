@@ -17,7 +17,8 @@ import {
    Settings,
    KeyRound,
    Pencil,
-   ArrowLeft
+   ArrowLeft,
+   Phone
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
@@ -30,6 +31,8 @@ export default function Profile() {
    const navigate = useNavigate()
    const [logoutLoading, setLogoutLoading] = useState(false)
 
+   const MotionLink = motion.create ? motion.create(Link) : motion(Link)
+
    // Tab state: 'addresses' or 'security' (default depending on role)
    const [activeTab, setActiveTab] = useState(user?.role === 'customer' ? 'addresses' : 'security')
 
@@ -37,6 +40,18 @@ export default function Profile() {
    const [isEditingName, setIsEditingName] = useState(false)
    const [newName, setNewName] = useState(user?.name || '')
    const [nameLoading, setNameLoading] = useState(false)
+
+   // Phone states
+   const [isEditingPhone, setIsEditingPhone] = useState(false)
+   const [newPhone, setNewPhone] = useState(user?.phone || '')
+   const [phoneLoading, setPhoneLoading] = useState(false)
+
+   useEffect(() => {
+      if (user) {
+         setNewName(user.name || '')
+         setNewPhone(user.phone || '')
+      }
+   }, [user])
 
    // Profile Picture state
    const [avatarLoading, setAvatarLoading] = useState(false)
@@ -125,6 +140,23 @@ export default function Profile() {
          addToast(err.response?.data?.message || 'Failed to update name', 'error')
       } finally {
          setNameLoading(false)
+      }
+   }
+
+   const handleSavePhone = async () => {
+      if (!newPhone.trim()) {
+         addToast('Phone number is required', 'error')
+         return
+      }
+      try {
+         setPhoneLoading(true)
+         await updateProfile({ phone: newPhone.trim() })
+         addToast('Phone number updated successfully', 'success')
+         setIsEditingPhone(false)
+      } catch (err) {
+         addToast(err.response?.data?.message || 'Failed to update phone number', 'error')
+      } finally {
+         setPhoneLoading(false)
       }
    }
 
@@ -345,7 +377,7 @@ export default function Profile() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.1 }}
-                  className="bg-artisan-light/[0.02] border border-artisan-light/10 p-8 flex flex-col justify-between relative overflow-hidden h-fit"
+                  className="bg-artisan-light/[0.02] border border-artisan-light/10 p-8 flex flex-col justify-between relative overflow-hidden h-fit rounded-2xl"
                >
                   <div className="absolute top-0 left-0 w-1 h-full bg-artisan-grey" />
 
@@ -395,20 +427,20 @@ export default function Profile() {
                                     type="text"
                                     value={newName}
                                     onChange={(e) => setNewName(e.target.value)}
-                                    className="bg-artisan-dark border border-artisan-light/10 px-3 py-1.5 text-center text-sm font-display font-bold uppercase text-artisan-light focus:border-artisan-grey outline-none w-full max-w-xs"
+                                    className="bg-artisan-dark border border-artisan-light/10 px-3 py-1.5 text-center text-sm font-display font-bold uppercase text-artisan-light focus:border-artisan-grey outline-none w-full max-w-xs rounded-xl"
                                     placeholder="Enter name"
                                  />
                                  <div className="flex gap-2">
                                     <button
                                        onClick={handleSaveName}
                                        disabled={nameLoading}
-                                       className="text-[8px] font-mono font-bold text-green-400 hover:text-green-300 uppercase tracking-widest py-1 px-2.5 border border-green-500/20 bg-green-500/5 transition-colors"
+                                       className="text-[8px] font-mono font-bold text-green-400 hover:text-green-300 uppercase tracking-widest py-1 px-2.5 border border-green-500/20 bg-green-500/5 transition-colors rounded-lg"
                                     >
                                        {nameLoading ? 'Saving...' : 'Save'}
                                     </button>
                                     <button
                                        onClick={() => { setIsEditingName(false); setNewName(user.name); }}
-                                       className="text-[8px] font-mono font-bold text-artisan-light/40 hover:text-artisan-light/70 uppercase tracking-widest py-1 px-2.5 border border-artisan-light/10 transition-colors"
+                                       className="text-[8px] font-mono font-bold text-artisan-light/40 hover:text-artisan-light/70 uppercase tracking-widest py-1 px-2.5 border border-artisan-light/10 transition-colors rounded-lg"
                                     >
                                        Cancel
                                     </button>
@@ -421,14 +453,14 @@ export default function Profile() {
                                  </span>
                                  <button
                                     onClick={() => { setIsEditingName(true); setNewName(user.name); }}
-                                    className="text-[9px] font-mono text-artisan-grey hover:text-artisan-light uppercase tracking-wider px-2 py-0.5 border border-artisan-light/10 hover:border-artisan-grey transition-colors rounded-sm"
+                                    className="text-[9px] font-mono text-artisan-grey hover:text-artisan-light uppercase tracking-wider px-2 py-0.5 border border-artisan-light/10 hover:border-artisan-grey transition-colors rounded-lg"
                                  >
                                     Edit
                                  </button>
                               </div>
                            )}
                         </div>
-                        <span className="text-[10px] font-mono uppercase tracking-widest text-artisan-grey bg-artisan-light/5 border border-artisan-light/10 px-3 py-1 rounded-sm mt-3">
+                        <span className="text-[10px] font-mono uppercase tracking-widest text-artisan-grey bg-artisan-light/5 border border-artisan-light/10 px-3 py-1 rounded-full mt-3">
                            {user.role}
                         </span>
                      </div>
@@ -443,6 +475,50 @@ export default function Profile() {
                               {user.email}
                            </span>
                         </div>
+
+                        {user.role !== 'admin' && (
+                           <div className="flex items-center justify-between py-2 border-b border-artisan-light/5">
+                              <span className="text-[9px] font-mono text-artisan-light/50 uppercase tracking-[0.2em] flex items-center gap-2">
+                                 <Phone className="w-3.5 h-3.5 text-artisan-light/20" /> Phone
+                              </span>
+                              {isEditingPhone ? (
+                                 <div className="flex items-center gap-2">
+                                    <input
+                                       type="text"
+                                       value={newPhone}
+                                       onChange={(e) => setNewPhone(e.target.value)}
+                                       className="bg-artisan-dark border border-artisan-light/10 px-2 py-0.5 text-right text-xs font-mono text-artisan-light focus:border-artisan-grey outline-none w-32 rounded-lg"
+                                       placeholder="Enter phone"
+                                    />
+                                    <button
+                                       onClick={handleSavePhone}
+                                       disabled={phoneLoading}
+                                       className="text-[8px] font-mono font-bold text-green-400 hover:text-green-300 uppercase tracking-widest cursor-pointer rounded-md border border-green-500/10 px-1.5 py-0.5 bg-green-500/5"
+                                    >
+                                       {phoneLoading ? '...' : 'Save'}
+                                    </button>
+                                    <button
+                                       onClick={() => { setIsEditingPhone(false); setNewPhone(user.phone || ''); }}
+                                       className="text-[8px] font-mono font-bold text-artisan-light/40 hover:text-artisan-light/70 uppercase tracking-widest cursor-pointer rounded-md border border-artisan-light/10 px-1.5 py-0.5"
+                                    >
+                                       Cancel
+                                    </button>
+                                 </div>
+                              ) : (
+                                 <div className="flex items-center gap-2">
+                                    <span className="text-xs font-mono text-artisan-light/85">
+                                       {user.phone || 'Not provided'}
+                                    </span>
+                                    <button
+                                       onClick={() => { setIsEditingPhone(true); setNewPhone(user.phone || ''); }}
+                                       className="text-[8px] font-mono text-artisan-grey hover:text-artisan-light uppercase tracking-wider px-1.5 py-0.5 border border-artisan-light/10 hover:border-artisan-grey transition-colors rounded-lg cursor-pointer"
+                                    >
+                                       Edit
+                                    </button>
+                                 </div>
+                              )}
+                           </div>
+                        )}
 
                         <div className="flex items-center justify-between py-2 border-b border-artisan-light/5">
                            <span className="text-[9px] font-mono text-artisan-light/50 uppercase tracking-[0.2em] flex items-center gap-2">
@@ -470,20 +546,31 @@ export default function Profile() {
 
                   {/* Sidebar Footer Logout */}
                   <div className="pt-8 mt-8 border-t border-artisan-light/5">
-                     <button
+                     <motion.button
                         onClick={handleLogout}
                         disabled={logoutLoading}
-                        className="w-full py-4 border border-red-500/20 bg-red-500/5 text-[9px] font-mono font-bold uppercase tracking-[0.2em] text-red-500 hover:bg-red-500 hover:text-artisan-dark transition-all duration-300 flex items-center justify-center gap-3"
+                        className="w-full py-4 border border-red-500 text-[9px] font-mono font-bold uppercase tracking-[0.2em] text-red-500 cursor-pointer rounded-full"
+                        initial={{ y: 0, boxShadow: "0 6px 0 0 rgba(239, 68, 68, 0.2)", backgroundColor: "rgba(239, 68, 68, 0.05)" }}
+                        whileHover={logoutLoading ? {} : {
+                           y: -2,
+                           boxShadow: "0 8px 0 0 rgba(239, 68, 68, 0.3)",
+                           backgroundColor: "rgba(239, 68, 68, 0.15)"
+                        }}
+                        whileTap={logoutLoading ? {} : {
+                           y: 6,
+                           boxShadow: "0 0px 0 0 rgba(239, 68, 68, 0.2)"
+                        }}
+                        transition={{ type: "spring", stiffness: 600, damping: 18 }}
                      >
                         {logoutLoading ? (
-                           <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                           <Loader2 className="w-3.5 h-3.5 animate-spin mx-auto" />
                         ) : (
-                           <>
+                           <div className="flex items-center justify-center gap-3">
                               <LogOut className="w-3.5 h-3.5" />
-                              Log Out Account
-                           </>
+                              Log Out
+                           </div>
                         )}
-                     </button>
+                     </motion.button>
                   </div>
                </motion.div>
 
@@ -500,8 +587,8 @@ export default function Profile() {
                         <button
                            onClick={() => setActiveTab('addresses')}
                            className={`pb-4 text-xs font-mono font-bold uppercase tracking-widest border-b-2 transition-all flex items-center gap-2 ${activeTab === 'addresses'
-                                 ? 'border-artisan-light text-artisan-light'
-                                 : 'border-transparent text-artisan-light/35 hover:text-artisan-light/60'
+                              ? 'border-artisan-light text-artisan-light'
+                              : 'border-transparent text-artisan-light/35 hover:text-artisan-light/60'
                               }`}
                         >
                            <MapPin className="w-3.5 h-3.5" />
@@ -511,8 +598,8 @@ export default function Profile() {
                      <button
                         onClick={() => setActiveTab('security')}
                         className={`pb-4 text-xs font-mono font-bold uppercase tracking-widest border-b-2 transition-all flex items-center gap-2 ${activeTab === 'security'
-                              ? 'border-artisan-light text-artisan-light'
-                              : 'border-transparent text-artisan-light/35 hover:text-artisan-light/60'
+                           ? 'border-artisan-light text-artisan-light'
+                           : 'border-transparent text-artisan-light/35 hover:text-artisan-light/60'
                            }`}
                      >
                         <Settings className="w-3.5 h-3.5" />
@@ -543,28 +630,28 @@ export default function Profile() {
                                        user.addresses.map((addr) => (
                                           <div
                                              key={addr._id}
-                                             className={`group p-5 flex flex-col justify-between min-h-[140px] transition-all relative overflow-hidden ${editingAddressId === addr._id
-                                                   ? 'bg-artisan-light/[0.05] border border-artisan-light/40 shadow-lg'
-                                                   : 'bg-artisan-light/[0.01] border border-artisan-light/5 hover:border-artisan-light/10'
+                                             className={`group p-5 flex flex-col justify-between min-h-[140px] transition-all relative overflow-hidden rounded-xl ${editingAddressId === addr._id
+                                                ? 'bg-artisan-light/[0.05] border border-artisan-light/40 shadow-lg'
+                                                : 'bg-artisan-light/[0.01] border border-artisan-light/5 hover:border-artisan-light/10'
                                                 }`}
                                           >
                                              <div className={`absolute top-0 left-0 w-[2px] h-full transition-colors ${editingAddressId === addr._id ? 'bg-artisan-light' : 'bg-artisan-light/10 group-hover:bg-artisan-grey'
                                                 }`} />
                                              <div className="flex items-start justify-between gap-3 mb-4">
-                                                <span className="text-[8px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 bg-artisan-light/5 border border-artisan-light/10 text-artisan-grey">
+                                                <span className="text-[8px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 bg-artisan-light/5 border border-artisan-light/10 text-artisan-grey rounded-full">
                                                    {addr.tag}
                                                 </span>
                                                 <div className="flex items-center gap-1.5">
                                                    <button
                                                       onClick={() => handleStartEditAddress(addr)}
-                                                      className="text-artisan-grey hover:text-artisan-light p-1.5 hover:bg-artisan-light/5 transition-all rounded-sm flex-shrink-0"
+                                                      className="text-artisan-grey hover:text-artisan-light p-1.5 hover:bg-artisan-light/5 transition-all rounded-lg flex-shrink-0"
                                                       title="Edit Address"
                                                    >
                                                       <Pencil className="w-3.5 h-3.5" />
                                                    </button>
                                                    <button
                                                       onClick={() => handleDeleteAddress(addr._id)}
-                                                      className="text-red-500/40 hover:text-red-400 p-1.5 hover:bg-red-500/5 transition-all rounded-sm flex-shrink-0"
+                                                      className="text-red-500/40 hover:text-red-400 p-1.5 hover:bg-red-500/5 transition-all rounded-lg flex-shrink-0"
                                                       title="Delete Address"
                                                    >
                                                       <Trash2 className="w-3.5 h-3.5" />
@@ -581,7 +668,7 @@ export default function Profile() {
                                           </div>
                                        ))
                                     ) : (
-                                       <div className="sm:col-span-2 text-center py-12 border border-dashed border-artisan-light/10 bg-artisan-light/[0.01]">
+                                       <div className="sm:col-span-2 text-center py-12 border border-dashed border-artisan-light/10 bg-artisan-light/[0.01] rounded-xl">
                                           <p className="text-xs font-mono text-artisan-light/50 uppercase tracking-widest">No addresses saved</p>
                                        </div>
                                     )}
@@ -590,7 +677,7 @@ export default function Profile() {
 
                               {/* Add Address Form Section */}
                               {(!user.addresses || user.addresses.length < 4 || editingAddressId) && (
-                                 <div className="bg-artisan-light/[0.01] border border-artisan-light/10 p-6 md:p-8 space-y-6">
+                                 <div className="bg-artisan-light/[0.01] border border-artisan-light/10 p-6 md:p-8 space-y-6 rounded-2xl">
                                     <h4 className="text-sm font-display font-bold uppercase tracking-widest text-artisan-light">
                                        {editingAddressId ? 'Edit Address' : 'Add Address'}
                                     </h4>
@@ -607,9 +694,9 @@ export default function Profile() {
                                                    key={tag}
                                                    type="button"
                                                    onClick={() => setAddressTag(tag)}
-                                                   className={`px-4 py-2 text-xs font-mono font-bold uppercase tracking-wider border transition-all ${addressTag === tag
-                                                         ? 'bg-artisan-light text-artisan-dark border-artisan-light'
-                                                         : 'bg-transparent border-artisan-light/10 text-artisan-grey hover:border-artisan-grey hover:text-artisan-light'
+                                                   className={`px-4 py-2 text-xs font-mono font-bold uppercase tracking-wider border transition-all rounded-xl ${addressTag === tag
+                                                      ? 'bg-artisan-light text-artisan-dark border-artisan-light'
+                                                      : 'bg-transparent border-artisan-light/10 text-artisan-grey hover:border-artisan-grey hover:text-artisan-light'
                                                       }`}
                                                 >
                                                    {tag}
@@ -629,7 +716,7 @@ export default function Profile() {
                                                 onChange={(e) => setDoorNumber(e.target.value)}
                                                 placeholder="APT 4B, DOOR 12"
                                                 required
-                                                className="w-full bg-artisan-dark border border-artisan-light/10 p-2.5 text-xs text-artisan-light font-mono uppercase tracking-wider focus:border-artisan-grey outline-none"
+                                                className="w-full bg-artisan-dark border border-artisan-light/10 p-2.5 text-xs text-artisan-light font-mono uppercase tracking-wider focus:border-artisan-grey outline-none rounded-xl"
                                              />
                                           </div>
 
@@ -642,7 +729,7 @@ export default function Profile() {
                                                 value={secondLine}
                                                 onChange={(e) => setSecondLine(e.target.value)}
                                                 placeholder="MAIN ROAD, APARTMENT NAME"
-                                                className="w-full bg-artisan-dark border border-artisan-light/10 p-2.5 text-xs text-artisan-light font-mono uppercase tracking-wider focus:border-artisan-grey outline-none"
+                                                className="w-full bg-artisan-dark border border-artisan-light/10 p-2.5 text-xs text-artisan-light font-mono uppercase tracking-wider focus:border-artisan-grey outline-none rounded-xl"
                                              />
                                           </div>
 
@@ -655,11 +742,11 @@ export default function Profile() {
                                                 value={landmark}
                                                 onChange={(e) => setLandmark(e.target.value)}
                                                 placeholder="NEAR METRO STATION"
-                                                className="w-full bg-artisan-dark border border-artisan-light/10 p-2.5 text-xs text-artisan-light font-mono uppercase tracking-wider focus:border-artisan-grey outline-none"
+                                                className="w-full bg-artisan-dark border border-artisan-light/10 p-2.5 text-xs text-artisan-light font-mono uppercase tracking-wider focus:border-artisan-grey outline-none rounded-xl"
                                              />
                                           </div>
 
-                                           <div className="md:col-span-3">
+                                          <div className="md:col-span-3">
                                              <label className="block text-[8px] font-mono text-artisan-light/40 uppercase tracking-widest mb-1.5">
                                                 Pincode *
                                              </label>
@@ -671,7 +758,7 @@ export default function Profile() {
                                                    onChange={(e) => setPincode(e.target.value.replace(/\D/g, ''))}
                                                    placeholder="600075"
                                                    required
-                                                   className="w-full bg-artisan-dark border border-artisan-light/10 p-2.5 pr-8 text-xs text-artisan-light font-mono uppercase tracking-wider focus:border-artisan-grey outline-none"
+                                                   className="w-full bg-artisan-dark border border-artisan-light/10 p-2.5 pr-8 text-xs text-artisan-light font-mono uppercase tracking-wider focus:border-artisan-grey outline-none rounded-xl"
                                                 />
                                                 {isFetchingPincode && (
                                                    <Loader2 className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 animate-spin text-artisan-light/40" />
@@ -690,7 +777,7 @@ export default function Profile() {
                                                 placeholder="CHENNAI"
                                                 required
                                                 disabled
-                                                className="w-full bg-artisan-dark border border-artisan-light/10 p-2.5 text-xs text-artisan-light font-mono uppercase tracking-wider focus:border-artisan-grey outline-none opacity-50 cursor-not-allowed"
+                                                className="w-full bg-artisan-dark border border-artisan-light/10 p-2.5 text-xs text-artisan-light font-mono uppercase tracking-wider focus:border-artisan-grey outline-none opacity-50 cursor-not-allowed rounded-xl"
                                              />
                                           </div>
 
@@ -705,7 +792,7 @@ export default function Profile() {
                                                 placeholder="TAMIL NADU"
                                                 required
                                                 disabled
-                                                className="w-full bg-artisan-dark border border-artisan-light/10 p-2.5 text-xs text-artisan-light font-mono uppercase tracking-wider focus:border-artisan-grey outline-none opacity-50 cursor-not-allowed"
+                                                className="w-full bg-artisan-dark border border-artisan-light/10 p-2.5 text-xs text-artisan-light font-mono uppercase tracking-wider focus:border-artisan-grey outline-none opacity-50 cursor-not-allowed rounded-xl"
                                              />
                                           </div>
                                        </div>
@@ -715,18 +802,29 @@ export default function Profile() {
                                              <button
                                                 type="button"
                                                 onClick={handleCancelEditAddress}
-                                                className="bg-transparent border border-artisan-light/10 text-artisan-light hover:border-artisan-grey font-mono font-bold uppercase text-[9px] tracking-widest px-6 py-3 transition-colors"
+                                                className="bg-transparent border border-artisan-light/10 text-artisan-light hover:border-artisan-grey font-mono font-bold uppercase text-[9px] tracking-widest px-6 py-3 transition-colors rounded-full"
                                              >
                                                 Cancel
                                              </button>
                                           )}
-                                          <button
+                                          <motion.button
                                              type="submit"
                                              disabled={addrLoading}
-                                             className="bg-artisan-light text-artisan-dark hover:bg-artisan-grey font-mono font-bold uppercase text-[9px] tracking-widest px-6 py-3 transition-colors disabled:opacity-50 flex-shrink-0"
+                                             className="bg-artisan-light text-artisan-dark font-mono font-bold uppercase text-[9px] tracking-widest px-6 py-3 disabled:opacity-50 flex-shrink-0 rounded-full border border-black cursor-pointer"
+                                             initial={{ y: 0, boxShadow: "0 6px 0 0 #000000" }}
+                                             whileHover={addrLoading ? {} : {
+                                                y: -2,
+                                                boxShadow: "0 8px 0 0 #000000",
+                                                backgroundColor: "#eb5e28"
+                                             }}
+                                             whileTap={addrLoading ? {} : {
+                                                y: 6,
+                                                boxShadow: "0 0px 0 0 #000000"
+                                             }}
+                                             transition={{ type: "spring", stiffness: 600, damping: 18 }}
                                           >
                                              {addrLoading ? 'Saving...' : editingAddressId ? 'Save Changes' : 'Add Address'}
-                                          </button>
+                                          </motion.button>
                                        </div>
                                     </form>
                                  </div>
@@ -744,7 +842,7 @@ export default function Profile() {
                               className="space-y-8"
                            >
                               {/* 2FA Settings Container */}
-                              <div className="bg-artisan-light/[0.01] border border-artisan-light/5 p-6 md:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                              <div className="bg-artisan-light/[0.01] border border-artisan-light/5 p-6 md:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 rounded-2xl">
                                  <div className="space-y-1.5 max-w-md">
                                     <span className="text-[9px] font-mono text-artisan-light/40 uppercase tracking-[0.25em] block">
                                        Two-Factor Authentication
@@ -757,97 +855,140 @@ export default function Profile() {
                                     </p>
                                  </div>
                                  <div className="flex flex-col items-start sm:items-end gap-2 flex-shrink-0">
-                                    <span className={`inline-flex items-center gap-1.5 text-[8px] font-mono font-bold uppercase px-2 py-0.5 border rounded-sm ${user.twoFactorEnabled
-                                          ? 'border-green-500/20 bg-green-500/5 text-green-400'
-                                          : 'border-artisan-light/10 bg-artisan-light/5 text-artisan-grey'
+                                    <span className={`inline-flex items-center gap-1.5 text-[8px] font-mono font-bold uppercase px-2 py-0.5 border rounded-full ${user.twoFactorEnabled
+                                       ? 'border-green-500/20 bg-green-500/5 text-green-400'
+                                       : 'border-artisan-light/10 bg-artisan-light/5 text-artisan-grey'
                                        }`}>
                                        <span className={`w-1.5 h-1.5 rounded-full ${user.twoFactorEnabled ? 'bg-green-500' : 'bg-artisan-grey'}`} />
                                        {user.twoFactorEnabled ? '2FA Active' : '2FA Inactive'}
                                     </span>
-                                    <button
+                                    <motion.button
                                        onClick={handleToggle2FA}
                                        disabled={twoFactorLoading}
-                                       className={`w-full sm:w-auto px-5 py-2.5 text-[9px] font-mono font-bold uppercase tracking-widest border transition-all duration-300 ${user.twoFactorEnabled
-                                             ? 'bg-red-500/10 border-red-500/20 text-red-500 hover:bg-red-500 hover:text-artisan-dark'
-                                             : 'bg-artisan-light text-artisan-dark hover:bg-artisan-grey'
+                                       className={`w-full sm:w-auto px-5 py-2.5 text-[9px] font-mono font-bold uppercase tracking-widest border rounded-full cursor-pointer ${user.twoFactorEnabled
+                                          ? 'border-red-500/30 bg-red-500/5 text-red-500'
+                                          : 'bg-artisan-light text-artisan-dark border-black'
                                           }`}
+                                       initial={{ y: 0, boxShadow: user.twoFactorEnabled ? "0 6px 0 0 rgba(239, 68, 68, 0.2)" : "0 6px 0 0 #000000" }}
+                                       whileHover={twoFactorLoading ? {} : {
+                                          y: -2,
+                                          boxShadow: user.twoFactorEnabled ? "0 8px 0 0 rgba(239, 68, 68, 0.3)" : "0 8px 0 0 #000000",
+                                          backgroundColor: user.twoFactorEnabled ? "rgba(239, 68, 68, 0.15)" : "#eb5e28"
+                                       }}
+                                       whileTap={twoFactorLoading ? {} : {
+                                          y: 6,
+                                          boxShadow: user.twoFactorEnabled ? "0 0px 0 0 rgba(239, 68, 68, 0.2)" : "0 0px 0 0 #000000"
+                                       }}
+                                       transition={{ type: "spring", stiffness: 600, damping: 18 }}
                                     >
                                        {twoFactorLoading ? 'Syncing...' : user.twoFactorEnabled ? 'Disable 2FA' : 'Enable 2FA'}
-                                    </button>
+                                    </motion.button>
                                  </div>
                               </div>
 
                               {/* Password Change Form Container */}
-                              <div className="bg-artisan-light/[0.01] border border-artisan-light/5 p-6 md:p-8 space-y-6">
-                                 <h4 className="text-sm font-display font-bold uppercase tracking-widest text-artisan-light flex items-center gap-2.5">
-                                    <KeyRound className="w-4 h-4 text-artisan-grey" /> Change Password
-                                 </h4>
-
-                                 <form onSubmit={handleChangePassword} className="space-y-6">
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                       <div className="group relative border-b border-artisan-light/10 focus-within:border-artisan-grey transition-all duration-500 pb-2">
-                                          <label className="block text-[8px] font-mono text-artisan-light/35 uppercase tracking-[0.2em] mb-1.5 group-focus-within:text-artisan-grey transition-colors">
-                                             Current Password
-                                          </label>
-                                          <div className="flex items-center gap-3">
-                                             <Lock className="w-3.5 h-3.5 text-artisan-light/20 group-focus-within:text-artisan-grey" />
-                                             <input
-                                                type="password"
-                                                value={currentPassword}
-                                                onChange={(e) => setCurrentPassword(e.target.value)}
-                                                required
-                                                className="w-full bg-transparent outline-none text-xs font-mono text-artisan-light"
-                                                placeholder="••••••••"
-                                             />
-                                          </div>
+                              {user.hasPassword === false ? (
+                                 <div className="bg-artisan-light/[0.01] border border-artisan-light/5 p-6 md:p-8 space-y-4 rounded-2xl">
+                                    <h4 className="text-sm font-display font-bold uppercase tracking-widest text-artisan-light flex items-center gap-2.5">
+                                       <KeyRound className="w-4 h-4 text-artisan-grey" /> Password Management
+                                    </h4>
+                                    <div className="p-5 border border-artisan-light/10 bg-artisan-light/[0.02] rounded-xl flex items-start gap-4">
+                                       <div className="w-10 h-10 rounded-full bg-artisan-light/5 flex items-center justify-center flex-shrink-0 text-artisan-grey">
+                                          <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                                             <path d="M12.24 10.285V13.4h6.887c-.648 2.41-2.519 4.13-5.136 4.13A5.76 5.76 0 0 1 8.2 11.77a5.76 5.76 0 0 1 5.79-5.77c1.47 0 2.8.53 3.82 1.5l2.42-2.42A9.13 9.13 0 0 0 13.99 3c-5.078 0-9.2 4.12-9.2 9.2s4.122 9.2 9.2 9.2c5.078 0 8.66-3.57 8.66-8.8 0-.58-.06-1.13-.17-1.63H12.24z" />
+                                          </svg>
                                        </div>
-
-                                       <div className="group relative border-b border-artisan-light/10 focus-within:border-artisan-grey transition-all duration-500 pb-2">
-                                          <label className="block text-[8px] font-mono text-artisan-light/35 uppercase tracking-[0.2em] mb-1.5 group-focus-within:text-artisan-grey transition-colors">
-                                             New Password
-                                          </label>
-                                          <div className="flex items-center gap-3">
-                                             <Lock className="w-3.5 h-3.5 text-artisan-light/20 group-focus-within:text-artisan-grey" />
-                                             <input
-                                                type="password"
-                                                value={newPassword}
-                                                onChange={(e) => setNewPassword(e.target.value)}
-                                                required
-                                                className="w-full bg-transparent outline-none text-xs font-mono text-artisan-light"
-                                                placeholder="••••••••"
-                                             />
-                                          </div>
-                                       </div>
-
-                                       <div className="group relative border-b border-artisan-light/10 focus-within:border-artisan-grey transition-all duration-500 pb-2">
-                                          <label className="block text-[8px] font-mono text-artisan-light/35 uppercase tracking-[0.2em] mb-1.5 group-focus-within:text-artisan-grey transition-colors">
-                                             Confirm New Password
-                                          </label>
-                                          <div className="flex items-center gap-3">
-                                             <Lock className="w-3.5 h-3.5 text-artisan-light/20 group-focus-within:text-artisan-grey" />
-                                             <input
-                                                type="password"
-                                                value={confirmPassword}
-                                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                                required
-                                                className="w-full bg-transparent outline-none text-xs font-mono text-artisan-light"
-                                                placeholder="••••••••"
-                                             />
-                                          </div>
+                                       <div className="space-y-1">
+                                          <p className="text-xs font-mono font-bold uppercase text-artisan-light">Logged in via Google</p>
+                                          <p className="text-[10px] font-mono uppercase tracking-wider text-artisan-light/50 leading-relaxed">
+                                             You have logged in via Google. Local password configuration is not required or applicable.
+                                          </p>
                                        </div>
                                     </div>
+                                 </div>
+                              ) : (
+                                 <div className="bg-artisan-light/[0.01] border border-artisan-light/5 p-6 md:p-8 space-y-6 rounded-2xl">
+                                    <h4 className="text-sm font-display font-bold uppercase tracking-widest text-artisan-light flex items-center gap-2.5">
+                                       <KeyRound className="w-4 h-4 text-artisan-grey" /> Change Password
+                                    </h4>
 
-                                    <div className="flex justify-end pt-2">
-                                       <button
-                                          type="submit"
-                                          disabled={passLoading}
-                                          className="bg-artisan-light text-artisan-dark hover:bg-artisan-grey font-mono font-bold uppercase text-[9px] tracking-widest px-6 py-3 transition-colors disabled:opacity-50"
-                                       >
-                                          {passLoading ? 'Saving...' : 'Change Password'}
-                                       </button>
-                                    </div>
-                                 </form>
-                              </div>
+                                    <form onSubmit={handleChangePassword} className="space-y-6">
+                                       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                          <div className="group relative border-b border-artisan-light/10 focus-within:border-artisan-grey transition-all duration-500 pb-2">
+                                             <label className="block text-[8px] font-mono text-artisan-light/35 uppercase tracking-[0.2em] mb-1.5 group-focus-within:text-artisan-grey transition-colors">
+                                                Current Password
+                                             </label>
+                                             <div className="flex items-center gap-3">
+                                                <Lock className="w-3.5 h-3.5 text-artisan-light/20 group-focus-within:text-artisan-grey" />
+                                                <input
+                                                   type="password"
+                                                   value={currentPassword}
+                                                   onChange={(e) => setCurrentPassword(e.target.value)}
+                                                   required
+                                                   className="w-full bg-transparent outline-none text-xs font-mono text-artisan-light"
+                                                   placeholder="••••••••"
+                                                />
+                                             </div>
+                                          </div>
+
+                                          <div className="group relative border-b border-artisan-light/10 focus-within:border-artisan-grey transition-all duration-500 pb-2">
+                                             <label className="block text-[8px] font-mono text-artisan-light/35 uppercase tracking-[0.2em] mb-1.5 group-focus-within:text-artisan-grey transition-colors">
+                                                New Password
+                                             </label>
+                                             <div className="flex items-center gap-3">
+                                                <Lock className="w-3.5 h-3.5 text-artisan-light/20 group-focus-within:text-artisan-grey" />
+                                                <input
+                                                   type="password"
+                                                   value={newPassword}
+                                                   onChange={(e) => setNewPassword(e.target.value)}
+                                                   required
+                                                   className="w-full bg-transparent outline-none text-xs font-mono text-artisan-light"
+                                                   placeholder="••••••••"
+                                                />
+                                             </div>
+                                          </div>
+
+                                          <div className="group relative border-b border-artisan-light/10 focus-within:border-artisan-grey transition-all duration-500 pb-2">
+                                             <label className="block text-[8px] font-mono text-artisan-light/35 uppercase tracking-[0.2em] mb-1.5 group-focus-within:text-artisan-grey transition-colors">
+                                                Confirm New Password
+                                             </label>
+                                             <div className="flex items-center gap-3">
+                                                <Lock className="w-3.5 h-3.5 text-artisan-light/20 group-focus-within:text-artisan-grey" />
+                                                <input
+                                                   type="password"
+                                                   value={confirmPassword}
+                                                   onChange={(e) => setConfirmPassword(e.target.value)}
+                                                   required
+                                                   className="w-full bg-transparent outline-none text-xs font-mono text-artisan-light"
+                                                   placeholder="••••••••"
+                                                />
+                                             </div>
+                                          </div>
+                                       </div>
+
+                                       <div className="flex justify-end pt-2">
+                                          <motion.button
+                                             type="submit"
+                                             disabled={passLoading}
+                                             className="bg-artisan-light text-artisan-dark font-mono font-bold uppercase text-[9px] tracking-widest px-6 py-3 disabled:opacity-50 rounded-full border border-black cursor-pointer"
+                                             initial={{ y: 0, boxShadow: "0 6px 0 0 #000000" }}
+                                             whileHover={passLoading ? {} : {
+                                                y: -2,
+                                                boxShadow: "0 8px 0 0 #000000",
+                                                backgroundColor: "#eb5e28"
+                                             }}
+                                             whileTap={passLoading ? {} : {
+                                                y: 6,
+                                                boxShadow: "0 0px 0 0 #000000"
+                                             }}
+                                             transition={{ type: "spring", stiffness: 600, damping: 18 }}
+                                          >
+                                             {passLoading ? 'Saving...' : 'Change Password'}
+                                          </motion.button>
+                                       </div>
+                                    </form>
+                                 </div>
+                              )}
                            </motion.div>
                         )}
                      </AnimatePresence>
@@ -858,20 +999,42 @@ export default function Profile() {
 
             {/* Quick Navigation and Links Footer */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-8 border-t border-artisan-light/5">
-               <Link
+               <MotionLink
                   to="/history"
-                  className="py-4 border border-artisan-light/10 hover:border-artisan-grey hover:bg-artisan-light/5 transition-all text-[10px] font-mono font-bold uppercase tracking-widest text-center flex items-center justify-center gap-3 text-artisan-light"
+                  className="py-4 border-2 border-artisan-light text-artisan-light font-mono font-bold uppercase tracking-widest text-[10px] flex items-center justify-center gap-3 rounded-full cursor-pointer"
+                  initial={{ y: 0, boxShadow: "0 6px 0 0 #252422" }}
+                  whileHover={{
+                     y: -2,
+                     boxShadow: "0 8px 0 0 #252422",
+                     backgroundColor: "rgba(37, 36, 34, 0.04)"
+                  }}
+                  whileTap={{
+                     y: 6,
+                     boxShadow: "0 0px 0 0 #252422"
+                  }}
+                  transition={{ type: "spring", stiffness: 600, damping: 18 }}
                >
                   <History className="w-4 h-4" />
                   Order History
-               </Link>
-               <Link
+               </MotionLink>
+               <MotionLink
                   to="/allproduct"
-                  className="py-4 bg-artisan-light text-artisan-dark hover:bg-artisan-grey hover:text-artisan-dark transition-all text-[10px] font-mono font-bold uppercase tracking-widest text-center flex items-center justify-center gap-3"
+                  className="py-4 bg-artisan-light text-artisan-dark font-mono font-bold uppercase tracking-widest text-[10px] flex items-center justify-center gap-3 rounded-full border border-black cursor-pointer"
+                  initial={{ y: 0, boxShadow: "0 6px 0 0 #000000" }}
+                  whileHover={{
+                     y: -2,
+                     boxShadow: "0 8px 0 0 #000000",
+                     backgroundColor: "#eb5e28"
+                  }}
+                  whileTap={{
+                     y: 6,
+                     boxShadow: "0 0px 0 0 #000000"
+                  }}
+                  transition={{ type: "spring", stiffness: 600, damping: 18 }}
                >
                   <ShoppingBag className="w-4 h-4" />
                   Browse Products
-               </Link>
+               </MotionLink>
             </div>
 
          </div>

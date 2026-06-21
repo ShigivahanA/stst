@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 import { 
   ArrowLeft, 
   Search, 
@@ -9,12 +10,15 @@ import {
   RefreshCcw, 
   Package, 
   ChevronRight,
-  ShoppingBag
+  ShoppingBag,
+  ChevronDown
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import api from '../services/api'
 import SEO from '../components/SEO'
+
+const MotionLink = motion.create ? motion.create(Link) : motion(Link)
 
 export default function OrdersHistory() {
   const { user } = useAuth()
@@ -23,6 +27,20 @@ export default function OrdersHistory() {
   const [orders, setOrders] = useState([])
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
+
+  const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false)
+  const dropdownRef = useRef(null)
+
+  // Click outside handler
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setIsStatusDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   const fetchOrders = async () => {
     try {
@@ -127,25 +145,75 @@ export default function OrdersHistory() {
           </div>
 
           <div className="lg:col-span-4 flex items-center gap-3">
-            <select 
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full bg-artisan-light/[0.005] border border-artisan-light/10 p-5 text-[9px] font-mono text-artisan-light uppercase tracking-[0.2em] outline-none focus:border-artisan-light/25 appearance-none cursor-pointer text-center rounded-xl"
-            >
-              <option value="all">ALL ORDERS</option>
-              <option value="pending">PENDING</option>
-              <option value="processing">PROCESSING</option>
-              <option value="completed">COMPLETED</option>
-              <option value="cancelled">CANCELLED</option>
-              <option value="refunded">REFUNDED</option>
-            </select>
-            <button 
+            <div className="relative flex-1" ref={dropdownRef}>
+              <button
+                type="button"
+                onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
+                className="w-full bg-artisan-light/[0.005] border border-artisan-light/10 p-5 text-[9px] font-mono text-artisan-light uppercase tracking-[0.2em] outline-none focus:border-artisan-light/25 flex justify-between items-center rounded-xl cursor-pointer"
+              >
+                <span className="truncate pr-4">
+                  {statusFilter === 'all' && 'ALL ORDERS'}
+                  {statusFilter === 'pending' && 'PENDING'}
+                  {statusFilter === 'processing' && 'PROCESSING'}
+                  {statusFilter === 'completed' && 'COMPLETED'}
+                  {statusFilter === 'cancelled' && 'CANCELLED'}
+                  {statusFilter === 'refunded' && 'REFUNDED'}
+                </span>
+                <ChevronDown className={`w-4 h-4 text-artisan-light/45 shrink-0 transition-transform duration-300 ${isStatusDropdownOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              <AnimatePresence>
+                {isStatusDropdownOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute top-full left-0 z-50 w-full mt-2 bg-artisan-dark/95 backdrop-blur-md border border-artisan-light/10 shadow-2xl rounded-xl py-2 max-h-60 overflow-y-auto"
+                  >
+                    {[
+                      { value: 'all', label: 'ALL ORDERS' },
+                      { value: 'pending', label: 'PENDING' },
+                      { value: 'processing', label: 'PROCESSING' },
+                      { value: 'completed', label: 'COMPLETED' },
+                      { value: 'cancelled', label: 'CANCELLED' },
+                      { value: 'refunded', label: 'REFUNDED' }
+                    ].map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => {
+                          setStatusFilter(opt.value)
+                          setIsStatusDropdownOpen(false)
+                        }}
+                        className={`w-full text-left px-5 py-3 hover:bg-artisan-light/[0.05] font-mono text-[9px] uppercase tracking-widest transition-colors border-b border-artisan-light/5 last:border-0 ${statusFilter === opt.value ? 'text-artisan-grey font-bold' : 'text-artisan-light/70 hover:text-artisan-light'}`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+            <motion.button 
+              type="button"
               onClick={fetchOrders}
-              className="w-16 h-16 bg-artisan-light/5 border border-artisan-light/10 flex items-center justify-center hover:bg-artisan-light hover:text-artisan-dark transition-all group shrink-0 rounded-full"
+              className="w-16 h-16 bg-artisan-light/5 border border-artisan-light/10 flex items-center justify-center group shrink-0 rounded-full cursor-pointer"
               title="Refresh"
+              initial={{ y: 0, boxShadow: "0 4px 0 0 #000000" }}
+              whileHover={{ 
+                 y: -2,
+                 boxShadow: "0 6px 0 0 #000000",
+                 backgroundColor: "rgba(255, 252, 242, 0.08)"
+              }}
+              whileTap={{ 
+                 y: 4,
+                 boxShadow: "0 0px 0 0 #000000"
+              }}
+              transition={{ type: "spring", stiffness: 600, damping: 18 }}
             >
-              <RefreshCcw className="w-4 h-4 text-artisan-light/40 group-hover:rotate-180 transition-transform duration-700 group-hover:text-current" />
-            </button>
+              <RefreshCcw className="w-4 h-4 text-artisan-light/40 group-hover:rotate-180 transition-transform duration-700 group-hover:text-artisan-light" />
+            </motion.button>
           </div>
         </div>
 
@@ -168,12 +236,23 @@ export default function OrdersHistory() {
                 </p>
               </div>
               {!search && statusFilter === 'all' && (
-                <Link 
+                <MotionLink 
                   to="/allproduct" 
-                  className="px-6 py-3 bg-artisan-light text-artisan-dark text-[9px] font-mono font-bold uppercase tracking-widest hover:bg-artisan-grey transition-all rounded-full"
+                  className="inline-block px-8 py-3.5 bg-artisan-light text-artisan-dark text-[9px] font-mono font-bold uppercase tracking-widest border border-black rounded-full cursor-pointer"
+                  initial={{ y: 0, boxShadow: "0 6px 0 0 #000000" }}
+                  whileHover={{ 
+                     y: -2,
+                     boxShadow: "0 8px 0 0 #000000",
+                     backgroundColor: "#eb5e28"
+                  }}
+                  whileTap={{ 
+                     y: 6,
+                     boxShadow: "0 0px 0 0 #000000"
+                  }}
+                  transition={{ type: "spring", stiffness: 600, damping: 18 }}
                 >
                   Shop Now
-                </Link>
+                </MotionLink>
               )}
             </div>
           ) : (
@@ -232,9 +311,22 @@ export default function OrdersHistory() {
                         <span className="text-xs font-mono text-artisan-light/50 uppercase tracking-widest block">Total</span>
                         <span className="text-xl font-display font-extrabold text-artisan-light tracking-tighter">₹{order.totalAmount.toLocaleString()}</span>
                       </div>
-                      <div className="w-8 h-8 rounded-full border border-artisan-light/10 flex items-center justify-center text-artisan-light/40 group-hover:text-artisan-light group-hover:border-artisan-light/30 transition-colors shrink-0">
+                      <motion.div 
+                        className="w-8 h-8 rounded-full bg-artisan-light border border-black flex items-center justify-center text-artisan-dark shrink-0 cursor-pointer"
+                        initial={{ y: 0, boxShadow: "0 4px 0 0 #000000" }}
+                        whileHover={{ 
+                           y: -1.5,
+                           boxShadow: "0 5.5px 0 0 #000000",
+                           backgroundColor: "#eb5e28"
+                        }}
+                        whileTap={{ 
+                           y: 4,
+                           boxShadow: "0 0px 0 0 #000000"
+                        }}
+                        transition={{ type: "spring", stiffness: 600, damping: 18 }}
+                      >
                         <ChevronRight className="w-4 h-4" />
-                      </div>
+                      </motion.div>
                     </div>
                   </div>
                 </Link>

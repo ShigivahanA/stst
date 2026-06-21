@@ -28,6 +28,7 @@ import SEO from '../components/SEO'
 
 export default function Cart() {
   const { user, setUser } = useAuth()
+  const MotionLink = motion.create ? motion.create(Link) : motion(Link)
   const { addToast } = useToast()
   const navigate = useNavigate()
 
@@ -130,7 +131,7 @@ export default function Cart() {
   const discountAmount = appliedCoupon ? appliedCoupon.discountAmount : 0
   const discountedSubtotal = Math.max(0, itemsSubtotal - discountAmount)
 
-  const shippingFee = discountedSubtotal > 5000 || discountedSubtotal === 0 ? 0 : 150 // Free shipping above ₹5,000
+  const shippingFee = discountedSubtotal > 1000 || discountedSubtotal === 0 ? 0 : 150 // Free shipping above ₹5,000
 
   const paymentMethod = 'online'
   const orderTotal = discountedSubtotal + shippingFee
@@ -637,28 +638,61 @@ export default function Cart() {
               </p>
               <div className="flex flex-col gap-3 w-full pt-8 px-4 max-w-sm">
                 {completedOrder && (
-                  <button
+                  <motion.button
                     onClick={() => downloadOrderReceipt(completedOrder)}
-                    className="w-full py-4 bg-artisan-light text-artisan-dark text-[9px] font-mono font-bold uppercase tracking-widest hover:bg-artisan-grey hover:text-artisan-dark transition-all flex items-center justify-center gap-2 rounded-full cursor-pointer"
+                    className="w-full py-4 bg-artisan-light text-artisan-dark text-[9px] font-mono font-bold uppercase tracking-widest border border-black flex items-center justify-center gap-2 rounded-full cursor-pointer"
+                    initial={{ y: 0, boxShadow: "0 6px 0 0 #000000" }}
+                    whileHover={{ 
+                       y: -2,
+                       boxShadow: "0 8px 0 0 #000000",
+                       backgroundColor: "#eb5e28"
+                    }}
+                    whileTap={{ 
+                       y: 6,
+                       boxShadow: "0 0px 0 0 #000000"
+                    }}
+                    transition={{ type: "spring", stiffness: 600, damping: 18 }}
                   >
                     <Download className="w-4 h-4 text-artisan-dark" />
                     Download Invoice Receipt
-                  </button>
+                  </motion.button>
                 )}
 
                 <div className="grid grid-cols-2 gap-3 w-full">
-                  <Link
+                  <MotionLink
                     to="/history"
-                    className="py-4 border border-artisan-light/20 text-[9px] font-mono font-bold uppercase tracking-widest hover:bg-artisan-light hover:text-artisan-dark hover:border-artisan-light transition-all text-center flex items-center justify-center gap-2 rounded-full"
+                    className="py-4 border border-artisan-light/20 text-[9px] font-mono font-bold uppercase tracking-widest text-center flex items-center justify-center gap-2 rounded-full cursor-pointer"
+                    initial={{ y: 0, boxShadow: "0 6px 0 0 rgba(255, 252, 242, 0.05)" }}
+                    whileHover={{ 
+                       y: -2,
+                       boxShadow: "0 8px 0 0 rgba(255, 252, 242, 0.1)",
+                       borderColor: "rgba(255, 252, 242, 0.3)"
+                    }}
+                    whileTap={{ 
+                       y: 6,
+                       boxShadow: "0 0px 0 0 rgba(255, 252, 242, 0.05)"
+                    }}
+                    transition={{ type: "spring", stiffness: 600, damping: 18 }}
                   >
                     View Orders
-                  </Link>
-                  <Link
+                  </MotionLink>
+                  <MotionLink
                     to="/allproduct"
-                    className="py-4 bg-artisan-grey text-artisan-dark text-[9px] font-mono font-bold uppercase tracking-widest hover:bg-artisan-light transition-all text-center flex items-center justify-center gap-2 rounded-full"
+                    className="py-4 bg-artisan-grey text-artisan-dark text-[9px] font-mono font-bold uppercase tracking-widest text-center flex items-center justify-center gap-2 rounded-full cursor-pointer border border-black"
+                    initial={{ y: 0, boxShadow: "0 6px 0 0 #000000" }}
+                    whileHover={{ 
+                       y: -2,
+                       boxShadow: "0 8px 0 0 #000000",
+                       backgroundColor: "#eb5e28"
+                    }}
+                    whileTap={{ 
+                       y: 6,
+                       boxShadow: "0 0px 0 0 #000000"
+                    }}
+                    transition={{ type: "spring", stiffness: 600, damping: 18 }}
                   >
                     Back to Shop
-                  </Link>
+                  </MotionLink>
                 </div>
               </div>
             </motion.div>
@@ -772,9 +806,9 @@ export default function Cart() {
                                     <div className="flex items-center gap-4 sm:gap-6 flex-1 min-w-0">
                                       {/* Product Image */}
                                       <div className="w-16 h-16 sm:w-20 sm:h-20 bg-artisan-dark border border-artisan-light/10 overflow-hidden shrink-0 flex items-center justify-center relative rounded-xl">
-                                        {item.product?.image ? (
+                                        {(item.product?.image || (item.product?.images && item.product.images.length > 0)) ? (
                                           <img
-                                            src={item.product.image}
+                                            src={item.product.image || item.product.images[0].url}
                                             alt={item.product.name}
                                             className="w-full h-full object-cover transition-all duration-500"
                                           />
@@ -870,7 +904,6 @@ export default function Cart() {
                       {checkoutStep === 1 && (
                         <div className="space-y-8">
                           <div className="space-y-3">
-                            <span className="text-xs font-mono font-bold text-artisan-grey uppercase tracking-[0.5em] block">Shipping Destination</span>
                             <h1 className="text-4xl md:text-5xl font-display font-extrabold uppercase tracking-tighter leading-none">
                               SHIPPING <br />
                               <span className="text-outline">ADDRESS.</span>
@@ -1008,14 +1041,25 @@ export default function Cart() {
                                 </div>
 
                                 <div className="flex gap-4 pt-4 border-t border-artisan-light/5">
-                                  <button
+                                  <motion.button
                                     type="submit"
                                     disabled={isProcessing}
-                                    className="px-5 py-3 bg-artisan-light text-artisan-dark text-[10px] font-mono font-bold uppercase tracking-widest hover:bg-artisan-grey transition-all flex items-center gap-2 rounded-full"
+                                    className="px-5 py-3 bg-artisan-light text-artisan-dark text-[10px] font-mono font-bold uppercase tracking-widest border border-black flex items-center gap-2 rounded-full cursor-pointer"
+                                    initial={{ y: 0, boxShadow: "0 6px 0 0 #000000" }}
+                                    whileHover={isProcessing ? {} : { 
+                                       y: -2,
+                                       boxShadow: "0 8px 0 0 #000000",
+                                       backgroundColor: "#eb5e28"
+                                    }}
+                                    whileTap={isProcessing ? {} : { 
+                                       y: 6,
+                                       boxShadow: "0 0px 0 0 #000000"
+                                    }}
+                                    transition={{ type: "spring", stiffness: 600, damping: 18 }}
                                   >
                                     {isProcessing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Save Address'}
-                                  </button>
-                                  <button
+                                  </motion.button>
+                                  <motion.button
                                     type="button"
                                     onClick={() => {
                                       setIsAddingAddress(false)
@@ -1023,10 +1067,21 @@ export default function Cart() {
                                       lastFetchedPincodeRef.current = ''
                                       setAddressErrors({})
                                     }}
-                                    className="px-5 py-3 border border-artisan-light/10 text-[10px] font-mono font-bold uppercase tracking-widest text-artisan-light/60 hover:text-artisan-light transition-all rounded-full"
+                                    className="px-5 py-3 border border-artisan-light/10 text-[10px] font-mono font-bold uppercase tracking-widest text-artisan-light/60 hover:text-artisan-light transition-all rounded-full cursor-pointer"
+                                    initial={{ y: 0, boxShadow: "0 6px 0 0 rgba(0, 0, 0, 0.15)" }}
+                                    whileHover={{ 
+                                       y: -2,
+                                       boxShadow: "0 8px 0 0 rgba(0, 0, 0, 0.2)",
+                                       borderColor: "rgba(255, 252, 242, 0.3)"
+                                    }}
+                                    whileTap={{ 
+                                       y: 6,
+                                       boxShadow: "0 0px 0 0 rgba(0, 0, 0, 0.15)"
+                                    }}
+                                    transition={{ type: "spring", stiffness: 600, damping: 18 }}
                                   >
                                     Cancel
-                                  </button>
+                                  </motion.button>
                                 </div>
                               </form>
                             </div>
@@ -1089,7 +1144,7 @@ export default function Cart() {
 
                               {/* Add address trigger */}
                               {(!user?.addresses || user.addresses.length < 4) && (
-                                <button
+                                <motion.button
                                   onClick={() => {
                                     setAddressForm({
                                       tag: 'Home',
@@ -1104,11 +1159,13 @@ export default function Cart() {
                                     setAddressErrors({})
                                     setIsAddingAddress(true)
                                   }}
-                                  className="w-full md:w-auto px-6 py-4 border border-dashed border-artisan-light/20 hover:border-artisan-grey hover:bg-artisan-light/[0.01] transition-all flex items-center justify-center gap-3 text-[9px] font-mono font-bold uppercase tracking-widest text-artisan-grey hover:text-artisan-light rounded-full"
+                                  className="w-full md:w-auto px-6 py-4 border border-dashed border-artisan-light/20 hover:border-artisan-grey hover:bg-artisan-light/[0.01] transition-all flex items-center justify-center gap-3 text-[9px] font-mono font-bold uppercase tracking-widest text-artisan-grey hover:text-artisan-light rounded-full cursor-pointer"
+                                  whileHover={{ scale: 1.01, backgroundColor: "rgba(255, 252, 242, 0.01)" }}
+                                  whileTap={{ scale: 0.99 }}
                                 >
                                   <PlusCircle className="w-4 h-4" />
                                   Add Shipping Address
-                                </button>
+                                </motion.button>
                               )}
                             </div>
                           )}
@@ -1119,7 +1176,6 @@ export default function Cart() {
                       {checkoutStep === 2 && (
                         <div className="space-y-8">
                           <div className="space-y-3">
-                            <span className="text-xs font-mono font-bold text-artisan-grey uppercase tracking-[0.5em] block">Review</span>
                             <h1 className="text-4xl md:text-5xl font-display font-extrabold uppercase tracking-tighter leading-none">
                               REVIEW <br />
                               <span className="text-outline">ORDER.</span>
@@ -1188,7 +1244,6 @@ export default function Cart() {
                       {checkoutStep === 3 && (
                         <div className="space-y-8">
                           <div className="space-y-3">
-                            <span className="text-xs font-mono font-bold text-artisan-grey uppercase tracking-[0.5em] block">Payment Method</span>
                             <h1 className="text-4xl md:text-5xl font-display font-extrabold uppercase tracking-tighter leading-none">
                               CHOOSE <br />
                               <span className="text-outline">PAYMENT.</span>
@@ -1221,15 +1276,26 @@ export default function Cart() {
                               </div>
 
                               <div className="flex flex-col gap-4">
-                                <button
+                                <motion.button
                                   type="button"
                                   onClick={handleRazorpayPayment}
                                   disabled={isProcessing}
-                                  className="w-full py-4.5 bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-[0.3em] text-xs hover:bg-artisan-grey hover:text-artisan-light transition-all flex items-center justify-center gap-3 relative rounded-full"
+                                  className="w-full py-4.5 bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-[0.3em] text-xs border border-black flex items-center justify-center gap-3 relative rounded-full cursor-pointer"
+                                  initial={{ y: 0, boxShadow: "0 6px 0 0 #000000" }}
+                                  whileHover={isProcessing ? {} : { 
+                                     y: -2,
+                                     boxShadow: "0 8px 0 0 #000000",
+                                     backgroundColor: "#eb5e28"
+                                  }}
+                                  whileTap={isProcessing ? {} : { 
+                                     y: 6,
+                                     boxShadow: "0 0px 0 0 #000000"
+                                  }}
+                                  transition={{ type: "spring", stiffness: 600, damping: 18 }}
                                 >
                                   Pay with Razorpay
                                   <ArrowRight className="w-4 h-4" />
-                                </button>
+                                </motion.button>
 
                                 <div className="relative flex py-2 items-center">
                                   <div className="flex-grow border-t border-artisan-light/5"></div>
@@ -1237,14 +1303,25 @@ export default function Cart() {
                                   <div className="flex-grow border-t border-artisan-light/5"></div>
                                 </div>
 
-                                <button
+                                <motion.button
                                   type="button"
                                   onClick={handleSimulatePayment}
                                   disabled={isProcessing}
-                                  className="w-full py-4 border border-dashed border-red-500/35 text-red-500 font-mono font-bold uppercase tracking-[0.2em] text-[9px] hover:bg-red-500/[0.01] hover:border-red-500 transition-all flex items-center justify-center gap-2 rounded-full"
+                                  className="w-full py-4 border border-dashed border-red-500/35 text-red-500 font-mono font-bold uppercase tracking-[0.2em] text-[9px] hover:bg-red-500/[0.01] hover:border-red-500 transition-all flex items-center justify-center gap-2 rounded-full cursor-pointer"
+                                  initial={{ y: 0, boxShadow: "0 6px 0 0 rgba(239, 68, 68, 0.15)", backgroundColor: "rgba(239, 68, 68, 0.02)" }}
+                                  whileHover={isProcessing ? {} : { 
+                                     y: -2,
+                                     boxShadow: "0 8px 0 0 rgba(239, 68, 68, 0.25)",
+                                     backgroundColor: "rgba(239, 68, 68, 0.08)"
+                                  }}
+                                  whileTap={isProcessing ? {} : { 
+                                     y: 6,
+                                     boxShadow: "0 0px 0 0 rgba(239, 68, 68, 0.15)"
+                                  }}
+                                  transition={{ type: "spring", stiffness: 600, damping: 18 }}
                                 >
                                   Simulate Online Payment (Dev Mode)
-                                </button>
+                                </motion.button>
                               </div>
 
                               <p className="text-[8px] font-mono text-artisan-light/25 uppercase tracking-widest pt-2">
@@ -1262,18 +1339,29 @@ export default function Cart() {
                 {cartItems.length > 0 && !isTransitioningStep && !isProcessing && (
                   <div className="block lg:hidden pt-4 border-t border-artisan-light/5">
                     {checkoutStep === 0 && (
-                      <button
+                      <motion.button
                         onClick={() => changeStep(1)}
                         disabled={hasStockErrors}
-                        className="w-full py-4 bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-[0.3em] text-xs hover:bg-artisan-grey transition-all flex items-center justify-center gap-3 disabled:opacity-30 disabled:pointer-events-none"
+                        className="w-full py-4 bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-[0.3em] text-xs border border-black flex items-center justify-center gap-3 disabled:opacity-30 disabled:pointer-events-none rounded-full cursor-pointer"
+                        initial={{ y: 0, boxShadow: "0 6px 0 0 #000000" }}
+                        whileHover={{ 
+                           y: -2,
+                           boxShadow: "0 8px 0 0 #000000",
+                           backgroundColor: "#eb5e28"
+                        }}
+                        whileTap={{ 
+                           y: 6,
+                           boxShadow: "0 0px 0 0 #000000"
+                        }}
+                        transition={{ type: "spring", stiffness: 600, damping: 18 }}
                       >
                         Proceed to Checkout
                         <ArrowRight className="w-4 h-4" />
-                      </button>
+                      </motion.button>
                     )}
 
                     {checkoutStep === 1 && (
-                      <button
+                      <motion.button
                         onClick={() => {
                           if (!selectedAddressId) {
                             addToast('Please select shipping address', 'error')
@@ -1281,22 +1369,44 @@ export default function Cart() {
                           }
                           changeStep(2)
                         }}
-                        className="w-full py-4 bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-[0.3em] text-xs hover:bg-artisan-grey transition-all flex items-center justify-center gap-3 rounded-full"
+                        className="w-full py-4 bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-[0.3em] text-xs border border-black flex items-center justify-center gap-3 rounded-full cursor-pointer"
+                        initial={{ y: 0, boxShadow: "0 6px 0 0 #000000" }}
+                        whileHover={{ 
+                           y: -2,
+                           boxShadow: "0 8px 0 0 #000000",
+                           backgroundColor: "#eb5e28"
+                        }}
+                        whileTap={{ 
+                           y: 6,
+                           boxShadow: "0 0px 0 0 #000000"
+                        }}
+                        transition={{ type: "spring", stiffness: 600, damping: 18 }}
                       >
                         Next Step
                         <ArrowRight className="w-4 h-4" />
-                      </button>
+                      </motion.button>
                     )}
 
                     {checkoutStep === 2 && (
-                      <button
+                      <motion.button
                         onClick={handleInitiateCheckout}
                         disabled={isProcessing}
-                        className="w-full py-4 bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-[0.3em] text-xs hover:bg-artisan-grey transition-all flex items-center justify-center gap-3 rounded-full disabled:opacity-50 disabled:pointer-events-none"
+                        className="w-full py-4 bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-[0.3em] text-xs border border-black flex items-center justify-center gap-3 rounded-full disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
+                        initial={{ y: 0, boxShadow: "0 6px 0 0 #000000" }}
+                        whileHover={isProcessing ? {} : { 
+                           y: -2,
+                           boxShadow: "0 8px 0 0 #000000",
+                           backgroundColor: "#eb5e28"
+                        }}
+                        whileTap={isProcessing ? {} : { 
+                           y: 6,
+                           boxShadow: "0 0px 0 0 #000000"
+                        }}
+                        transition={{ type: "spring", stiffness: 600, damping: 18 }}
                       >
                         Confirm Details
                         <ArrowRight className="w-4 h-4" />
-                      </button>
+                      </motion.button>
                     )}
                   </div>
                 )}
@@ -1336,7 +1446,7 @@ export default function Cart() {
                     {shippingFee > 0 && itemsSubtotal > 0 && (
                       <div className="flex rounded-xl items-center gap-2 text-[7px] font-mono text-artisan-light/50 uppercase bg-artisan-light/[0.02] p-2 border border-artisan-light/5">
                         <Truck className="w-3.5 h-3.5 shrink-0" />
-                        <span>Add ₹{(5000 - itemsSubtotal).toLocaleString()} more for free shipping</span>
+                        <span>Add ₹{(1000 - itemsSubtotal).toLocaleString()} more for free shipping</span>
                       </div>
                     )}
 
@@ -1347,36 +1457,58 @@ export default function Cart() {
                         <span className="text-[8px] font-mono font-bold text-artisan-light/40 uppercase tracking-widest block">Promo Code</span>
 
                         {appliedCoupon ? (
-                          <div className="flex items-center justify-between border border-green-500/20 bg-green-500/[0.02] p-2">
+                          <div className="flex items-center justify-between border border-green-500/20 bg-green-500/[0.02] p-2.5 rounded-xl">
                             <div className="flex items-center gap-2">
                               <span className="text-[10px] font-mono font-bold text-green-500 uppercase tracking-widest">{appliedCoupon.code}</span>
                               <span className="text-[8px] font-mono text-green-500/60 uppercase">Applied</span>
                             </div>
-                            <button
+                            <motion.button
                               type="button"
                               onClick={handleRemoveCoupon}
-                              className="text-[8px] font-mono font-bold uppercase tracking-widest text-red-500 hover:text-red-400 p-1 rounded-xl"
+                              className="text-[8px] font-mono font-bold uppercase tracking-widest text-red-500 border border-red-500/25 px-4 py-1.5 rounded-full cursor-pointer"
+                              initial={{ y: 0, boxShadow: "0 4px 0 0 rgba(239, 68, 68, 0.15)", backgroundColor: "rgba(239, 68, 68, 0.02)" }}
+                              whileHover={{ 
+                                 y: -2,
+                                 boxShadow: "0 6px 0 0 rgba(239, 68, 68, 0.25)",
+                                 backgroundColor: "rgba(239, 68, 68, 0.08)"
+                              }}
+                              whileTap={{ 
+                                 y: 4,
+                                 boxShadow: "0 0px 0 0 rgba(239, 68, 68, 0.15)"
+                              }}
+                              transition={{ type: "spring", stiffness: 600, damping: 18 }}
                             >
                               Remove
-                            </button>
+                            </motion.button>
                           </div>
                         ) : (
-                          <form onSubmit={handleApplyCoupon} className="flex gap-2">
+                          <form onSubmit={handleApplyCoupon} className="flex gap-2 items-center">
                             <input
                               type="text"
                               placeholder="ENTER CODE"
                               value={couponCodeInput}
                               onChange={(e) => setCouponCodeInput(e.target.value.toUpperCase())}
-                              className="flex-1 bg-transparent border rounded-xl border-artisan-light/10 focus:border-artisan-grey/50 px-3 py-1.5 outline-none font-mono text-[10px] uppercase tracking-widest text-artisan-light placeholder:text-artisan-light/25 rounded-none"
+                              className="flex-1 bg-transparent border border-artisan-light/10 focus:border-artisan-grey/50 px-4 py-2 outline-none font-mono text-[10px] uppercase tracking-widest text-artisan-light placeholder:text-artisan-light/25 rounded-full"
                               disabled={isApplyingCoupon}
                             />
-                            <button
+                            <motion.button
                               type="submit"
                               disabled={isApplyingCoupon || !couponCodeInput.trim()}
-                              className="px-4 bg-artisan-light/5 rounded-xl border border-artisan-light/10 text-artisan-light hover:bg-artisan-light hover:text-artisan-dark hover:border-artisan-light disabled:opacity-30 disabled:pointer-events-none transition-all font-mono text-[9px] font-bold uppercase tracking-widest shrink-0"
+                              className="px-6 py-2 bg-artisan-light text-artisan-dark font-mono font-bold uppercase text-[9px] tracking-widest disabled:opacity-50 shrink-0 rounded-full border border-black cursor-pointer"
+                              initial={{ y: 0, boxShadow: "0 6px 0 0 #000000" }}
+                              whileHover={isApplyingCoupon || !couponCodeInput.trim() ? {} : { 
+                                 y: -2,
+                                 boxShadow: "0 8px 0 0 #000000",
+                                 backgroundColor: "#eb5e28"
+                              }}
+                              whileTap={isApplyingCoupon || !couponCodeInput.trim() ? {} : { 
+                                 y: 6,
+                                 boxShadow: "0 0px 0 0 #000000"
+                              }}
+                              transition={{ type: "spring", stiffness: 600, damping: 18 }}
                             >
                               {isApplyingCoupon ? '...' : 'Apply'}
-                            </button>
+                            </motion.button>
                           </form>
                         )}
                       </div>
@@ -1396,18 +1528,29 @@ export default function Cart() {
                   {cartItems.length > 0 && !isTransitioningStep && !isProcessing && (
                     <div className="hidden lg:block pt-2">
                       {checkoutStep === 0 && (
-                        <button
+                        <motion.button
                           onClick={() => changeStep(1)}
                           disabled={hasStockErrors}
-                          className="w-full py-4.5 bg-artisan-light rounded-full text-artisan-dark font-display font-black uppercase tracking-[0.3em] text-xs hover:bg-artisan-grey transition-all flex items-center justify-center gap-3 disabled:opacity-30 disabled:pointer-events-none"
+                          className="w-full py-4.5 bg-artisan-light rounded-full text-artisan-dark font-display font-black uppercase tracking-[0.3em] text-xs border border-black flex items-center justify-center gap-3 disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+                          initial={{ y: 0, boxShadow: "0 6px 0 0 #000000" }}
+                          whileHover={{ 
+                             y: -2,
+                             boxShadow: "0 8px 0 0 #000000",
+                             backgroundColor: "#eb5e28"
+                          }}
+                          whileTap={{ 
+                             y: 6,
+                             boxShadow: "0 0px 0 0 #000000"
+                          }}
+                          transition={{ type: "spring", stiffness: 600, damping: 18 }}
                         >
                           Proceed to Checkout
                           <ArrowRight className="w-4 h-4" />
-                        </button>
+                        </motion.button>
                       )}
 
                       {checkoutStep === 1 && (
-                        <button
+                        <motion.button
                           onClick={() => {
                             if (!selectedAddressId) {
                               addToast('Please select shipping address', 'error')
@@ -1415,22 +1558,44 @@ export default function Cart() {
                             }
                             changeStep(2)
                           }}
-                          className="w-full py-4.5 rounded-full bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-[0.3em] text-xs hover:bg-artisan-grey transition-all flex items-center justify-center gap-3"
+                          className="w-full py-4.5 rounded-full bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-[0.3em] text-xs border border-black flex items-center justify-center gap-3 cursor-pointer"
+                          initial={{ y: 0, boxShadow: "0 6px 0 0 #000000" }}
+                          whileHover={{ 
+                             y: -2,
+                             boxShadow: "0 8px 0 0 #000000",
+                             backgroundColor: "#eb5e28"
+                          }}
+                          whileTap={{ 
+                             y: 6,
+                             boxShadow: "0 0px 0 0 #000000"
+                          }}
+                          transition={{ type: "spring", stiffness: 600, damping: 18 }}
                         >
                           Next Step
                           <ArrowRight className="w-4 h-4" />
-                        </button>
+                        </motion.button>
                       )}
 
                       {checkoutStep === 2 && (
-                        <button
+                        <motion.button
                           onClick={handleInitiateCheckout}
                           disabled={isProcessing}
-                          className="w-full py-4.5 rounded-full bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-[0.3em] text-xs hover:bg-artisan-grey transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:pointer-events-none"
+                          className="w-full py-4.5 rounded-full bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-[0.3em] text-xs border border-black flex items-center justify-center gap-3 disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
+                          initial={{ y: 0, boxShadow: "0 6px 0 0 #000000" }}
+                          whileHover={isProcessing ? {} : { 
+                             y: -2,
+                             boxShadow: "0 8px 0 0 #000000",
+                             backgroundColor: "#eb5e28"
+                          }}
+                          whileTap={isProcessing ? {} : { 
+                             y: 6,
+                             boxShadow: "0 0px 0 0 #000000"
+                          }}
+                          transition={{ type: "spring", stiffness: 600, damping: 18 }}
                         >
                           Confirm Details
                           <ArrowRight className="w-4 h-4" />
-                        </button>
+                        </motion.button>
                       )}
                     </div>
                   )}

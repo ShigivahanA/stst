@@ -273,13 +273,24 @@ export default function OrderDetail() {
                         </div>
                      </div>
 
-                     <button
+                     <motion.button
                         onClick={() => downloadOrderReceipt(order)}
-                        className="h-10 px-4 bg-artisan-light hover:bg-artisan-grey text-artisan-dark font-mono text-[9px] font-bold uppercase tracking-widest transition-all rounded-full flex items-center justify-center gap-2 cursor-pointer shadow-md select-none"
+                        className="h-10 px-6 bg-artisan-light text-artisan-dark font-mono text-[9px] font-bold uppercase tracking-widest border border-black rounded-full flex items-center justify-center gap-2 cursor-pointer select-none"
+                        initial={{ y: 0, boxShadow: "0 4px 0 0 #000000" }}
+                        whileHover={{ 
+                           y: -1.5,
+                           boxShadow: "0 5.5px 0 0 #000000",
+                           backgroundColor: "#eb5e28"
+                        }}
+                        whileTap={{ 
+                           y: 4,
+                           boxShadow: "0 0px 0 0 #000000"
+                        }}
+                        transition={{ type: "spring", stiffness: 600, damping: 18 }}
                      >
                         <Download className="w-3.5 h-3.5 text-artisan-dark" />
                         Download Invoice
-                     </button>
+                     </motion.button>
                   </div>
                </div>
             </div>
@@ -536,10 +547,21 @@ export default function OrderDetail() {
                                           </div>
                                        </div>
 
-                                       <button
+                                       <motion.button
                                           type="submit"
                                           disabled={formState.submitting}
-                                          className="px-6 py-2.5 bg-artisan-light text-artisan-dark font-mono font-bold text-[9px] uppercase tracking-widest hover:bg-artisan-grey disabled:bg-artisan-light/20 disabled:text-artisan-light/40 transition-all rounded-full flex items-center gap-2"
+                                          className="px-6 py-2.5 bg-artisan-light text-artisan-dark font-mono font-bold text-[9px] uppercase tracking-widest disabled:opacity-40 disabled:pointer-events-none border border-black rounded-full flex items-center gap-2 cursor-pointer"
+                                          initial={{ y: 0, boxShadow: "0 4px 0 0 #000000" }}
+                                          whileHover={formState.submitting ? {} : { 
+                                             y: -1.5,
+                                             boxShadow: "0 5.5px 0 0 #000000",
+                                             backgroundColor: "#eb5e28"
+                                          }}
+                                          whileTap={formState.submitting ? {} : { 
+                                             y: 4,
+                                             boxShadow: "0 0px 0 0 #000000"
+                                          }}
+                                          transition={{ type: "spring", stiffness: 600, damping: 18 }}
                                        >
                                           {formState.submitting ? (
                                              <>
@@ -549,7 +571,7 @@ export default function OrderDetail() {
                                           ) : (
                                              'Submit Review'
                                           )}
-                                       </button>
+                                       </motion.button>
                                     </form>
                                  ) : (
                                     <div className="text-[10px] font-mono text-green-500/70 uppercase tracking-wider flex items-center gap-2">

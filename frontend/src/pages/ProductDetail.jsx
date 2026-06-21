@@ -23,7 +23,8 @@ import {
    Truck,
    Check,
    Share2,
-   X
+   X,
+   Mail
 } from 'lucide-react'
 import api from '../services/api'
 import { useToast } from '../context/ToastContext'
@@ -561,19 +562,35 @@ export default function ProductDetail() {
                         {displayTitle}
                      </h1>
                      <div className="flex flex-col gap-1">
-                        <div className="flex items-baseline gap-2">
-                           {tool.mrp !== undefined && tool.mrp > displayPrice && (
-                              <span className="text-sm font-display font-medium line-through text-artisan-light/40">
-                                 ₹{tool.mrp?.toLocaleString()}
+                        {tool.priceDisplayMode === 'contact_us' ? (
+                           <div className="flex items-baseline gap-2">
+                              <span className="text-xl font-display font-black text-artisan-grey tracking-wider">
+                                 Contact us to know price
                               </span>
-                           )}
-                           <span className="text-2xl font-display font-black text-artisan-light">
-                              ₹{displayPrice?.toLocaleString()}
-                           </span>
-                        </div>
-                        <p className="text-[10px] font-mono text-artisan-grey uppercase tracking-widest mt-1">
-                           🤝 Ready to negotiate and get lower prices?
-                        </p>
+                           </div>
+                        ) : (
+                           <div className="flex items-baseline gap-2">
+                              {tool.mrp !== undefined && tool.mrp > displayPrice && (
+                                 <span className="text-sm font-display font-medium line-through text-artisan-light/40">
+                                    ₹{tool.mrp?.toLocaleString()}
+                                 </span>
+                              )}
+                              <span className="text-2xl font-display font-black text-artisan-light">
+                                 ₹{displayPrice?.toLocaleString()}
+                              </span>
+                           </div>
+                        )}
+                        {tool.priceDisplayMode !== 'contact_us' && (
+                           <p className="text-[10px] font-mono text-artisan-grey uppercase tracking-widest mt-1 flex items-center gap-2 flex-wrap">
+                              <span>🤝 Ready to negotiate and get lower prices?</span>
+                              <Link
+                                 to={`/bulk-enquiry?productId=${tool._id}`}
+                                 className="text-artisan-light underline hover:text-[#eb5e28] transition-colors font-bold"
+                              >
+                                 [ Negotiate now ]
+                              </Link>
+                           </p>
+                        )}
                      </div>
                   </div>
 
@@ -584,51 +601,63 @@ export default function ProductDetail() {
                   </p>
 
                   {/* Quantity selector */}
-                  <div className="flex items-center justify-between border-y border-artisan-light/10 py-4">
-                     <span className="text-xs font-mono font-bold uppercase tracking-wider text-artisan-light/60">Quantity</span>
-                     <div className="flex items-center gap-4">
-                        <div className="flex border border-artisan-light/10 p-1 bg-artisan-light/5">
-                           <button
-                              onClick={() => quantity > 1 && setQuantity(quantity - 1)}
-                              className="w-8 h-8 flex items-center justify-center hover:bg-artisan-light/10 text-artisan-light transition-colors"
-                           >
-                              <Minus className="w-3.5 h-3.5" />
-                           </button>
-                           <div className="w-10 h-8 flex items-center justify-center font-mono font-bold text-sm">
-                              {quantity}
+                  {tool.priceDisplayMode !== 'contact_us' && (
+                     <div className="flex items-center justify-between border-y border-artisan-light/10 py-4">
+                        <span className="text-xs font-mono font-bold uppercase tracking-wider text-artisan-light/60">Quantity</span>
+                        <div className="flex items-center gap-4">
+                           <div className="flex border border-artisan-light/10 p-1 bg-artisan-light/5">
+                              <button
+                                 onClick={() => quantity > 1 && setQuantity(quantity - 1)}
+                                 className="w-8 h-8 flex items-center justify-center hover:bg-artisan-light/10 text-artisan-light transition-colors"
+                              >
+                                 <Minus className="w-3.5 h-3.5" />
+                              </button>
+                              <div className="w-10 h-8 flex items-center justify-center font-mono font-bold text-sm">
+                                 {quantity}
+                              </div>
+                              <button
+                                 onClick={() => setQuantity(quantity + 1)}
+                                 className="w-8 h-8 flex items-center justify-center hover:bg-artisan-light/10 text-artisan-light transition-colors"
+                              >
+                                 <Plus className="w-3.5 h-3.5" />
+                              </button>
                            </div>
-                           <button
-                              onClick={() => setQuantity(quantity + 1)}
-                              className="w-8 h-8 flex items-center justify-center hover:bg-artisan-light/10 text-artisan-light transition-colors"
-                           >
-                              <Plus className="w-3.5 h-3.5" />
-                           </button>
+                           <span className="text-xs font-mono text-artisan-light/40 italic">
+                              Total: ₹{(displayPrice * quantity).toLocaleString()}
+                           </span>
                         </div>
-                        <span className="text-xs font-mono text-artisan-light/40 italic">
-                           Total: ₹{(displayPrice * quantity).toLocaleString()}
-                        </span>
                      </div>
-                  </div>
+                  )}
 
                   {/* Actions Block */}
                   <div className="space-y-3">
                      <div className="flex gap-3">
-                        <button
-                           onClick={handleAddToCart}
-                           className="flex-1 py-4 bg-artisan-grey text-artisan-dark font-display font-extrabold uppercase tracking-widest text-xs hover:bg-artisan-light hover:text-artisan-dark transition-all flex items-center justify-center gap-2"
-                        >
-                           <ShoppingCart className="w-4 h-4" />
-                           Add to Cart
-                        </button>
+                        {tool.priceDisplayMode === 'contact_us' ? (
+                           <Link
+                              to={`/bulk-enquiry?productId=${tool._id}`}
+                              className="flex-1 py-4 bg-[#eb5e28] text-white font-display font-extrabold uppercase tracking-widest rounded-xl text-xs hover:bg-[#eb5e28]/80 transition-all flex items-center justify-center gap-2 border border-[#eb5e28]"
+                           >
+                              <Mail className="w-4 h-4" />
+                              Contact Us
+                           </Link>
+                        ) : (
+                           <button
+                              onClick={handleAddToCart}
+                              className="flex-1 py-4 bg-artisan-grey text-artisan-dark font-display font-extrabold uppercase rounded-xl tracking-widest text-xs hover:bg-artisan-light hover:text-artisan-dark transition-all flex items-center justify-center gap-2"
+                           >
+                              <ShoppingCart className="w-4 h-4" />
+                              Add to Cart
+                           </button>
+                        )}
                         <button
                            onClick={toggleWishlist}
-                           className={`px-4 py-4 border border-artisan-light/10 hover:border-artisan-grey transition-all flex items-center justify-center ${isWishlisted ? 'bg-red-500/10 border-red-500 text-red-500' : 'text-artisan-light hover:bg-artisan-light/5'}`}
+                           className={`px-4 py-4 border border-artisan-light/10 rounded-full hover:border-artisan-grey transition-all flex items-center justify-center ${isWishlisted ? 'bg-red-500/10 border-red-500 text-red-500' : 'text-artisan-light hover:bg-artisan-light/5'}`}
                         >
                            <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-current' : ''}`} />
                         </button>
                         <button
                            onClick={handleShare}
-                           className="px-4 py-4 border border-artisan-light/10 hover:border-artisan-grey text-artisan-light hover:bg-artisan-light/5 transition-all flex items-center justify-center gap-2"
+                           className="px-4 py-4 border border-artisan-light/10 rounded-full hover:border-artisan-grey text-artisan-light hover:bg-artisan-light/5 transition-all flex items-center justify-center gap-2"
                            title="Share Product"
                         >
                            <Share2 className="w-4 h-4" />

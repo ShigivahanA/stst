@@ -46,6 +46,7 @@ const transformProductToListing = (p) => {
     mrp: p.mrp || p.price || 0,
     sellingPrice: p.sellingPrice || p.price || 0,
     tax: p.tax || 0,
+    priceDisplayMode: p.priceDisplayMode || 'display_price',
     createdAt: p.createdAt,
     updatedAt: p.updatedAt
   };
@@ -167,7 +168,7 @@ export const getListing = asyncHandler(async (req, res) => {
 });
 
 export const createListing = asyncHandler(async (req, res) => {
-  const { sku, name, desc, price, mrp, sellingPrice, tax, quantity, category, lowstockthreshold, active, image, title, description, pricePerDay, images, specifications } = req.body;
+  const { sku, name, desc, price, mrp, sellingPrice, tax, quantity, category, lowstockthreshold, active, image, title, description, pricePerDay, images, specifications, priceDisplayMode } = req.body;
   const productImages = (images && images.length > 0)
     ? images
     : (image ? [{ url: image, publicId: 'legacy' }] : []);
@@ -189,13 +190,14 @@ export const createListing = asyncHandler(async (req, res) => {
     lowstockthreshold: lowstockthreshold !== undefined ? lowstockthreshold : 10,
     active: active !== undefined ? active : true,
     images: productImages,
-    specifications: specifications || {}
+    specifications: specifications || {},
+    priceDisplayMode: priceDisplayMode || 'display_price'
   });
   return res.status(201).json(new ApiResponse(201, transformProductToListing(newProduct), 'Listing created successfully'));
 });
 
 export const updateListing = asyncHandler(async (req, res) => {
-  const { sku, name, desc, price, mrp, sellingPrice, tax, quantity, category, lowstockthreshold, active, image, isActive, title, description, pricePerDay, images, specifications } = req.body;
+  const { sku, name, desc, price, mrp, sellingPrice, tax, quantity, category, lowstockthreshold, active, image, isActive, title, description, pricePerDay, images, specifications, priceDisplayMode } = req.body;
   const updateData = {};
   if (sku !== undefined) updateData.sku = sku;
   if (name !== undefined) updateData.name = name;
@@ -210,6 +212,7 @@ export const updateListing = asyncHandler(async (req, res) => {
   if (mrp !== undefined) updateData.mrp = parseFloat(mrp);
   if (sellingPrice !== undefined) updateData.sellingPrice = parseFloat(sellingPrice);
   if (tax !== undefined) updateData.tax = parseFloat(tax);
+  if (priceDisplayMode !== undefined) updateData.priceDisplayMode = priceDisplayMode;
 
   if (images !== undefined) {
     updateData.images = images;

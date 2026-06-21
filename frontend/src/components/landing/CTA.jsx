@@ -46,22 +46,44 @@ export default function CTA() {
             transition={{ duration: 0.8, delay: 0.4 }}
             className="flex flex-col sm:flex-row gap-4"
           >
-            <a href="https://wa.me/919876543210" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
+            <a href="https://wa.me/919876543210" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto flex-1 sm:flex-initial">
               <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full px-10 py-5 bg-artisan-dark text-artisan-light font-display font-extrabold uppercase tracking-widest text-xs hover:bg-artisan-light hover:text-artisan-dark transition-all duration-500 shadow-2xl flex items-center justify-center gap-3 rounded-xl"
+                className="w-full px-10 py-5 bg-artisan-dark text-artisan-light font-display font-black uppercase tracking-widest text-xs border border-artisan-light flex items-center justify-center gap-3 rounded-full cursor-pointer"
+                initial={{ y: 0, boxShadow: "0 6px 0 0 #252422" }}
+                whileHover={{ 
+                   y: -2,
+                   boxShadow: "0 8px 0 0 #fffcf2",
+                   backgroundColor: "#252422",
+                   color: "#fffcf2",
+                   borderColor: "#252422"
+                }}
+                whileTap={{ 
+                   y: 6,
+                   boxShadow: "0 0px 0 0 #fffcf2"
+                }}
+                transition={{ type: "spring", stiffness: 600, damping: 18 }}
               >
                 <MessageCircle className="w-4 h-4" />
                 WhatsApp Us
               </motion.button>
             </a>
 
-            <Link to="/book-demo" className="w-full sm:w-auto">
+            <Link to="/book-demo" className="w-full sm:w-auto flex-1 sm:flex-initial">
               <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full px-10 py-5 border-2 border-artisan-dark text-artisan-dark font-display font-extrabold uppercase tracking-widest text-xs hover:bg-artisan-dark hover:text-artisan-light transition-all duration-500 flex items-center justify-center gap-3 rounded-full"
+                className="w-full px-10 py-5 bg-artisan-grey text-artisan-dark font-display font-black uppercase tracking-widest text-xs border-2 border-artisan-dark rounded-full flex items-center justify-center gap-3 cursor-pointer"
+                initial={{ y: 0, boxShadow: "0 6px 0 0 #252422" }}
+                whileHover={{ 
+                   y: -2,
+                   boxShadow: "0 8px 0 0 #252422",
+                   backgroundColor: "#fffcf2",
+                   color: "#252422",
+                   borderColor: "#fffcf2"
+                }}
+                whileTap={{ 
+                   y: 6,
+                   boxShadow: "0 0px 0 0 #252422"
+                }}
+                transition={{ type: "spring", stiffness: 600, damping: 18 }}
               >
                 <Calendar className="w-4 h-4" />
                 Book Trial Demo

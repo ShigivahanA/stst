@@ -85,6 +85,8 @@ const bentoGridClasses = [
   "md:col-span-1 lg:col-span-2 lg:row-span-1"
 ]
 
+const MotionLink = motion.create ? motion.create(Link) : motion(Link)
+
 export default function Categories() {
   const [productsByCategory, setProductsByCategory] = useState({})
   const [loading, setLoading] = useState(true)
@@ -152,7 +154,7 @@ export default function Categories() {
               PRODUCT <br />
               <span className="text-outline">CATEGORIES.</span>
             </motion.h1>
-            <p className="text-lg md:text-xl text-artisan-light/40 font-display font-medium uppercase tracking-widest leading-relaxed max-w-2xl">
+            <p className="text-lg md:text-xl text-artisan-light/40 font-display font-medium tracking-widest leading-relaxed max-w-2xl">
               Browse our specialized collections of clinical-grade medical equipment and surgical supplies.
             </p>
           </div>
@@ -268,25 +270,46 @@ export default function Categories() {
               Need Help <br />
               <span className="text-outline text-artisan-grey">Finding Supplies?</span>
             </h2>
-            <p className="text-xs font-mono font-bold text-artisan-light/50 uppercase tracking-[0.4em] max-w-lg mx-auto leading-relaxed">
+            <p className="text-xs font-mono font-bold text-artisan-light/50 tracking-[0.4em] max-w-lg mx-auto leading-relaxed">
               Connect with our certified medical representatives to secure the exact equipment you need.
             </p>
           </div>
 
           <div className="relative z-10 flex flex-col sm:flex-row justify-center gap-6">
-            <Link
+            <MotionLink
               to="/bulk-enquiry"
-              className="px-12 py-6 bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-widest hover:bg-artisan-grey transition-all rounded-full"
+              className="px-12 py-6 bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-widest rounded-full border border-black cursor-pointer flex items-center justify-center relative overflow-hidden group"
+              initial={{ y: 0, boxShadow: "0 6px 0 0 #000000" }}
+              whileHover={{ 
+                y: -2,
+                boxShadow: "0 8px 0 0 #000000"
+              }}
+              whileTap={{ 
+                y: 6,
+                boxShadow: "0 0px 0 0 #000000"
+              }}
+              transition={{ type: "spring", stiffness: 600, damping: 18 }}
             >
-              Bulk Orders ?
-            </Link>
-            <Link
+              <span className="relative z-10">Bulk Orders ?</span>
+            </MotionLink>
+            <MotionLink
               to="/support"
-              className="px-12 py-6 border-2 border-artisan-light/10 text-artisan-light font-display font-black uppercase tracking-widest hover:bg-artisan-light/5 transition-all flex items-center justify-center gap-4 rounded-full"
+              className="px-12 py-6 border-2 border-artisan-light text-artisan-light font-display font-black uppercase tracking-widest flex items-center justify-center gap-4 rounded-full cursor-pointer group"
+              initial={{ y: 0, boxShadow: "0 6px 0 0 #252422" }}
+              whileHover={{ 
+                y: -2, 
+                boxShadow: "0 8px 0 0 #252422",
+                backgroundColor: "rgba(37, 36, 34, 0.04)"
+              }}
+              whileTap={{ 
+                y: 6,
+                boxShadow: "0 0px 0 0 #252422"
+              }}
+              transition={{ type: "spring", stiffness: 600, damping: 18 }}
             >
-              Contact Support
-              <ArrowRight className="w-5 h-5" />
-            </Link>
+              <span>Contact Support</span>
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1.5 transition-transform duration-300 ease-out" />
+            </MotionLink>
           </div>
         </section>
 

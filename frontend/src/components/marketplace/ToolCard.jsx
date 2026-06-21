@@ -114,9 +114,9 @@ export default function ToolCard({ tool, idx, showAddToCart = false }) {
         </div>
 
         {/* Content Area */}
-        <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between bg-gradient-to-b from-transparent to-artisan-dark/40">
-          <div className="mb-4">
-            <h3 className="text-base sm:text-lg font-display font-bold uppercase tracking-tight text-artisan-light group-hover:text-artisan-grey transition-colors duration-300 line-clamp-2 mb-1.5 leading-snug">
+        <div className={`${showAddToCart ? 'p-3.5 sm:p-4' : 'p-4 sm:p-5'} flex-1 flex flex-col justify-between bg-gradient-to-b from-transparent to-artisan-dark/40`}>
+          <div className={showAddToCart ? 'mb-2.5' : 'mb-4'}>
+            <h3 className={`font-display font-bold uppercase tracking-tight text-artisan-light group-hover:text-artisan-grey transition-colors duration-300 line-clamp-2 leading-snug ${showAddToCart ? 'text-sm sm:text-base mb-1' : 'text-base sm:text-lg mb-1.5'}`}>
               {tool.name || tool.title}
             </h3>
             
@@ -126,19 +126,25 @@ export default function ToolCard({ tool, idx, showAddToCart = false }) {
           </div>
 
           {/* Pricing & Rating */}
-          <div className="pt-3 border-t border-artisan-light/5 flex items-center justify-between mt-auto">
+          <div className={`${showAddToCart ? 'pt-2.5' : 'pt-3'} border-t border-artisan-light/5 flex items-center justify-between mt-auto`}>
             <div className="flex flex-col">
               <span className="text-[9px] font-mono text-artisan-light/40 uppercase tracking-widest mb-0.5">Price</span>
-              <div className="flex items-baseline gap-1.5">
-                {tool.mrp !== undefined && tool.mrp > (tool.price !== undefined ? tool.price : tool.pricePerDay) && (
-                  <span className="text-xs font-display font-medium line-through text-artisan-light/30">
-                    ₹{tool.mrp?.toLocaleString()}
-                  </span>
-                )}
-                <span className="text-lg sm:text-xl font-display font-extrabold text-artisan-light tracking-tighter leading-none">
-                  ₹{(tool.price !== undefined ? tool.price : tool.pricePerDay)?.toLocaleString()}
+              {tool.priceDisplayMode === 'contact_us' ? (
+                <span className="text-sm sm:text-base font-display font-extrabold text-artisan-grey uppercase tracking-wider">
+                  Contact us
                 </span>
-              </div>
+              ) : (
+                <div className="flex items-baseline gap-1.5">
+                  {tool.mrp !== undefined && tool.mrp > (tool.price !== undefined ? tool.price : tool.pricePerDay) && (
+                    <span className="text-xs font-display font-medium line-through text-artisan-light/30">
+                      ₹{tool.mrp?.toLocaleString()}
+                    </span>
+                  )}
+                  <span className="text-lg sm:text-xl font-display font-extrabold text-artisan-light tracking-tighter leading-none">
+                    ₹{(tool.price !== undefined ? tool.price : tool.pricePerDay)?.toLocaleString()}
+                  </span>
+                </div>
+              )}
             </div>
 
             <div className="flex items-center gap-1 text-[11px] font-mono font-bold text-artisan-grey/90 group-hover:text-artisan-grey transition-colors duration-300">
@@ -148,31 +154,78 @@ export default function ToolCard({ tool, idx, showAddToCart = false }) {
           </div>
 
           {showAddToCart && (
-            <div className="mt-4 pt-3 border-t border-artisan-light/5 flex items-center gap-2">
-              <button
-                type="button"
-                onClick={handleAddToCart}
-                disabled={isAdding}
-                className="flex-1 h-10 bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-widest text-[9px] hover:bg-artisan-grey hover:text-artisan-light transition-all flex items-center justify-center gap-2 disabled:opacity-50 rounded-xl"
-              >
-                {isAdding ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                ) : (
-                  <>
-                    Add to Cart
-                    <ShoppingBag className="w-3.5 h-3.5" />
-                  </>
-                )}
-              </button>
+            <div className="mt-3.5 pt-2.5 border-t border-artisan-light/5 flex items-center gap-2 pb-1">
+              {tool.priceDisplayMode === 'contact_us' ? (
+                <motion.button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    navigate(`/bulk-enquiry?productId=${tool._id}`);
+                  }}
+                  className="flex-1 h-9 bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-widest text-[9px] border border-black flex items-center justify-center gap-2 rounded-full cursor-pointer"
+                  initial={{ y: 0, boxShadow: "0 4px 0 0 #000000" }}
+                  whileHover={{ 
+                     y: -1.5,
+                     boxShadow: "0 5.5px 0 0 #000000",
+                     backgroundColor: "#eb5e28"
+                  }}
+                  whileTap={{ 
+                     y: 4,
+                     boxShadow: "0 0px 0 0 #000000"
+                  }}
+                  transition={{ type: "spring", stiffness: 600, damping: 18 }}
+                >
+                  Enquire Now
+                </motion.button>
+              ) : (
+                <motion.button
+                  type="button"
+                  onClick={handleAddToCart}
+                  disabled={isAdding}
+                  className="flex-1 h-9 bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-widest text-[9px] border border-black flex items-center justify-center gap-2 disabled:opacity-50 rounded-full cursor-pointer"
+                  initial={{ y: 0, boxShadow: "0 4px 0 0 #000000" }}
+                  whileHover={isAdding ? {} : { 
+                     y: -1.5,
+                     boxShadow: "0 5.5px 0 0 #000000",
+                     backgroundColor: "#eb5e28"
+                  }}
+                  whileTap={isAdding ? {} : { 
+                     y: 4,
+                     boxShadow: "0 0px 0 0 #000000"
+                  }}
+                  transition={{ type: "spring", stiffness: 600, damping: 18 }}
+                >
+                  {isAdding ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <>
+                      Add to Cart
+                      <ShoppingBag className="w-3.5 h-3.5" />
+                    </>
+                  )}
+                </motion.button>
+              )}
 
-              <button
+              <motion.button
                 type="button"
                 onClick={handleWishlist}
-                className="w-10 h-10 flex items-center justify-center border border-red-500/20 text-red-500 hover:bg-red-500/10 hover:border-red-500 transition-all shrink-0 rounded-full"
+                className="w-9 h-9 flex items-center justify-center border border-red-500/25 text-red-500 rounded-full cursor-pointer shrink-0"
                 title="Remove from Wishlist"
+                initial={{ y: 0, boxShadow: "0 4px 0 0 rgba(239, 68, 68, 0.15)", backgroundColor: "rgba(239, 68, 68, 0.02)" }}
+                whileHover={{ 
+                   y: -1.5,
+                   boxShadow: "0 5.5px 0 0 rgba(239, 68, 68, 0.25)",
+                   backgroundColor: "rgba(239, 68, 68, 0.08)"
+                }}
+                whileTap={{ 
+                   y: 4,
+                   boxShadow: "0 0px 0 0 rgba(239, 68, 68, 0.15)"
+                }}
+                transition={{ type: "spring", stiffness: 600, damping: 18 }}
               >
-                <Trash2 className="w-4 h-4" />
-              </button>
+                <Trash2 className="w-3.5 h-3.5" />
+              </motion.button>
             </div>
           )}
         </div>

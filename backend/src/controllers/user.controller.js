@@ -4,11 +4,11 @@ import asyncHandler from '../utils/asyncHandler.js';
 import ApiError from '../utils/ApiError.js';
 import { uploadToCloudinary, deleteFromCloudinary } from '../utils/cloudinary.js';
 
-// Edit user's name
+// Edit user's details (name and/or phone)
 export const updateDetails = asyncHandler(async (req, res) => {
-  const { name } = req.body;
-  if (!name) {
-    throw new ApiError(400, 'Name is required');
+  const { name, phone } = req.body;
+  if (name === undefined && phone === undefined) {
+    throw new ApiError(400, 'Name or Phone number is required');
   }
 
   const user = await User.findById(req.user._id);
@@ -16,7 +16,17 @@ export const updateDetails = asyncHandler(async (req, res) => {
     throw new ApiError(404, 'User not found');
   }
 
-  user.name = name;
+  if (name !== undefined) {
+    if (!name.trim()) {
+      throw new ApiError(400, 'Name cannot be empty');
+    }
+    user.name = name.trim();
+  }
+
+  if (phone !== undefined) {
+    user.phone = phone.trim();
+  }
+
   await user.save();
 
   const userResponse = user.toObject();
@@ -25,7 +35,7 @@ export const updateDetails = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, userResponse, 'Name updated successfully'));
+    .json(new ApiResponse(200, userResponse, 'Profile details updated successfully'));
 });
 
 // Add a new address with a tag (limit of 4)

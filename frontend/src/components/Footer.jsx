@@ -32,15 +32,38 @@ export default function Footer() {
 
             {/* Social / Contact Shortcut Icons */}
             <div className="flex gap-4 mt-2">
-              <a href="https://wa.me/918608678828" target="_blank" rel="noopener noreferrer" className="p-2 border border-artisan-dark/10 hover:border-artisan-dark hover:bg-artisan-dark hover:text-artisan-light transition-all rounded-full text-artisan-dark/60">
+              <motion.a 
+                href="https://wa.me/918608678828" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="w-8 h-8 border border-artisan-light flex items-center justify-center rounded-full text-artisan-light cursor-pointer bg-artisan-dark"
+                initial={{ y: 0, boxShadow: "0 3px 0 0 #eb5e28" }}
+                whileHover={{ y: -1.5, boxShadow: "0 4.5px 0 0 #fffcf2", backgroundColor: "#eb5e28", color: "#fffcf2", borderColor: "#eb5e28" }}
+                whileTap={{ y: 3, boxShadow: "0 0px 0 0 #fffcf2" }}
+                transition={{ type: "spring", stiffness: 600, damping: 18 }}
+              >
                 <MessageCircle className="w-4 h-4" />
-              </a>
-              <a href="tel:+918608678828" className="p-2 border border-artisan-dark/10 hover:border-artisan-dark hover:bg-artisan-dark hover:text-artisan-light transition-all rounded-full text-artisan-dark/60">
+              </motion.a>
+              <motion.a 
+                href="tel:+918608678828" 
+                className="w-8 h-8 border border-artisan-light flex items-center justify-center rounded-full text-artisan-light cursor-pointer bg-artisan-dark"
+                initial={{ y: 0, boxShadow: "0 3px 0 0 #eb5e28" }}
+                whileHover={{ y: -1.5, boxShadow: "0 4.5px 0 0 #fffcf2", backgroundColor: "#eb5e28", color: "#fffcf2", borderColor: "#eb5e28" }}
+                whileTap={{ y: 3, boxShadow: "0 0px 0 0 #fffcf2" }}
+                transition={{ type: "spring", stiffness: 600, damping: 18 }}
+              >
                 <Phone className="w-4 h-4" />
-              </a>
-              <a href="mailto:statsurgicalsupplies@gmail.com" className="p-2 border border-artisan-dark/10 hover:border-artisan-dark hover:bg-artisan-dark hover:text-artisan-light transition-all rounded-full text-artisan-dark/60">
+              </motion.a>
+              <motion.a 
+                href="mailto:statsurgicalsupplies@gmail.com" 
+                className="w-8 h-8 border border-artisan-light flex items-center justify-center rounded-full text-artisan-light cursor-pointer bg-artisan-dark"
+                initial={{ y: 0, boxShadow: "0 3px 0 0 #eb5e28" }}
+                whileHover={{ y: -1.5, boxShadow: "0 4.5px 0 0 #fffcf2", backgroundColor: "#eb5e28", color: "#fffcf2", borderColor: "#eb5e28" }}
+                whileTap={{ y: 3, boxShadow: "0 0px 0 0 #fffcf2" }}
+                transition={{ type: "spring", stiffness: 600, damping: 18 }}
+              >
                 <Mail className="w-4 h-4" />
-              </a>
+              </motion.a>
             </div>
           </div>
 
@@ -146,12 +169,27 @@ export default function Footer() {
 
             <button
               onClick={scrollToTop}
-              className="group flex items-center gap-3 text-[10px] font-mono font-bold text-artisan-grey uppercase tracking-[0.3em] hover:text-artisan-dark transition-colors"
+              className="group flex items-center gap-3 text-[10px] font-mono font-bold text-artisan-grey uppercase tracking-[0.3em] hover:text-artisan-dark transition-colors select-none"
             >
               BACK TO TOP
-              <div className="w-8 h-8 border-2 border-artisan-grey flex items-center justify-center rounded-full group-hover:bg-artisan-grey group-hover:text-artisan-dark transition-all">
+              <motion.div 
+                className="w-8 h-8 bg-artisan-dark border-2 border-artisan-grey flex items-center justify-center rounded-full text-artisan-light cursor-pointer shrink-0"
+                initial={{ y: 0, boxShadow: "0 3px 0 0 #eb5e28" }}
+                whileHover={{ 
+                   y: -1.5,
+                   boxShadow: "0 4.5px 0 0 #fffcf2",
+                   backgroundColor: "#eb5e28",
+                   borderColor: "#eb5e28",
+                   color: "#fffcf2"
+                }}
+                whileTap={{ 
+                   y: 3,
+                   boxShadow: "0 0px 0 0 #fffcf2"
+                }}
+                transition={{ type: "spring", stiffness: 600, damping: 18 }}
+              >
                 <ArrowUp className="w-3.5 h-3.5" />
-              </div>
+              </motion.div>
             </button>
           </div>
         </div>

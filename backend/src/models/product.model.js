@@ -110,11 +110,23 @@ const productSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    priceDisplayMode: {
+      type: String,
+      enum: ['display_price', 'contact_us'],
+      default: 'display_price',
+    },
   },
   {
     timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
   }
 );
+
+// Virtual for legacy flat product image url fallback
+productSchema.virtual('image').get(function () {
+  return this.images && this.images.length > 0 ? this.images[0].url : '';
+});
 
 productSchema.index({ category: 1, active: 1 });
 productSchema.index({ featured: 1, active: 1 });

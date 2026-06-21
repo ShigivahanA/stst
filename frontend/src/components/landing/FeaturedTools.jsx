@@ -71,20 +71,30 @@ export default function FeaturedTools() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="flex flex-wrap gap-2 justify-start md:justify-end max-w-xl"
           >
-            {CATEGORIES.map((cat) => (
-              <motion.button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className={`px-4 py-2 border text-[10px] font-mono font-bold uppercase tracking-widest transition-colors duration-300 rounded-full ${activeCategory === cat
-                  ? 'bg-artisan-grey text-artisan-dark border-artisan-grey'
-                  : 'border-artisan-light/10 bg-artisan-dark/40 backdrop-blur-sm text-artisan-light hover:bg-artisan-grey hover:text-artisan-dark hover:border-artisan-grey'
+            {CATEGORIES.map((cat) => {
+              const isActive = activeCategory === cat;
+              return (
+                <motion.button
+                  key={cat}
+                  onClick={() => setActiveCategory(cat)}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={`relative overflow-hidden group px-4 py-2 border text-[10px] font-mono font-bold uppercase tracking-widest transition-all duration-300 rounded-full cursor-pointer ${
+                    isActive
+                      ? 'bg-artisan-grey text-artisan-dark border-artisan-grey'
+                      : 'border-artisan-light/10 text-artisan-light hover:text-artisan-dark hover:border-artisan-grey'
                   }`}
-              >
-                {cat}
-              </motion.button>
-            ))}
+                >
+                  {!isActive && (
+                    <div className="absolute inset-0 bg-artisan-dark/40 backdrop-blur-sm" />
+                  )}
+                  {!isActive && (
+                    <div className="absolute inset-y-0 left-0 w-0 bg-artisan-grey transition-all duration-300 ease-out group-hover:w-full" />
+                  )}
+                  <span className="relative z-10">{cat}</span>
+                </motion.button>
+              );
+            })}
           </motion.div>
         </div>
 
@@ -118,9 +128,20 @@ export default function FeaturedTools() {
         >
           <Link to="/allproduct">
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="px-10 py-4 bg-artisan-light text-artisan-dark font-display font-extrabold uppercase tracking-widest text-[10px] hover:bg-artisan-grey hover:text-artisan-dark transition-all duration-500 rounded-full"
+              className="px-10 py-4 bg-artisan-grey text-artisan-dark font-display font-black uppercase tracking-widest text-[10px] border border-artisan-light rounded-full cursor-pointer flex items-center justify-center"
+              initial={{ y: 0, boxShadow: "0 6px 0 0 #252422" }}
+              whileHover={{ 
+                 y: -2,
+                 boxShadow: "0 8px 0 0 #252422",
+                 backgroundColor: "#fffcf2",
+                 color: "#252422",
+                 borderColor: "#252422"
+              }}
+              whileTap={{ 
+                 y: 6,
+                 boxShadow: "0 0px 0 0 #252422"
+              }}
+              transition={{ type: "spring", stiffness: 600, damping: 18 }}
             >
               View All Products
             </motion.button>

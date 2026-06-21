@@ -122,7 +122,7 @@ export default function Sitemap() {
             </span>
           </Link>
         </div>
-        
+
         {/* HERO HEADER */}
         <header className="mb-16 border-b border-artisan-light/10 pb-12">
           <div className="max-w-4xl space-y-6">
@@ -155,16 +155,13 @@ export default function Sitemap() {
               transition={{ delay: 0.4, duration: 0.6 }}
               className="flex flex-wrap items-center gap-4 text-xs font-mono text-artisan-light/50 uppercase tracking-widest pt-2"
             >
-              <span>Stat Surgicals</span>
-              <span className="hidden sm:inline">/</span>
-              <span>Sitemap</span>
             </motion.div>
           </div>
         </header>
 
         {/* TWO COLUMN CONTENT LAYOUT */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-          
+
           {/* LEFT COLUMN: STICKY NAVIGATION */}
           <aside className="lg:col-span-3 hidden lg:block sticky top-32 h-fit">
             <div className="space-y-8">
@@ -178,8 +175,8 @@ export default function Sitemap() {
                     key={idx}
                     onClick={() => scrollTo(`sec-${idx}`)}
                     className={`text-left text-xs font-display font-bold uppercase tracking-wider py-1.5 transition-all duration-300 border-l-2 pl-4 hover:text-artisan-grey hover:border-artisan-grey/50 ${activeSection === `sec-${idx}`
-                        ? 'border-artisan-grey text-artisan-grey pl-6'
-                        : 'border-artisan-light/10 text-artisan-light/50'
+                      ? 'border-artisan-grey text-artisan-grey pl-6'
+                      : 'border-artisan-light/10 text-artisan-light/50'
                       }`}
                   >
                     {section.title}
@@ -207,7 +204,7 @@ export default function Sitemap() {
                   </span>
                   <div className="h-px bg-artisan-light/10 flex-1" />
                 </div>
-                
+
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-artisan-light/5 border border-artisan-light/10 flex items-center justify-center text-artisan-grey rounded-xl">
                     <section.icon className="w-6 h-6" />

@@ -17,6 +17,8 @@ import api from '../services/api'
 import SEO from '../components/SEO'
 import ToolCard from '../components/marketplace/ToolCard'
 
+const MotionLink = motion.create ? motion.create(Link) : motion(Link)
+
 export default function Wishlist() {
   const { user, setUser, toggleWishlist } = useAuth()
   const { addToast } = useToast()
@@ -108,12 +110,23 @@ export default function Wishlist() {
           <p className="text-xs font-mono text-artisan-light/40 uppercase tracking-widest leading-relaxed">
             Administrators are not permitted to save items in the wishlist. Please use a customer account.
           </p>
-          <Link
+          <MotionLink
             to="/admin"
-            className="inline-block px-6 py-3 bg-artisan-light text-artisan-dark text-[9px] font-mono font-bold uppercase tracking-widest hover:bg-artisan-grey transition-all rounded-full cursor-pointer"
+            className="inline-block px-6 py-3 bg-artisan-light text-artisan-dark text-[9px] font-mono font-bold uppercase tracking-widest border border-black rounded-full cursor-pointer"
+            initial={{ y: 0, boxShadow: "0 4px 0 0 #000000" }}
+            whileHover={{ 
+               y: -2,
+               boxShadow: "0 6px 0 0 #000000",
+               backgroundColor: "#eb5e28"
+            }}
+            whileTap={{ 
+               y: 4,
+               boxShadow: "0 0px 0 0 #000000"
+            }}
+            transition={{ type: "spring", stiffness: 600, damping: 18 }}
           >
             Go to Admin Dashboard
-          </Link>
+          </MotionLink>
         </div>
       </div>
     )
@@ -205,12 +218,23 @@ export default function Wishlist() {
                       {user ? 'Tap the heart icon on any product to save it here' : 'Log in to save your favorite products'}
                     </p>
                   </div>
-                  <Link
+                  <MotionLink
                     to={user ? '/allproduct' : '/login'}
-                    className="px-12 py-6 bg-artisan-grey text-artisan-dark font-display font-black uppercase tracking-widest hover:bg-artisan-light transition-all"
+                    className="inline-block px-12 py-4 bg-artisan-grey text-artisan-dark font-display font-black uppercase tracking-widest border border-black rounded-full cursor-pointer"
+                    initial={{ y: 0, boxShadow: "0 6px 0 0 #000000" }}
+                    whileHover={{ 
+                       y: -2,
+                       boxShadow: "0 8px 0 0 #000000",
+                       backgroundColor: "#eb5e28"
+                    }}
+                    whileTap={{ 
+                       y: 6,
+                       boxShadow: "0 0px 0 0 #000000"
+                    }}
+                    transition={{ type: "spring", stiffness: 600, damping: 18 }}
                   >
                     {user ? 'Browse Products' : 'Login'}
-                  </Link>
+                  </MotionLink>
                 </motion.div>
               )}
             </AnimatePresence>

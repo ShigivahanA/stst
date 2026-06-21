@@ -68,6 +68,7 @@ export default function AdminProductDetail() {
    const [editUploadedImages, setEditUploadedImages] = useState([])
    const [editActive, setEditActive] = useState(true)
    const [editFeatured, setEditFeatured] = useState(false)
+   const [editPriceDisplayMode, setEditPriceDisplayMode] = useState('display_price')
    const [editSpecifications, setEditSpecifications] = useState([{ type: 'key_value', label: '', value: '', extra: {} }])
 
    // Stock editor state
@@ -92,6 +93,7 @@ export default function AdminProductDetail() {
          setEditImage(prodData.image || '')
          setEditActive(prodData.active)
          setEditFeatured(prodData.featured || false)
+         setEditPriceDisplayMode(prodData.priceDisplayMode || 'display_price')
          setStockCount(prodData.quantity.toString())
          setInlineStockValue(prodData.quantity.toString())
 
@@ -170,8 +172,12 @@ export default function AdminProductDetail() {
             lowstockthreshold: parseInt(editLowStockThreshold, 10),
             active: editActive,
             featured: editFeatured,
+            priceDisplayMode: editPriceDisplayMode,
             image: editImage, // Primary cover image
-            images: editUploadedImages, // Gallery array of { url, publicId }
+            images: editUploadedImages.map(img => ({
+               url: img.url,
+               publicId: img.publicId
+            })), // Gallery array of { url, publicId }
             specifications: specsPayload
          }
 
@@ -279,7 +285,7 @@ export default function AdminProductDetail() {
 
             {/* PRODUCT TITLE SUMMARY */}
             <div className="mb-10 flex flex-col md:flex-row items-start md:items-center gap-6 border-b border-artisan-light/10 pb-8 shrink-0">
-               <ProductImage src={product.image} alt={product.name} className="w-20 h-20 border-2 border-artisan-grey" />
+               <ProductImage src={product.image || product.images?.[0]?.url} alt={product.name} className="w-20 h-20 border-2 border-artisan-grey" />
                <div className="space-y-1 flex-1 min-w-0">
                   <span className="text-[9px] font-mono font-bold text-artisan-grey uppercase tracking-[0.3em] block">Surgical Catalog Dossier</span>
                   <h1 className="text-3xl sm:text-4xl font-display font-black uppercase tracking-tight text-artisan-light truncate">
@@ -570,6 +576,41 @@ export default function AdminProductDetail() {
                                        className="w-full bg-artisan-light/[0.01] border border-artisan-light/10 p-4 text-xs sm:text-sm font-mono text-artisan-light tracking-widest outline-none focus:border-artisan-grey transition-all"
                                        required
                                     />
+                                 </div>
+                              </div>
+
+                              {/* Price Display Configuration */}
+                              <div className="space-y-3 mt-6">
+                                 <label className="text-[8px] font-mono text-artisan-light/40 uppercase tracking-widest block font-bold">
+                                    Price Display Mode <span className="text-artisan-grey">*</span>
+                                 </label>
+                                 <div className="flex flex-col gap-3 sm:flex-row sm:gap-6 pt-1">
+                                    <label className="flex items-center gap-2 cursor-pointer select-none">
+                                       <input
+                                          type="radio"
+                                          name="priceDisplayMode"
+                                          value="display_price"
+                                          checked={editPriceDisplayMode === 'display_price'}
+                                          onChange={(e) => setEditPriceDisplayMode(e.target.value)}
+                                          className="w-4 h-4 rounded-full border-artisan-light/10 bg-artisan-light/5 text-artisan-grey focus:ring-0 cursor-pointer"
+                                       />
+                                       <span className="text-[10px] font-mono text-artisan-light/60 uppercase tracking-wider">
+                                          Display Price publicly
+                                       </span>
+                                    </label>
+                                    <label className="flex items-center gap-2 cursor-pointer select-none">
+                                       <input
+                                          type="radio"
+                                          name="priceDisplayMode"
+                                          value="contact_us"
+                                          checked={editPriceDisplayMode === 'contact_us'}
+                                          onChange={(e) => setEditPriceDisplayMode(e.target.value)}
+                                          className="w-4 h-4 rounded-full border-artisan-light/10 bg-artisan-light/5 text-artisan-grey focus:ring-0 cursor-pointer"
+                                       />
+                                       <span className="text-[10px] font-mono text-artisan-light/60 uppercase tracking-wider">
+                                          Hide Price & Show "Contact Us"
+                                       </span>
+                                    </label>
                                  </div>
                               </div>
 
