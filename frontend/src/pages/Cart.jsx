@@ -1296,32 +1296,6 @@ export default function Cart() {
                                   Pay with Razorpay
                                   <ArrowRight className="w-4 h-4" />
                                 </motion.button>
-
-                                <div className="relative flex py-2 items-center">
-                                  <div className="flex-grow border-t border-artisan-light/5"></div>
-                                  <span className="flex-shrink mx-4 text-[8px] font-mono text-artisan-light/20 uppercase tracking-[0.4em]">Or</span>
-                                  <div className="flex-grow border-t border-artisan-light/5"></div>
-                                </div>
-
-                                <motion.button
-                                  type="button"
-                                  onClick={handleSimulatePayment}
-                                  disabled={isProcessing}
-                                  className="w-full py-4 border border-dashed border-red-500/35 text-red-500 font-mono font-bold uppercase tracking-[0.2em] text-[9px] hover:bg-red-500/[0.01] hover:border-red-500 transition-all flex items-center justify-center gap-2 rounded-full cursor-pointer"
-                                  initial={{ y: 0, boxShadow: "0 6px 0 0 rgba(239, 68, 68, 0.15)", backgroundColor: "rgba(239, 68, 68, 0.02)" }}
-                                  whileHover={isProcessing ? {} : { 
-                                     y: -2,
-                                     boxShadow: "0 8px 0 0 rgba(239, 68, 68, 0.25)",
-                                     backgroundColor: "rgba(239, 68, 68, 0.08)"
-                                  }}
-                                  whileTap={isProcessing ? {} : { 
-                                     y: 6,
-                                     boxShadow: "0 0px 0 0 rgba(239, 68, 68, 0.15)"
-                                  }}
-                                  transition={{ type: "spring", stiffness: 600, damping: 18 }}
-                                >
-                                  Simulate Online Payment (Dev Mode)
-                                </motion.button>
                               </div>
 
                               <p className="text-[8px] font-mono text-artisan-light/25 uppercase tracking-widest pt-2">
