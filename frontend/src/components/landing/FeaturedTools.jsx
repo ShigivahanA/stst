@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect } from 'react'
 import { motion, useInView, AnimatePresence } from 'framer-motion'
-import { ArrowUpRight, Star, MapPin, Wrench, Loader2 } from 'lucide-react'
+import { ArrowUpRight, Star, MapPin, Wrench } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import api from '../../services/api'
 import ToolCard from '../marketplace/ToolCard'
@@ -101,9 +101,44 @@ export default function FeaturedTools() {
         {/* Tools Catalog Grid */}
         <div ref={ref} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 flex-1">
           {loading ? (
-            <div className="col-span-full flex items-center justify-center py-12">
-              <Loader2 className="w-8 h-8 text-artisan-grey animate-spin" />
-            </div>
+            <>
+              {[1, 2, 3, 4].map((i) => (
+                <div key={`skeleton-${i}`} className="flex flex-col bg-artisan-dark/40 backdrop-blur-sm border border-artisan-light/10 h-full rounded-2xl overflow-hidden animate-pulse">
+                  {/* Image Area Skeleton */}
+                  <div className="relative aspect-video w-full bg-artisan-light/5 shrink-0">
+                    <div className="absolute top-3 left-3">
+                      <div className="h-4 w-16 bg-artisan-light/10 rounded-md" />
+                    </div>
+                    <div className="absolute top-3 right-3">
+                      <div className="w-7 h-7 bg-artisan-light/5 rounded-full" />
+                    </div>
+                  </div>
+
+                  {/* Content Area Skeleton */}
+                  <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between bg-gradient-to-b from-transparent to-artisan-dark/40">
+                    <div className="mb-4 space-y-2">
+                      {/* Title lines */}
+                      <div className="h-4 bg-artisan-light/10 rounded w-5/6" />
+                      <div className="h-3.5 bg-artisan-light/8 rounded w-3/5" />
+                      {/* Description line */}
+                      <div className="h-2.5 bg-artisan-light/5 rounded w-4/5 mt-1" />
+                    </div>
+
+                    {/* Price & Rating footer */}
+                    <div className="pt-3 border-t border-artisan-light/5 flex items-center justify-between mt-auto">
+                      <div className="flex flex-col gap-1.5">
+                        <div className="h-2 bg-artisan-light/5 rounded w-8" />
+                        <div className="h-5 bg-artisan-light/10 rounded w-20" />
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <div className="w-3 h-3 bg-artisan-light/10 rounded-full" />
+                        <div className="h-3 bg-artisan-light/10 rounded w-6" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </>
           ) : (
             <AnimatePresence mode="wait">
               {tools.length > 0 ? (
