@@ -228,7 +228,8 @@ export default function Hero() {
               <Link to="/allproduct" className="flex-1 sm:flex-initial">
                 <motion.button
                   className="w-full sm:w-auto px-6 py-3.5 sm:px-8 sm:py-4 bg-artisan-grey text-artisan-dark font-display font-black uppercase tracking-widest text-[10px] border border-artisan-light rounded-full cursor-pointer flex items-center justify-center"
-                  initial={{ y: 0, boxShadow: "0 6px 0 0 #252422" }}
+                  initial={{ y: 0, boxShadow: "0 6px 0 0 #252422", backgroundColor: "#eb5e28", color: "#fffcf2", borderColor: "#252422" }}
+                  animate={{ y: 0, boxShadow: "0 6px 0 0 #252422", backgroundColor: "#eb5e28", color: "#fffcf2", borderColor: "#252422" }}
                   whileHover={{ 
                      y: -2,
                      boxShadow: "0 8px 0 0 #252422",
@@ -252,7 +253,8 @@ export default function Hero() {
               >
                 <motion.button
                   className="w-full sm:w-auto px-6 py-3.5 sm:px-8 sm:py-4 bg-artisan-dark text-artisan-light font-display font-black uppercase tracking-widest text-[10px] border border-artisan-light rounded-full flex items-center justify-center gap-2 cursor-pointer"
-                  initial={{ y: 0, boxShadow: "0 6px 0 0 #252422" }}
+                  initial={{ y: 0, boxShadow: "0 6px 0 0 #252422", backgroundColor: "#fffcf2", color: "#252422", borderColor: "#252422" }}
+                  animate={{ y: 0, boxShadow: "0 6px 0 0 #252422", backgroundColor: "#fffcf2", color: "#252422", borderColor: "#252422" }}
                   whileHover={{ 
                      y: -2,
                      boxShadow: "0 8px 0 0 #252422",

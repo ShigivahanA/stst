@@ -129,7 +129,8 @@ export default function FeaturedTools() {
           <Link to="/allproduct">
             <motion.button
               className="px-10 py-4 bg-artisan-grey text-artisan-dark font-display font-black uppercase tracking-widest text-[10px] border border-artisan-light rounded-full cursor-pointer flex items-center justify-center"
-              initial={{ y: 0, boxShadow: "0 6px 0 0 #252422" }}
+              initial={{ y: 0, boxShadow: "0 6px 0 0 #252422", backgroundColor: "#eb5e28", color: "#fffcf2", borderColor: "#252422" }}
+              animate={{ y: 0, boxShadow: "0 6px 0 0 #252422", backgroundColor: "#eb5e28", color: "#fffcf2", borderColor: "#252422" }}
               whileHover={{ 
                  y: -2,
                  boxShadow: "0 8px 0 0 #252422",

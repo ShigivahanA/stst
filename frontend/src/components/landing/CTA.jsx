@@ -49,7 +49,8 @@ export default function CTA() {
             <a href="https://wa.me/919876543210" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto flex-1 sm:flex-initial">
               <motion.button
                 className="w-full px-10 py-5 bg-artisan-dark text-artisan-light font-display font-black uppercase tracking-widest text-xs border border-artisan-light flex items-center justify-center gap-3 rounded-full cursor-pointer"
-                initial={{ y: 0, boxShadow: "0 6px 0 0 #252422" }}
+                initial={{ y: 0, boxShadow: "0 6px 0 0 #252422", backgroundColor: "#fffcf2", color: "#252422", borderColor: "#252422" }}
+                animate={{ y: 0, boxShadow: "0 6px 0 0 #252422", backgroundColor: "#fffcf2", color: "#252422", borderColor: "#252422" }}
                 whileHover={{ 
                    y: -2,
                    boxShadow: "0 8px 0 0 #fffcf2",
@@ -71,7 +72,8 @@ export default function CTA() {
             <Link to="/book-demo" className="w-full sm:w-auto flex-1 sm:flex-initial">
               <motion.button
                 className="w-full px-10 py-5 bg-artisan-grey text-artisan-dark font-display font-black uppercase tracking-widest text-xs border-2 border-artisan-dark rounded-full flex items-center justify-center gap-3 cursor-pointer"
-                initial={{ y: 0, boxShadow: "0 6px 0 0 #252422" }}
+                initial={{ y: 0, boxShadow: "0 6px 0 0 #252422", backgroundColor: "#eb5e28", color: "#fffcf2", borderColor: "#fffcf2" }}
+                animate={{ y: 0, boxShadow: "0 6px 0 0 #252422", backgroundColor: "#eb5e28", color: "#fffcf2", borderColor: "#fffcf2" }}
                 whileHover={{ 
                    y: -2,
                    boxShadow: "0 8px 0 0 #252422",

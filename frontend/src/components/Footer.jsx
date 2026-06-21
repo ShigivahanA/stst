@@ -37,7 +37,8 @@ export default function Footer() {
                 target="_blank" 
                 rel="noopener noreferrer" 
                 className="w-8 h-8 border border-artisan-light flex items-center justify-center rounded-full text-artisan-light cursor-pointer bg-artisan-dark"
-                initial={{ y: 0, boxShadow: "0 3px 0 0 #eb5e28" }}
+                initial={{ y: 0, boxShadow: "0 3px 0 0 #eb5e28", backgroundColor: "#fffcf2", color: "#252422", borderColor: "#252422" }}
+                animate={{ y: 0, boxShadow: "0 3px 0 0 #eb5e28", backgroundColor: "#fffcf2", color: "#252422", borderColor: "#252422" }}
                 whileHover={{ y: -1.5, boxShadow: "0 4.5px 0 0 #fffcf2", backgroundColor: "#eb5e28", color: "#fffcf2", borderColor: "#eb5e28" }}
                 whileTap={{ y: 3, boxShadow: "0 0px 0 0 #fffcf2" }}
                 transition={{ type: "spring", stiffness: 600, damping: 18 }}
@@ -47,7 +48,8 @@ export default function Footer() {
               <motion.a 
                 href="tel:+918608678828" 
                 className="w-8 h-8 border border-artisan-light flex items-center justify-center rounded-full text-artisan-light cursor-pointer bg-artisan-dark"
-                initial={{ y: 0, boxShadow: "0 3px 0 0 #eb5e28" }}
+                initial={{ y: 0, boxShadow: "0 3px 0 0 #eb5e28", backgroundColor: "#fffcf2", color: "#252422", borderColor: "#252422" }}
+                animate={{ y: 0, boxShadow: "0 3px 0 0 #eb5e28", backgroundColor: "#fffcf2", color: "#252422", borderColor: "#252422" }}
                 whileHover={{ y: -1.5, boxShadow: "0 4.5px 0 0 #fffcf2", backgroundColor: "#eb5e28", color: "#fffcf2", borderColor: "#eb5e28" }}
                 whileTap={{ y: 3, boxShadow: "0 0px 0 0 #fffcf2" }}
                 transition={{ type: "spring", stiffness: 600, damping: 18 }}
@@ -57,7 +59,8 @@ export default function Footer() {
               <motion.a 
                 href="mailto:statsurgicalsupplies@gmail.com" 
                 className="w-8 h-8 border border-artisan-light flex items-center justify-center rounded-full text-artisan-light cursor-pointer bg-artisan-dark"
-                initial={{ y: 0, boxShadow: "0 3px 0 0 #eb5e28" }}
+                initial={{ y: 0, boxShadow: "0 3px 0 0 #eb5e28", backgroundColor: "#fffcf2", color: "#252422", borderColor: "#252422" }}
+                animate={{ y: 0, boxShadow: "0 3px 0 0 #eb5e28", backgroundColor: "#fffcf2", color: "#252422", borderColor: "#252422" }}
                 whileHover={{ y: -1.5, boxShadow: "0 4.5px 0 0 #fffcf2", backgroundColor: "#eb5e28", color: "#fffcf2", borderColor: "#eb5e28" }}
                 whileTap={{ y: 3, boxShadow: "0 0px 0 0 #fffcf2" }}
                 transition={{ type: "spring", stiffness: 600, damping: 18 }}
@@ -174,7 +177,8 @@ export default function Footer() {
               BACK TO TOP
               <motion.div 
                 className="w-8 h-8 bg-artisan-dark border-2 border-artisan-grey flex items-center justify-center rounded-full text-artisan-light cursor-pointer shrink-0"
-                initial={{ y: 0, boxShadow: "0 3px 0 0 #eb5e28" }}
+                initial={{ y: 0, boxShadow: "0 3px 0 0 #eb5e28", backgroundColor: "#fffcf2", color: "#252422", borderColor: "#eb5e28" }}
+                animate={{ y: 0, boxShadow: "0 3px 0 0 #eb5e28", backgroundColor: "#fffcf2", color: "#252422", borderColor: "#eb5e28" }}
                 whileHover={{ 
                    y: -1.5,
                    boxShadow: "0 4.5px 0 0 #fffcf2",
