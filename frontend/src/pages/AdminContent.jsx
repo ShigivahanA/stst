@@ -162,11 +162,11 @@ function StatsTab() {
             Refresh
           </button>
           <button
-            onClick={() => { resetForm(); setShowForm(v => !v) }}
+            onClick={() => { if (showForm) { resetForm() } else { setShowForm(true) } }}
             className="h-9 px-4 bg-artisan-light text-artisan-dark hover:bg-artisan-grey flex items-center gap-2 font-mono text-[9px] font-bold uppercase tracking-widest transition-all"
           >
-            {showForm && !editingId ? <X className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
-            {showForm && !editingId ? 'Cancel' : 'Add Stat'}
+            {showForm ? <X className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
+            {showForm ? 'Cancel' : 'Add Stat'}
           </button>
         </div>
       </div>
@@ -477,7 +477,7 @@ function ReviewsTab() {
             Refresh
           </button>
           <button
-            onClick={() => { resetForm(); setShowForm(v => !v) }}
+            onClick={() => { if (showForm) { resetForm() } else { setShowForm(true) } }}
             className="h-9 px-4 bg-artisan-light text-artisan-dark hover:bg-artisan-grey flex items-center gap-2 font-mono text-[9px] font-bold uppercase tracking-widest transition-all"
           >
             {showForm ? <X className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
@@ -834,7 +834,7 @@ function BadgesTab() {
             Refresh
           </button>
           <button
-            onClick={() => { resetForm(); setShowForm(v => !v) }}
+            onClick={() => { if (showForm) { resetForm() } else { setShowForm(true) } }}
             className="h-9 px-4 bg-artisan-light text-artisan-dark hover:bg-artisan-grey flex items-center gap-2 font-mono text-[9px] font-bold uppercase tracking-widest transition-all"
           >
             {showForm ? <X className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
@@ -1229,11 +1229,11 @@ function PageSectionsTab({ slug, title }) {
             Refresh
           </button>
           <button
-            onClick={() => { resetForm(); setShowForm(v => !v) }}
+            onClick={() => { if (showForm) { resetForm() } else { setShowForm(true) } }}
             className="h-9 px-4 bg-artisan-light text-artisan-dark hover:bg-artisan-grey flex items-center gap-2 font-mono text-[9px] font-bold uppercase tracking-widest transition-all"
           >
-            {showForm && !editingId ? <X className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
-            {showForm && !editingId ? 'Cancel' : 'Add Section'}
+            {showForm ? <X className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
+            {showForm ? 'Cancel' : 'Add Section'}
           </button>
         </div>
       </div>

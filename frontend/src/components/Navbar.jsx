@@ -323,9 +323,9 @@ export default function Navbar() {
                         }}
                         className="w-full text-left px-3 py-2.5 hover:bg-artisan-light/[0.05] transition-colors border-b border-artisan-light/5 last:border-0 flex items-center gap-3"
                       >
-                        {prod.images && prod.images[0] && (
+                        {(prod.image || (prod.images && prod.images[0])) && (
                           <img
-                            src={prod.images[0].url}
+                            src={prod.image || (typeof prod.images[0] === 'object' ? prod.images[0].url : prod.images[0])}
                             alt={prod.name}
                             className="w-6 h-6 object-cover border border-artisan-light/10"
                           />
@@ -469,9 +469,9 @@ export default function Navbar() {
                           }}
                           className="w-full text-left px-4 py-3 hover:bg-artisan-light/[0.05] transition-colors border-b border-artisan-light/5 last:border-0 flex items-center gap-3"
                         >
-                          {prod.images && prod.images[0] && (
+                          {(prod.image || (prod.images && prod.images[0])) && (
                             <img
-                              src={prod.images[0].url}
+                              src={prod.image || (typeof prod.images[0] === 'object' ? prod.images[0].url : prod.images[0])}
                               alt={prod.name}
                               className="w-6 h-6 object-cover border border-artisan-light/10"
                             />

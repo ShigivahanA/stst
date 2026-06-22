@@ -409,7 +409,6 @@ export default function ProductDetail() {
    const displayImages = tool.images?.length ? tool.images : (tool.image ? [tool.image] : [])
 
    const specs = [
-      { label: 'Condition', value: tool.condition || 'Excellent' },
       { label: 'Category', value: tool.category },
    ]
 

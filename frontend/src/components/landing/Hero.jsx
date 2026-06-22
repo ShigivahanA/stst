@@ -204,6 +204,7 @@ export default function Hero() {
               transition={{ duration: 0.8, ease: [0.33, 1, 0.68, 1] }}
               className="text-3xl sm:text-5xl md:text-6xl lg:text-[72px] font-display font-black uppercase tracking-tighter leading-[0.92] mb-4 text-artisan-light"
             >
+              <span className="block sm:hidden text-artisan-light">STAT <br /></span>
               Surgical <br />
               <span className="text-artisan-grey">Supplies</span>
             </motion.h1>

@@ -160,13 +160,20 @@ export default function AdminProductDetail() {
 
       try {
          setActionLoading(true)
+         const parsedMrp = Math.max(1, Math.ceil(parseFloat(editMrp) || 0))
+         const parsedSellingPrice = Math.max(1, Math.ceil(parseFloat(editSellingPrice) || 0))
+         const parsedPrice = Math.max(1, Math.ceil(parsedSellingPrice * (1 + parseFloat(editTax) / 100)))
+
+         setEditMrp(parsedMrp.toString())
+         setEditSellingPrice(parsedSellingPrice.toString())
+
          const payload = {
             sku: editSku.trim().toUpperCase(),
             name: editName.trim(),
             desc: editDesc.trim(),
-            price: parseFloat(editSellingPrice) * (1 + parseFloat(editTax) / 100),
-            mrp: parseFloat(editMrp),
-            sellingPrice: parseFloat(editSellingPrice),
+            price: parsedPrice,
+            mrp: parsedMrp,
+            sellingPrice: parsedSellingPrice,
             tax: parseFloat(editTax),
             category: finalCategory,
             lowstockthreshold: parseInt(editLowStockThreshold, 10),
@@ -543,8 +550,13 @@ export default function AdminProductDetail() {
                                        type="number"
                                        value={editMrp}
                                        onChange={(e) => setEditMrp(e.target.value)}
-                                       min="0"
-                                       step="0.01"
+                                       onBlur={(e) => {
+                                          if (e.target.value) {
+                                             setEditMrp(Math.max(1, Math.ceil(parseFloat(e.target.value) || 0)).toString())
+                                          }
+                                       }}
+                                       min="1"
+                                       step="1"
                                        className="w-full bg-artisan-light/[0.01] border border-artisan-light/10 p-4 text-xs sm:text-sm font-mono text-artisan-light tracking-widest outline-none focus:border-artisan-grey transition-all"
                                        required
                                     />
@@ -557,8 +569,13 @@ export default function AdminProductDetail() {
                                        type="number"
                                        value={editSellingPrice}
                                        onChange={(e) => setEditSellingPrice(e.target.value)}
-                                       min="0"
-                                       step="0.01"
+                                       onBlur={(e) => {
+                                          if (e.target.value) {
+                                             setEditSellingPrice(Math.max(1, Math.ceil(parseFloat(e.target.value) || 0)).toString())
+                                          }
+                                       }}
+                                       min="1"
+                                       step="1"
                                        className="w-full bg-artisan-light/[0.01] border border-artisan-light/10 p-4 text-xs sm:text-sm font-mono text-artisan-light tracking-widest outline-none focus:border-artisan-grey transition-all"
                                        required
                                     />

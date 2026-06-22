@@ -66,13 +66,20 @@ export default function AdminNewProduct() {
       try {
          setActionLoading(true)
 
+         const parsedMrp = Math.max(1, Math.ceil(parseFloat(mrp) || 0))
+         const parsedSellingPrice = Math.max(1, Math.ceil(parseFloat(sellingPrice) || 0))
+         const parsedPrice = Math.max(1, Math.ceil(parsedSellingPrice * (1 + parseFloat(tax) / 100)))
+
+         setMrp(parsedMrp.toString())
+         setSellingPrice(parsedSellingPrice.toString())
+
          const payload = {
             sku: sku.trim().toUpperCase(),
             name: name.trim(),
             desc: desc.trim(),
-            price: parseFloat(sellingPrice) * (1 + parseFloat(tax) / 100),
-            mrp: parseFloat(mrp),
-            sellingPrice: parseFloat(sellingPrice),
+            price: parsedPrice,
+            mrp: parsedMrp,
+            sellingPrice: parsedSellingPrice,
             tax: parseFloat(tax),
             quantity: parseInt(quantity, 10),
             category: finalCategory,
@@ -241,9 +248,14 @@ export default function AdminNewProduct() {
                            type="number"
                            value={mrp}
                            onChange={(e) => setMrp(e.target.value)}
+                           onBlur={(e) => {
+                              if (e.target.value) {
+                                 setMrp(Math.max(1, Math.ceil(parseFloat(e.target.value) || 0)).toString())
+                              }
+                           }}
                            placeholder="MRP in INR"
-                           min="0"
-                           step="0.01"
+                           min="1"
+                           step="1"
                            className="w-full bg-artisan-light/[0.01] border border-artisan-light/10 p-4 text-xs sm:text-sm font-mono text-artisan-light tracking-widest outline-none focus:border-artisan-grey transition-all"
                            required
                         />
@@ -258,9 +270,14 @@ export default function AdminNewProduct() {
                            type="number"
                            value={sellingPrice}
                            onChange={(e) => setSellingPrice(e.target.value)}
+                           onBlur={(e) => {
+                              if (e.target.value) {
+                                 setSellingPrice(Math.max(1, Math.ceil(parseFloat(e.target.value) || 0)).toString())
+                              }
+                           }}
                            placeholder="Selling Price in INR"
-                           min="0"
-                           step="0.01"
+                           min="1"
+                           step="1"
                            className="w-full bg-artisan-light/[0.01] border border-artisan-light/10 p-4 text-xs sm:text-sm font-mono text-artisan-light tracking-widest outline-none focus:border-artisan-grey transition-all"
                            required
                         />

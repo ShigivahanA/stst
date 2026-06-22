@@ -9,12 +9,15 @@ export const createProduct = async (productBody) => {
 
   // Calculate final tax-inclusive price
   const tax = productBody.tax !== undefined ? productBody.tax : 0;
-  const sellingPrice = productBody.sellingPrice !== undefined ? productBody.sellingPrice : (productBody.price || 0);
-  productBody.price = sellingPrice * (1 + tax / 100);
+  let sellingPrice = productBody.sellingPrice !== undefined ? productBody.sellingPrice : (productBody.price || 1);
+  sellingPrice = Math.max(1, Math.ceil(sellingPrice));
 
-  // Set default values for mrp and sellingPrice if not provided
-  if (productBody.mrp === undefined) productBody.mrp = sellingPrice;
-  if (productBody.sellingPrice === undefined) productBody.sellingPrice = sellingPrice;
+  let mrp = productBody.mrp !== undefined ? productBody.mrp : sellingPrice;
+  mrp = Math.max(1, Math.ceil(mrp));
+
+  productBody.sellingPrice = sellingPrice;
+  productBody.mrp = mrp;
+  productBody.price = Math.max(1, Math.ceil(sellingPrice * (1 + tax / 100)));
 
   return await Product.create(productBody);
 };
@@ -75,10 +78,17 @@ export const updateProductById = async (id, updateBody) => {
     }
   }
 
+  if (updateBody.sellingPrice !== undefined) {
+    updateBody.sellingPrice = Math.max(1, Math.ceil(updateBody.sellingPrice));
+  }
+  if (updateBody.mrp !== undefined) {
+    updateBody.mrp = Math.max(1, Math.ceil(updateBody.mrp));
+  }
+
   // Update final price if sellingPrice or tax is updated
   const tax = updateBody.tax !== undefined ? updateBody.tax : (product.tax || 0);
-  const sellingPrice = updateBody.sellingPrice !== undefined ? updateBody.sellingPrice : (product.sellingPrice || product.price || 0);
-  updateBody.price = sellingPrice * (1 + tax / 100);
+  const sellingPrice = updateBody.sellingPrice !== undefined ? updateBody.sellingPrice : (product.sellingPrice || product.price || 1);
+  updateBody.price = Math.max(1, Math.ceil(sellingPrice * (1 + tax / 100)));
 
   Object.assign(product, updateBody);
   await product.save();
