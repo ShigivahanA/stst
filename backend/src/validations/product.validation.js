@@ -39,6 +39,7 @@ const createProduct = {
       })
     ).default([]),
     priceDisplayMode: Joi.string().valid('display_price', 'contact_us').default('display_price'),
+    badges: Joi.array().items(Joi.string().custom(objectId)).max(4).default([]),
   }),
 };
 
@@ -77,6 +78,7 @@ const updateProduct = {
       })
     ),
     priceDisplayMode: Joi.string().valid('display_price', 'contact_us'),
+    badges: Joi.array().items(Joi.string().custom(objectId)).max(4),
   }).min(1),
 };
 

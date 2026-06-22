@@ -70,6 +70,8 @@ export default function AdminProductDetail() {
    const [editFeatured, setEditFeatured] = useState(false)
    const [editPriceDisplayMode, setEditPriceDisplayMode] = useState('display_price')
    const [editSpecifications, setEditSpecifications] = useState([{ type: 'key_value', label: '', value: '', extra: {} }])
+   const [availableBadges, setAvailableBadges] = useState([])
+   const [editSelectedBadges, setEditSelectedBadges] = useState([])
 
    // Stock editor state
    const [stockCount, setStockCount] = useState('0')
@@ -106,6 +108,23 @@ export default function AdminProductDetail() {
             })))
          } else {
             setEditSpecifications([{ type: 'key_value', label: '', value: '', extra: {} }])
+         }
+
+         if (Array.isArray(prodData.badges) && prodData.badges.length > 0) {
+            setEditSelectedBadges(prodData.badges.map(b => b._id || b))
+         } else {
+            setEditSelectedBadges([])
+         }
+
+         try {
+            const badgesRes = await api.get('/admin/badges')
+            const allBadges = badgesRes.data.data || []
+            const publicBadges = allBadges.filter(
+               b => b.title !== '__BADGES_VISIBILITY__' && b.isActive
+            )
+            setAvailableBadges(publicBadges)
+         } catch (err) {
+            console.error('Failed to fetch available badges', err)
          }
 
          // Fallback legacy images array if empty
@@ -185,7 +204,8 @@ export default function AdminProductDetail() {
                url: img.url,
                publicId: img.publicId
             })), // Gallery array of { url, publicId }
-            specifications: specsPayload
+            specifications: specsPayload,
+            badges: editSelectedBadges
          }
 
          const res = await api.put(`/products/${id}`, payload)
@@ -938,20 +958,71 @@ export default function AdminProductDetail() {
                                  >
                                     + Add Specification Row
                                  </button>
-                              </div>
+                                 
+                                 {/* Quality Certifications */}
+                                 <div className="space-y-6 pt-4 border-t border-artisan-light/5">
+                                    <span className="text-[9px] font-mono font-bold text-artisan-light/40 uppercase tracking-widest block border-b border-artisan-light/5 pb-2">
+                                       Quality Certifications
+                                    </span>
+                                    <div className="space-y-3">
+                                       <label className="text-[8px] font-mono text-artisan-light/40 uppercase tracking-widest block font-bold">
+                                          Select Certifications (Max 4)
+                                       </label>
+                                       {availableBadges.length === 0 ? (
+                                          <p className="text-[10px] font-mono text-artisan-light/40 uppercase">No active certifications available.</p>
+                                       ) : (
+                                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                             {availableBadges.map(badge => {
+                                                const isSelected = editSelectedBadges.includes(badge._id)
+                                                return (
+                                                   <label 
+                                                      key={badge._id} 
+                                                      className={`flex items-start gap-3 p-3 border cursor-pointer transition-all ${isSelected ? 'border-artisan-grey bg-artisan-light/5' : 'border-artisan-light/10 bg-artisan-light/[0.01] hover:border-artisan-light/30'}`}
+                                                   >
+                                                      <input 
+                                                         type="checkbox"
+                                                         className="mt-0.5 w-3.5 h-3.5 rounded border-artisan-light/20 bg-artisan-light/5 text-artisan-grey focus:ring-0 cursor-pointer shrink-0"
+                                                         checked={isSelected}
+                                                         onChange={(e) => {
+                                                            if (e.target.checked) {
+                                                               if (editSelectedBadges.length >= 4) {
+                                                                  addToast('Maximum 4 certifications allowed', 'error')
+                                                                  return
+                                                               }
+                                                               setEditSelectedBadges([...editSelectedBadges, badge._id])
+                                                            } else {
+                                                               setEditSelectedBadges(editSelectedBadges.filter(id => id !== badge._id))
+                                                            }
+                                                         }}
+                                                      />
+                                                      <div className="space-y-0.5">
+                                                         <span className="text-[10px] font-mono font-bold text-artisan-light uppercase block tracking-wider leading-none">
+                                                            {badge.title}
+                                                         </span>
+                                                         <span className="text-[8px] font-mono text-artisan-light/50 uppercase tracking-widest block">
+                                                            {badge.description}
+                                                         </span>
+                                                      </div>
+                                                   </label>
+                                                )
+                                             })}
+                                          </div>
+                                       )}
+                                    </div>
+                                 </div>
 
-                              {/* Active checkbox */}
-                              <div className="flex items-center gap-3 pt-2">
-                                 <input
-                                    type="checkbox"
-                                    id="active"
-                                    checked={editActive}
-                                    onChange={(e) => setEditActive(e.target.checked)}
-                                    className="w-4 h-4 rounded border-artisan-light/10 bg-artisan-light/5 text-artisan-grey focus:ring-0"
-                                 />
-                                 <label htmlFor="active" className="text-[9px] font-mono text-artisan-light/60 uppercase tracking-widest block font-bold cursor-pointer select-none">
-                                    Publish product publicly (Active status)
-                                 </label>
+                                 <div className="flex items-center gap-3 pt-6 border-t border-artisan-light/5">
+                                    <input
+                                       type="checkbox"
+                                       id="active"
+                                       checked={editActive}
+                                       onChange={(e) => setEditActive(e.target.checked)}
+                                       className="w-4 h-4 rounded border-artisan-light/10 bg-artisan-light/5 text-artisan-grey focus:ring-0"
+                                    />
+                                    <label htmlFor="active" className="text-[9px] font-mono text-artisan-light/60 uppercase tracking-widest block font-bold cursor-pointer select-none">
+                                       Publish product publicly (Active status)
+                                    </label>
+                                 </div>
                               </div>
 
                               {/* Featured toggle */}

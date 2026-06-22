@@ -669,10 +669,10 @@ export default function ProductDetail() {
             </div>
 
             {/* Quality Certifications Badges Row */}
-            {!loadingBadges && badgesData.sectionVisible && badgesData.badges && badgesData.badges.length > 0 && (
+            {!loadingBadges && badgesData.sectionVisible && tool.badges && tool.badges.length > 0 && (
                <div className="border border-artisan-light/10 bg-artisan-light/[0.01] p-6 rounded-xl">
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                     {badgesData.badges.map((badge) => {
+                     {tool.badges.map((badge) => {
                         const IconComponent = LucideIcons[badge.icon] || LucideIcons.ShieldCheck;
                         return (
                            <div key={badge._id} className="flex items-center gap-3 p-3 bg-artisan-light/[0.005] border border-artisan-light/5 rounded-xl">

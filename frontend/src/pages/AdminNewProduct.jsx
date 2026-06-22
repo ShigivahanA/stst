@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -36,6 +36,24 @@ export default function AdminNewProduct() {
    const [active, setActive] = useState(true)
    const [priceDisplayMode, setPriceDisplayMode] = useState('display_price')
    const [specifications, setSpecifications] = useState([{ type: 'key_value', label: '', value: '', extra: {} }])
+   const [availableBadges, setAvailableBadges] = useState([])
+   const [selectedBadges, setSelectedBadges] = useState([])
+
+   useEffect(() => {
+      const fetchBadges = async () => {
+         try {
+            const res = await api.get('/admin/badges')
+            const allBadges = res.data.data || []
+            const publicBadges = allBadges.filter(
+               b => b.title !== '__BADGES_VISIBILITY__' && b.isActive
+            )
+            setAvailableBadges(publicBadges)
+         } catch (err) {
+            console.error('Failed to load badges', err)
+         }
+      }
+      fetchBadges()
+   }, [])
 
    const handleSubmit = async (e) => {
       e.preventDefault()
@@ -91,7 +109,8 @@ export default function AdminNewProduct() {
                url: img.url,
                publicId: img.publicId
             })), // Array of { url, publicId }
-            specifications: specsPayload
+            specifications: specsPayload,
+            badges: selectedBadges
          }
 
          await api.post('/products', payload)
@@ -688,6 +707,58 @@ export default function AdminNewProduct() {
                      <label htmlFor="active" className="text-[9px] font-mono text-artisan-light/60 uppercase tracking-widest block font-bold cursor-pointer select-none">
                         Publish Product Immediately (Active status)
                      </label>
+                  </div>
+               </div>
+
+               {/* 4. Quality Certifications */}
+               <div className="space-y-6">
+                  <span className="text-[9px] font-mono font-bold text-artisan-light/40 uppercase tracking-widest block border-b border-artisan-light/5 pb-2">
+                     4. Quality Certifications
+                  </span>
+                  <div className="space-y-3">
+                     <label className="text-[8px] font-mono text-artisan-light/40 uppercase tracking-widest block font-bold">
+                        Select Certifications (Max 4)
+                     </label>
+                     {availableBadges.length === 0 ? (
+                        <p className="text-[10px] font-mono text-artisan-light/40 uppercase">No active certifications available.</p>
+                     ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                           {availableBadges.map(badge => {
+                              const isSelected = selectedBadges.includes(badge._id)
+                              return (
+                                 <label 
+                                    key={badge._id} 
+                                    className={`flex items-start gap-3 p-3 border cursor-pointer transition-all ${isSelected ? 'border-artisan-grey bg-artisan-light/5' : 'border-artisan-light/10 bg-artisan-light/[0.01] hover:border-artisan-light/30'}`}
+                                 >
+                                    <input 
+                                       type="checkbox"
+                                       className="mt-0.5 w-3.5 h-3.5 rounded border-artisan-light/20 bg-artisan-light/5 text-artisan-grey focus:ring-0 cursor-pointer shrink-0"
+                                       checked={isSelected}
+                                       onChange={(e) => {
+                                          if (e.target.checked) {
+                                             if (selectedBadges.length >= 4) {
+                                                addToast('Maximum 4 certifications allowed', 'error')
+                                                return
+                                             }
+                                             setSelectedBadges([...selectedBadges, badge._id])
+                                          } else {
+                                             setSelectedBadges(selectedBadges.filter(id => id !== badge._id))
+                                          }
+                                       }}
+                                    />
+                                    <div className="space-y-0.5">
+                                       <span className="text-[10px] font-mono font-bold text-artisan-light uppercase block tracking-wider leading-none">
+                                          {badge.title}
+                                       </span>
+                                       <span className="text-[8px] font-mono text-artisan-light/50 uppercase tracking-widest block">
+                                          {badge.description}
+                                       </span>
+                                    </div>
+                                 </label>
+                              )
+                           })}
+                        </div>
+                     )}
                   </div>
                </div>
 

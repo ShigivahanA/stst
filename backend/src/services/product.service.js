@@ -61,7 +61,7 @@ export const queryProducts = async (filter, options = {}) => {
 };
 
 export const getProductById = async (id) => {
-  const product = await Product.findById(id);
+  const product = await Product.findById(id).populate('badges');
   if (!product) {
     throw new ApiError(404, 'Product not found');
   }

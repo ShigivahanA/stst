@@ -102,6 +102,12 @@ const productSchema = new mongoose.Schema(
         },
       },
     ],
+    badges: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Badge',
+      },
+    ],
     rating: {
       type: Number,
       default: 0,

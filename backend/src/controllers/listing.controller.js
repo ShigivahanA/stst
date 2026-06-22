@@ -29,6 +29,7 @@ const transformProductToListing = (p) => {
       ? p.images.map(img => (img && typeof img === 'object' && img.url) ? img.url : String(img))
       : [],
     specifications: p.specifications || [],
+    badges: p.badges || [],
     location: {
       address: '9/330, Nethaji Street, Polichalur',
       city: 'Chennai',
@@ -146,17 +147,17 @@ export const getListing = asyncHandler(async (req, res) => {
 
   // 1. Try finding by MongoDB ObjectId first
   if (idStr.match(/^[0-9a-fA-F]{24}$/)) {
-    product = await Product.findById(idStr);
+    product = await Product.findById(idStr).populate('badges');
   }
 
   // 2. Try finding by SKU (case-insensitive)
   if (!product) {
-    product = await Product.findOne({ sku: { $regex: new RegExp(`^${idStr}$`, 'i') } });
+    product = await Product.findOne({ sku: { $regex: new RegExp(`^${idStr}$`, 'i') } }).populate('badges');
   }
 
   // 3. Try finding by ID suffix (last characters, e.g. "2447c2" from "6a2017221b857d71cb2447c2")
   if (!product && idStr.length >= 4) {
-    const allProducts = await Product.find({});
+    const allProducts = await Product.find({}).populate('badges');
     product = allProducts.find(p => p._id.toString().toLowerCase().endsWith(idStr.toLowerCase()));
   }
 
