@@ -309,7 +309,7 @@ export default function Navbar() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
-                    className="absolute left-0 top-[110%] w-64 lg:w-80 bg-artisan-dark/95 border border-artisan-light/10 shadow-2xl z-[120] rounded-sm py-2 max-h-80 overflow-y-auto backdrop-blur-md"
+                    className="absolute left-0 top-[110%] w-full bg-artisan-dark/95 border border-artisan-light/10 shadow-2xl z-[120] rounded-sm py-2 max-h-80 overflow-y-auto backdrop-blur-md"
                   >
                     <p className="px-3 py-1 text-[7px] font-mono text-artisan-grey uppercase tracking-widest border-b border-artisan-light/5 pb-2">Recommendations</p>
                     {recommendations.slice(0, 5).map((prod) => (
