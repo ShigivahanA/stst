@@ -108,7 +108,7 @@ export default function Categories() {
                 <h3 className="text-base sm:text-lg lg:text-xl font-display font-extrabold uppercase text-artisan-light group-hover:text-artisan-dark transition-colors duration-300 ease-out mb-1.5 leading-tight break-keep hyphens-none">
                   {cat.name}
                 </h3>
-                <p className="text-[10px] font-mono font-bold text-artisan-light/45 group-hover:text-artisan-dark/60 uppercase tracking-widest transition-colors duration-300 ease-out">
+                <p className="text-[10px] font-mono font-bold text-artisan-light group-hover:text-artisan-dark/60 uppercase tracking-widest transition-colors duration-300 ease-out">
                   {cat.desc}
                 </p>
               </div>

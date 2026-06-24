@@ -8,14 +8,14 @@ import api from '../../services/api'
 // Helper function to optimize image URLs dynamically for CDNs like Cloudinary and Unsplash
 const optimizeImageUrl = (url, width = 450) => {
   if (!url) return '';
-  
+
   // 1. Optimize Cloudinary URLs by injecting transformation parameters (f_auto, q_auto, width)
   if (url.includes('res.cloudinary.com')) {
     if (url.includes('/upload/') && !url.includes('/f_auto')) {
       return url.replace('/upload/', `/upload/f_auto,q_auto,w_${width},c_limit/`);
     }
   }
-  
+
   // 2. Optimize Unsplash URLs by modifying search parameters
   if (url.includes('images.unsplash.com')) {
     try {
@@ -29,7 +29,7 @@ const optimizeImageUrl = (url, width = 450) => {
       return url;
     }
   }
-  
+
   return url;
 }
 
@@ -44,7 +44,7 @@ const MarqueeCard = ({ product }) => {
       className="block w-full outline-none"
     >
       <div className="group flex flex-col bg-artisan-dark/40 backdrop-blur-sm border border-artisan-light/10 hover:border-artisan-light/30 transition-all duration-300 h-full rounded-2xl overflow-hidden hover:shadow-[0_8px_30px_rgba(235,94,40,0.05)] relative">
-        
+
         {/* Image Area */}
         <div className="relative aspect-[4/3] sm:aspect-video w-full overflow-hidden bg-artisan-dark/60 shrink-0">
           <img
@@ -53,10 +53,10 @@ const MarqueeCard = ({ product }) => {
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out opacity-90 group-hover:opacity-100"
             draggable={false}
           />
-          
+
           {/* Top Overlay Badge */}
           <div className="absolute top-2 inset-x-2 flex justify-between items-start pointer-events-none">
-            <span className="px-2 py-1 bg-artisan-dark/80 backdrop-blur-md text-[8px] font-mono text-artisan-light/80 border border-artisan-light/10 uppercase tracking-widest rounded-md">
+            <span className="px-2 py-1 bg-artisan-dark/80 backdrop-blur-md text-[8px] font-mono text-artisan-light border border-artisan-light/10 uppercase tracking-widest rounded-md">
               {product.category}
             </span>
           </div>
@@ -72,13 +72,13 @@ const MarqueeCard = ({ product }) => {
 
           <div className="pt-2 border-t border-artisan-light/5 flex items-center justify-between mt-auto">
             <div className="flex flex-col">
-              <span className="text-[8px] font-mono text-artisan-light/40 uppercase tracking-widest mb-0.5">Price</span>
+              <span className="text-[8px] font-mono text-artisan-light uppercase tracking-widest mb-0.5">Price</span>
               <span className="text-sm font-display font-extrabold text-artisan-light tracking-tighter leading-none">
                 ₹{(product.price !== undefined ? product.price : product.pricePerDay)?.toLocaleString()}
               </span>
             </div>
             <div className="flex items-center gap-1 text-[9px] font-mono font-bold text-artisan-grey/90">
-              <span className="uppercase tracking-widest text-artisan-light/40">SKU:</span>
+              <span className="uppercase tracking-widest text-artisan-light">SKU:</span>
               <span>{product.sku}</span>
             </div>
           </div>
@@ -214,7 +214,7 @@ export default function Hero() {
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.15 }}
-              className="text-xs sm:text-base text-artisan-light/60 max-w-lg mb-6 leading-relaxed font-normal"
+              className="text-xs sm:text-base text-artisan-light max-w-lg mb-6 leading-relaxed font-normal"
             >
               Engineered for reliability. Certified for safety. Serving hospitals and clinics across India with precision surgical tools.
             </motion.p>
@@ -231,16 +231,16 @@ export default function Hero() {
                   className="w-full sm:w-auto px-6 py-3.5 sm:px-8 sm:py-4 bg-artisan-grey text-artisan-dark font-display font-black uppercase tracking-widest text-[10px] border border-artisan-light rounded-full cursor-pointer flex items-center justify-center"
                   initial={{ y: 0, boxShadow: "0 6px 0 0 #252422", backgroundColor: "#eb5e28", color: "#fffcf2", borderColor: "#252422" }}
                   animate={{ y: 0, boxShadow: "0 6px 0 0 #252422", backgroundColor: "#eb5e28", color: "#fffcf2", borderColor: "#252422" }}
-                  whileHover={{ 
-                     y: -2,
-                     boxShadow: "0 8px 0 0 #252422",
-                     backgroundColor: "#fffcf2",
-                     color: "#252422",
-                     borderColor: "#252422"
+                  whileHover={{
+                    y: -2,
+                    boxShadow: "0 8px 0 0 #252422",
+                    backgroundColor: "#fffcf2",
+                    color: "#252422",
+                    borderColor: "#252422"
                   }}
-                  whileTap={{ 
-                     y: 6,
-                     boxShadow: "0 0px 0 0 #252422"
+                  whileTap={{
+                    y: 6,
+                    boxShadow: "0 0px 0 0 #252422"
                   }}
                   transition={{ type: "spring", stiffness: 600, damping: 18 }}
                 >
@@ -256,16 +256,16 @@ export default function Hero() {
                   className="w-full sm:w-auto px-6 py-3.5 sm:px-8 sm:py-4 bg-artisan-dark text-artisan-light font-display font-black uppercase tracking-widest text-[10px] border border-artisan-light rounded-full flex items-center justify-center gap-2 cursor-pointer"
                   initial={{ y: 0, boxShadow: "0 6px 0 0 #252422", backgroundColor: "#fffcf2", color: "#252422", borderColor: "#252422" }}
                   animate={{ y: 0, boxShadow: "0 6px 0 0 #252422", backgroundColor: "#fffcf2", color: "#252422", borderColor: "#252422" }}
-                  whileHover={{ 
-                     y: -2,
-                     boxShadow: "0 8px 0 0 #252422",
-                     backgroundColor: "#eb5e28",
-                     color: "#fffcf2",
-                     borderColor: "#eb5e28"
+                  whileHover={{
+                    y: -2,
+                    boxShadow: "0 8px 0 0 #252422",
+                    backgroundColor: "#eb5e28",
+                    color: "#fffcf2",
+                    borderColor: "#eb5e28"
                   }}
-                  whileTap={{ 
-                     y: 6,
-                     boxShadow: "0 0px 0 0 #252422"
+                  whileTap={{
+                    y: 6,
+                    boxShadow: "0 0px 0 0 #252422"
                   }}
                   transition={{ type: "spring", stiffness: 600, damping: 18 }}
                 >

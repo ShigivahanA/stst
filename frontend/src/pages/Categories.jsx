@@ -154,7 +154,7 @@ export default function Categories() {
               PRODUCT <br />
               <span className="text-outline">CATEGORIES.</span>
             </motion.h1>
-            <p className="text-lg md:text-xl text-artisan-light/40 font-display font-medium tracking-widest leading-relaxed max-w-2xl">
+            <p className="text-lg md:text-xl text-artisan-light font-display font-medium tracking-widest leading-relaxed max-w-2xl">
               Browse our specialized collections of clinical-grade medical equipment and surgical supplies.
             </p>
           </div>
@@ -174,7 +174,7 @@ export default function Categories() {
                 {/* Subtle Background Image Overlay */}
                 <div
                   className="absolute inset-0 bg-cover bg-center opacity-[0.3] group-hover:opacity-[0.05] group-hover:scale-105 transition-all duration-700 pointer-events-none filter grayscale mix-blend-multiply"
-                  style={{ backgroundImage: `url(${category.bgImage})` }}
+                  style={{ backgroundImage: `url(${(hasActualProducts && (actualProducts[0]?.image || actualProducts[0]?.images?.[0])) || category.bgImage})` }}
                 />
 
                 {/* Large watermark category ID */}
@@ -211,7 +211,7 @@ export default function Categories() {
                             <li key={prod._id}>
                               <Link
                                 to={`/product/${prod._id}`}
-                                className="text-[10px] font-mono text-artisan-light/50 hover:text-artisan-grey uppercase tracking-wide flex items-center gap-2 transition-all duration-300 hover:translate-x-1 group/link"
+                                className="text-[10px] font-mono text-artisan-light hover:text-artisan-grey uppercase tracking-wide flex items-center gap-2 transition-all duration-300 hover:translate-x-1 group/link"
                               >
                                 <span className="w-1.5 h-1.5 bg-artisan-grey rounded-full flex-shrink-0 group-hover/link:bg-artisan-light transition-colors" />
                                 <span className="truncate max-w-[200px] text-artisan-blue group-hover/link:text-artisan-grey transition-colors">{prod.title || prod.name}</span>
@@ -280,11 +280,11 @@ export default function Categories() {
               to="/bulk-enquiry"
               className="px-12 py-6 bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-widest rounded-full border border-black cursor-pointer flex items-center justify-center relative overflow-hidden group"
               initial={{ y: 0, boxShadow: "0 6px 0 0 #000000" }}
-              whileHover={{ 
+              whileHover={{
                 y: -2,
                 boxShadow: "0 8px 0 0 #000000"
               }}
-              whileTap={{ 
+              whileTap={{
                 y: 6,
                 boxShadow: "0 0px 0 0 #000000"
               }}
@@ -296,12 +296,12 @@ export default function Categories() {
               to="/support"
               className="px-12 py-6 border-2 border-artisan-light text-artisan-light font-display font-black uppercase tracking-widest flex items-center justify-center gap-4 rounded-full cursor-pointer group"
               initial={{ y: 0, boxShadow: "0 6px 0 0 #252422" }}
-              whileHover={{ 
-                y: -2, 
+              whileHover={{
+                y: -2,
                 boxShadow: "0 8px 0 0 #252422",
                 backgroundColor: "rgba(37, 36, 34, 0.04)"
               }}
-              whileTap={{ 
+              whileTap={{
                 y: 6,
                 boxShadow: "0 0px 0 0 #252422"
               }}

@@ -3,7 +3,7 @@ import ApiResponse from '../utils/ApiResponse.js';
 import asyncHandler from '../utils/asyncHandler.js';
 
 export const checkout = asyncHandler(async (req, res) => {
-  const { items, sessionId, conversionSource, couponCode, addressId } = req.body;
+  const { items, sessionId, conversionSource, couponCode, addressId, deliveryOption } = req.body;
   const userId = req.user?._id; // If guest, userId is undefined
 
   const data = await orderService.createCheckoutOrder({
@@ -13,6 +13,7 @@ export const checkout = asyncHandler(async (req, res) => {
     conversionSource,
     couponCode,
     addressId,
+    deliveryOption,
   });
 
   return res
@@ -63,4 +64,52 @@ export const getOrderDetail = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(new ApiResponse(200, order, 'Order details fetched successfully'));
+});
+
+export const checkChennaiLocation = asyncHandler(async (req, res) => {
+  const { addressId } = req.body;
+  const userId = req.user?._id;
+
+  const isChennai = await orderService.checkAddressChennai({ userId, addressId });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, { isChennai }, 'Address location checked successfully'));
+});
+
+export const savePickupSlot = asyncHandler(async (req, res) => {
+  const orderId = req.params.id;
+  const { date, time } = req.body;
+  const userId = req.user._id;
+
+  const order = await orderService.savePickupSlot({
+    orderId,
+    userId,
+    date,
+    time
+  });
+
+  return res.status(200).json(new ApiResponse(200, order, 'Pickup slot confirmed successfully'));
+});
+
+export const verifyPickupCode = asyncHandler(async (req, res) => {
+  const orderId = req.params.id;
+  const { verificationPin } = req.body;
+
+  const order = await orderService.verifyPickupCode({
+    orderId,
+    verificationPin
+  });
+
+  return res.status(200).json(new ApiResponse(200, order, 'Order verified and collected successfully'));
+});
+
+export const sendManualPickupEmail = asyncHandler(async (req, res) => {
+  const orderId = req.params.id;
+
+  const order = await orderService.sendManualPickupEmail({
+    orderId
+  });
+
+  return res.status(200).json(new ApiResponse(200, order, 'Pickup slot invitation email sent successfully'));
 });

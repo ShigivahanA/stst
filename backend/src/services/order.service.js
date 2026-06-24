@@ -9,9 +9,9 @@ import User from '../models/user.model.js';
 import Coupon from '../models/coupon.model.js';
 import ApiError from '../utils/ApiError.js';
 import logger from '../config/logger.js';
-import { sendOrderSuccessEmail, sendOrderFailureEmail, sendShippingUpdateEmail } from './email.service.js';
+import { sendOrderSuccessEmail, sendOrderFailureEmail, sendShippingUpdateEmail, sendAdminPickupNotificationEmail, sendOrderSuccessPickupEmail, sendPickupSlotInvitationEmail } from './email.service.js';
 
-export const createCheckoutOrder = async ({ userId, items, sessionId, conversionSource, couponCode, addressId }) => {
+export const createCheckoutOrder = async ({ userId, items, sessionId, conversionSource, couponCode, addressId, deliveryOption = 'delivery' }) => {
   const session = await mongoose.startSession();
   session.startTransaction();
 
@@ -42,6 +42,15 @@ export const createCheckoutOrder = async ({ userId, items, sessionId, conversion
       state: matchedAddress.state,
       pincode: matchedAddress.pincode,
     };
+
+    if (deliveryOption === 'instore_pickup') {
+      const isChennai =
+        shippingAddress.city.trim().toLowerCase() === 'chennai' ||
+        shippingAddress.pincode.trim().startsWith('600');
+      if (!isChennai) {
+        throw new ApiError(400, 'In-Store Pickup is only available for Chennai addresses');
+      }
+    }
 
     // Verify stock, reserve inventory, and calculate totals
     for (const item of items) {
@@ -124,7 +133,7 @@ export const createCheckoutOrder = async ({ userId, items, sessionId, conversion
     }
 
     const discountedSubtotal = Math.max(0, subtotal - discountAmount);
-    const shippingFee = discountedSubtotal > 5000 || discountedSubtotal === 0 ? 0 : 150;
+    const shippingFee = deliveryOption === 'instore_pickup' ? 0 : (discountedSubtotal > 5000 || discountedSubtotal === 0 ? 0 : 150);
     const finalTotalAmount = discountedSubtotal + shippingFee;
 
     // Create Razorpay order
@@ -142,6 +151,10 @@ export const createCheckoutOrder = async ({ userId, items, sessionId, conversion
     }
 
     // Create Order in DB (status pending)
+    const pickupVerificationPin = deliveryOption === 'instore_pickup'
+      ? Math.floor(100000 + Math.random() * 900000).toString()
+      : '';
+
     const order = await Order.create(
       [
         {
@@ -158,6 +171,9 @@ export const createCheckoutOrder = async ({ userId, items, sessionId, conversion
           orderStatus: 'pending',
           paymentStatus: 'pending',
           shippingAddress,
+          deliveryOption,
+          storeAddress: deliveryOption === 'instore_pickup' ? 'No 85, Nalla Thambi Road, Pammal, Chennai - 600075' : '',
+          pickupVerificationPin,
         },
       ],
       { session }
@@ -302,13 +318,35 @@ export const verifyRazorpayPayment = async ({
           if (user) {
             // Populate product details in order
             const populatedOrder = await Order.findById(order._id).populate('items.product');
-            sendOrderSuccessEmail(
-              user.email,
-              user.name,
-              order.razorpayOrderId || order._id.toString(),
-              populatedOrder.items,
-              order.totalAmount
-            );
+            if (order.deliveryOption === 'instore_pickup') {
+              sendOrderSuccessPickupEmail(
+                user.email,
+                user.name,
+                order._id.toString(),
+                populatedOrder.items,
+                order.totalAmount
+              );
+            } else {
+              sendOrderSuccessEmail(
+                user.email,
+                user.name,
+                order.razorpayOrderId || order._id.toString(),
+                populatedOrder.items,
+                order.totalAmount
+              );
+            }
+
+            // Notify admin if it's an in-store pickup
+            if (order.deliveryOption === 'instore_pickup') {
+              sendAdminPickupNotificationEmail(
+                order._id.toString(),
+                user.name,
+                order.totalAmount,
+                populatedOrder.items
+              ).catch((err) => {
+                logger.error(`Error sending admin pickup email: ${err.message}`);
+              });
+            }
           }
         })
         .catch((err) => {
@@ -462,5 +500,104 @@ export const releaseExpiredOrdersStock = async () => {
     session.endSession();
     logger.error(`Error in releaseExpiredOrdersStock: ${error.message}`);
   }
+};
+
+export const checkAddressChennai = async ({ userId, addressId }) => {
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new ApiError(404, 'User not found');
+  }
+
+  const address = user.addresses.find(addr => addr._id.toString() === addressId);
+  if (!address) {
+    throw new ApiError(404, 'Selected address not found');
+  }
+
+  const city = address.city || '';
+  const pincode = address.pincode || '';
+
+  const isChennai = city.trim().toLowerCase() === 'chennai' || pincode.trim().startsWith('600');
+  return isChennai;
+};
+
+export const savePickupSlot = async ({ orderId, userId, date, time }) => {
+  const order = await Order.findById(orderId).populate('user');
+  if (!order) {
+    throw new ApiError(404, 'Order not found');
+  }
+
+  // Authorize: check if user owns the order (or is admin)
+  if (order.user?._id?.toString() !== userId.toString()) {
+    throw new ApiError(403, 'YOU ARE NOT AUTHORIZED TO SET SLOT FOR THIS ORDER');
+  }
+
+  if (order.deliveryOption !== 'instore_pickup') {
+    throw new ApiError(400, 'This order is not configured for in-store pickup');
+  }
+
+  order.pickupSlot = {
+    date: new Date(date),
+    time: time
+  };
+
+  // Add history log
+  order.shippingHistory.push({
+    status: order.shippingStatus,
+    description: `Pickup slot confirmed: ${new Date(date).toLocaleDateString()} at ${time}.`,
+    timestamp: new Date()
+  });
+
+  await order.save();
+
+  return order;
+};
+
+export const verifyPickupCode = async ({ orderId, verificationPin }) => {
+  const order = await Order.findById(orderId).populate('user', 'name email');
+  if (!order) {
+    throw new ApiError(404, 'Order not found');
+  }
+
+  if (order.deliveryOption !== 'instore_pickup') {
+    throw new ApiError(400, 'This order is not configured for in-store pickup');
+  }
+
+  if (!order.pickupVerificationPin || order.pickupVerificationPin !== verificationPin.trim()) {
+    throw new ApiError(400, 'Invalid verification PIN. Access denied.');
+  }
+
+  order.shippingStatus = 'picked_up';
+  order.orderStatus = 'completed';
+  order.shippingHistory.push({
+    status: 'picked_up',
+    description: 'Order successfully verified and collected via In-Store Pickup.',
+    timestamp: new Date()
+  });
+
+  await order.save();
+  return order;
+};
+
+export const sendManualPickupEmail = async ({ orderId }) => {
+  const order = await Order.findById(orderId).populate('user', 'name email');
+  if (!order) {
+    throw new ApiError(404, 'Order not found');
+  }
+
+  if (order.deliveryOption !== 'instore_pickup') {
+    throw new ApiError(400, 'This order is not configured for in-store pickup');
+  }
+
+  if (!order.user || !order.user.email) {
+    throw new ApiError(400, 'Order user details are missing email address');
+  }
+
+  await sendPickupSlotInvitationEmail(
+    order.user.email,
+    order.user.name,
+    order._id.toString()
+  );
+
+  return order;
 };
 

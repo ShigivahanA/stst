@@ -282,7 +282,77 @@ export const getOrderSuccessTemplate = (name, orderId, items, totalAmount) => {
     <p style="margin-bottom: 0;">An email containing parcel tracking details will be dispatched as soon as the logistics hub processes your items.</p>
   `;
   return wrapTemplate('Purchase Receipt Invoice', content);
+
 };
+
+export const getOrderSuccessPickupTemplate = (name, orderId, items, totalAmount, frontendUrl) => {
+  let itemsHtml = '';
+  items.forEach(item => {
+    const pName = item.product?.name || 'Medical Supplies';
+    const pSku = item.product?.sku || 'N/A';
+    itemsHtml += `
+      <tr style="border-bottom: 1px solid #ccc5b9;">
+        <td style="padding: 12px 0; color: #252422;">
+          <span style="font-weight: 700; font-size: 14px; display: block;">${pName}</span>
+          <span style="font-size: 11px; color: #eb5e28; font-family: monospace;">SKU: ${pSku}</span>
+        </td>
+        <td align="center" style="padding: 12px 0; color: #252422; font-size: 14px;">${item.quantity}</td>
+        <td align="right" style="padding: 12px 0; color: #252422; font-size: 14px; font-weight: 600;">₹${item.priceAtPurchase.toLocaleString()}</td>
+      </tr>
+    `;
+  });
+
+  const slotLink = `${frontendUrl || 'http://localhost:5173'}/pickup-slot/${orderId}`;
+
+  const content = `
+    <h2 style="color: #eb5e28; font-size: 20px; font-weight: 700; margin-top: 0; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.02em;">In-Store Pickup Order Confirmed</h2>
+    <p style="margin-top: 0; margin-bottom: 16px;">Dear ${name},</p>
+    <p style="margin-top: 0; margin-bottom: 24px;">Thank you for your purchase. We are pleased to confirm that payment has been verified. Your order <strong>#${orderId.slice(-6).toUpperCase()}</strong> is now being prepared for collection at our store.</p>
+    
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="font-size: 13px; border-collapse: collapse; margin-bottom: 24px;">
+      <thead>
+        <tr style="border-bottom: 2px solid #eb5e28; text-transform: uppercase; color: #eb5e28; font-size: 11px; font-weight: 700;">
+          <th align="left" style="padding-bottom: 8px;">Item Description</th>
+          <th align="center" style="padding-bottom: 8px; width: 60px;">Qty</th>
+          <th align="right" style="padding-bottom: 8px; width: 100px;">Price</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${itemsHtml}
+        <tr>
+          <td colspan="2" style="padding-top: 16px; font-weight: 700; text-transform: uppercase; color: #403d39; font-size: 12px;">Total Paid:</td>
+          <td align="right" style="padding-top: 16px; font-size: 18px; font-weight: 800; color: #eb5e28;">₹${totalAmount.toLocaleString()}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 28px;">
+      <tr>
+        <td align="center" style="background-color: #fffcf2; border: 1px dashed #eb5e28; border-radius: 8px; padding: 24px 16px;">
+          <span style="font-size: 11px; color: #403d39; text-transform: uppercase; font-weight: bold; letter-spacing: 0.1em; display: block; margin-bottom: 10px;">Select Your Collection Slot</span>
+          <p style="margin: 0 0 16px 0; font-size: 13px; color: #252422; line-height: 1.4;">Please select your preferred date and time slot to collect your order:</p>
+          <a href="${slotLink}" style="display: inline-block; background-color: #eb5e28; color: #ffffff; font-weight: 700; text-decoration: none; padding: 12px 28px; text-transform: uppercase; letter-spacing: 0.1em; font-size: 12px; border-radius: 4px; box-shadow: 0 2px 4px rgba(235,94,40,0.2);">
+            Schedule Pickup Slot
+          </a>
+        </td>
+      </tr>
+    </table>
+    
+    <table border="0" cellpadding="10" cellspacing="0" width="100%" style="background-color: #fffcf2; border: 1px solid #ccc5b9; border-radius: 6px; margin-bottom: 24px; font-size: 13px;">
+      <tr>
+        <td style="color: #403d39; line-height: 1.5;">
+          <strong>Store Address:</strong> No 85, Nalla Thambi Road, Pammal, Chennai - 600 075 <br />
+          <strong>Collection Timings:</strong> Monday - Saturday: 9:00 AM - 8:00 PM <br />
+          <strong>Important:</strong> Present your digital pass or the 6-digit Verification PIN at the counter to verify collection.
+        </td>
+      </tr>
+    </table>
+    
+    <p style="margin-bottom: 0;">You will receive another update when your package is ready at the counter.</p>
+  `;
+  return wrapTemplate('In-Store Collection Invoice', content);
+};
+
 
 export const getOrderFailureTemplate = (name, orderId, totalAmount) => {
   const content = `

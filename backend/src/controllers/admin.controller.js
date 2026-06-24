@@ -13,7 +13,7 @@ import ApiResponse from '../utils/ApiResponse.js';
 
 import asyncHandler from '../utils/asyncHandler.js';
 import ApiError from '../utils/ApiError.js';
-import { sendSuspensionEmail, sendShippingUpdateEmail } from '../services/email.service.js';
+import { sendSuspensionEmail, sendShippingUpdateEmail, sendPickupSlotInvitationEmail } from '../services/email.service.js';
 import { uploadToCloudinary, deleteFromCloudinary } from '../utils/cloudinary.js';
 import { DEFAULT_PAGES } from '../constants/defaultPages.js';
 
@@ -165,7 +165,9 @@ export const updateListingStatus = asyncHandler(async (req, res) => {
         in_transit: 'Order in transit through regional courier facility.',
         out_for_delivery: 'Order out for delivery with local surgical delivery agent.',
         delivered: 'Order delivered successfully to shipping address.',
-        failed: 'Delivery attempt failed.'
+        failed: 'Delivery attempt failed.',
+        ready_for_pickup: 'Your order is ready for in-store pickup at No 85, Nalla Thambi Road, Pammal, Chennai - 600075.',
+        picked_up: 'Order picked up successfully from the store.'
       };
 
       order.shippingHistory.push({
@@ -174,7 +176,7 @@ export const updateListingStatus = asyncHandler(async (req, res) => {
         timestamp: new Date()
       });
 
-      if (shippingStatus === 'delivered') {
+      if (shippingStatus === 'delivered' || shippingStatus === 'picked_up') {
         order.orderStatus = 'completed';
       }
     }
@@ -208,13 +210,22 @@ export const updateListingStatus = asyncHandler(async (req, res) => {
       try {
         const latestHistory = order.shippingHistory[order.shippingHistory.length - 1];
         const description = latestHistory ? latestHistory.description : `Order shipping status updated to ${order.shippingStatus}`;
-        await sendShippingUpdateEmail(
-          order.user.email,
-          order.user.name,
-          order._id.toString(),
-          order.shippingStatus,
-          description
-        );
+        
+        if (order.deliveryOption === 'instore_pickup' && order.shippingStatus === 'ready_for_pickup') {
+          await sendPickupSlotInvitationEmail(
+            order.user.email,
+            order.user.name,
+            order._id.toString()
+          );
+        } else {
+          await sendShippingUpdateEmail(
+            order.user.email,
+            order.user.name,
+            order._id.toString(),
+            order.shippingStatus,
+            description
+          );
+        }
       } catch (err) {
         console.error(`Error sending manual shipping update email: ${err.message}`);
       }
@@ -277,6 +288,10 @@ export const getBookings = asyncHandler(async (req, res) => {
       shippingStatus: order.shippingStatus,
       paymentStatus: order.paymentStatus,
       shippingTrackingNumber: order.shippingTrackingNumber || '',
+      deliveryOption: order.deliveryOption || 'delivery',
+      storeAddress: order.storeAddress || '',
+      pickupSlot: order.pickupSlot,
+      pickupVerificationPin: order.pickupVerificationPin || '',
     };
   });
 

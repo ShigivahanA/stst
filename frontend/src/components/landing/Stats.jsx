@@ -86,7 +86,7 @@ function StatCard({ stat, index, isInView, icon: IconComponent, idBadge }) {
         <div className="w-10 h-10 bg-artisan-light/5 border border-artisan-light/10 flex items-center justify-center text-artisan-grey rounded-xl group-hover:bg-artisan-grey/10 group-hover:border-artisan-grey/30 group-hover:text-artisan-grey transition-all duration-500">
           <IconComponent className="w-5 h-5" />
         </div>
-        <span className="text-[8px] font-mono font-bold text-artisan-light/30 uppercase tracking-[0.2em] group-hover:text-artisan-dark/40 transition-colors duration-500">
+        <span className="text-[8px] font-mono font-bold text-artisan-light uppercase tracking-[0.2em] group-hover:text-artisan-dark/40 transition-colors duration-500">
           {idBadge}
         </span>
       </div>
@@ -155,7 +155,7 @@ export default function Stats() {
               </h2>
             </div>
 
-            <p className="text-xs font-mono text-artisan-light/50 uppercase tracking-[0.2em] leading-relaxed">
+            <p className="text-xs font-mono text-artisan-light uppercase tracking-[0.2em] leading-relaxed">
               STAT Surgical Supplies delivers top-tier clinical machinery, diagnostic tools, and surgical consumables to hospitals, healthcare centers, and medical practitioners across India.
             </p>
             {/* Premium Heartbeat/ECG Visual Component */}

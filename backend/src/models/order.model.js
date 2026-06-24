@@ -62,7 +62,7 @@ const orderSchema = new mongoose.Schema(
     },
     shippingStatus: {
       type: String,
-      enum: ['pending', 'shipped', 'in_transit', 'out_for_delivery', 'delivered', 'failed'],
+      enum: ['pending', 'shipped', 'in_transit', 'out_for_delivery', 'delivered', 'failed', 'ready_for_pickup', 'picked_up'],
       default: 'pending',
     },
     shippingTrackingNumber: {
@@ -73,7 +73,7 @@ const orderSchema = new mongoose.Schema(
       {
         status: {
           type: String,
-          enum: ['pending', 'shipped', 'in_transit', 'out_for_delivery', 'delivered', 'failed'],
+          enum: ['pending', 'shipped', 'in_transit', 'out_for_delivery', 'delivered', 'failed', 'ready_for_pickup', 'picked_up'],
         },
         description: {
           type: String,
@@ -122,6 +122,23 @@ const orderSchema = new mongoose.Schema(
       city: { type: String, default: '' },
       state: { type: String, default: '' },
       pincode: { type: String, default: '' },
+    },
+    deliveryOption: {
+      type: String,
+      enum: ['delivery', 'instore_pickup'],
+      default: 'delivery',
+    },
+    storeAddress: {
+      type: String,
+      default: '',
+    },
+    pickupSlot: {
+      date: { type: Date },
+      time: { type: String },
+    },
+    pickupVerificationPin: {
+      type: String,
+      default: '',
     },
   },
   {

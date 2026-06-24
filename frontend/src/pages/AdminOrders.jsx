@@ -33,6 +33,13 @@ const SHIPPING_STATUS_OPTIONS = [
    { value: 'failed', label: 'Failed', color: 'bg-red-500', text: 'text-red-500', border: 'border-red-500/30', bg: 'bg-red-500/5' }
 ]
 
+const PICKUP_STATUS_OPTIONS = [
+   { value: 'pending', label: 'Pending', color: 'bg-yellow-500', text: 'text-yellow-400', border: 'border-yellow-500/30', bg: 'bg-yellow-500/5' },
+   { value: 'ready_for_pickup', label: 'Ready for Pickup', color: 'bg-indigo-500', text: 'text-indigo-400', border: 'border-indigo-500/30', bg: 'bg-indigo-500/5' },
+   { value: 'picked_up', label: 'Picked Up', color: 'bg-green-500', text: 'text-green-500', border: 'border-green-500/30', bg: 'bg-green-500/5' },
+   { value: 'failed', label: 'Failed', color: 'bg-red-500', text: 'text-red-500', border: 'border-red-500/30', bg: 'bg-red-500/5' }
+]
+
 const FILTER_OPTIONS = [
    { value: 'all', label: 'All' },
    { value: 'pending', label: 'Pending' },
@@ -115,6 +122,7 @@ export default function AdminOrders() {
    const [filterStatus, setFilterStatus] = useState('all')
    const [trackingInputs, setTrackingInputs] = useState({})
    const [editingTrackingId, setEditingTrackingId] = useState(null)
+   const [verificationInputs, setVerificationInputs] = useState({})
 
    const fetchBookings = async () => {
       try {
@@ -147,7 +155,7 @@ export default function AdminOrders() {
          return
       }
       try {
-         setActionLoading(id)
+         setActionLoading(`${id}-tracking`)
          await api.put(`/admin/listings/${id}/status`, {
             shippingTrackingNumber: trackingVal.trim()
          })
@@ -163,7 +171,7 @@ export default function AdminOrders() {
 
    const handleStatusUpdate = async (id, status, orderStatus = null, shippingStatus = null) => {
       try {
-         setActionLoading(id)
+         setActionLoading(`${id}-status`)
          const payload = {}
          if (status) payload.status = status
          if (orderStatus) payload.orderStatus = orderStatus
@@ -174,6 +182,44 @@ export default function AdminOrders() {
          fetchBookings()
       } catch (err) {
          addToast('Update failed', 'error')
+      } finally {
+         setActionLoading(null)
+      }
+   }
+
+   const handleVerifyPickupPin = async (id) => {
+      let pinVal = verificationInputs[id] || ''
+      pinVal = pinVal.replace(/-/g, '')
+      if (!pinVal.trim() || pinVal.length !== 6) {
+         addToast('Please enter a valid 6-digit verification PIN', 'error')
+         return
+      }
+      try {
+         setActionLoading(`${id}-verify`)
+         await api.post(`/orders/${id}/verify-pickup`, {
+            verificationPin: pinVal.trim()
+         })
+         addToast('Verification successful! Order collected.', 'success')
+         setVerificationInputs(prev => {
+            const copy = { ...prev }
+            delete copy[id]
+            return copy
+         })
+         fetchBookings()
+      } catch (err) {
+         addToast(err.response?.data?.message || 'Verification failed. Invalid PIN.', 'error')
+      } finally {
+         setActionLoading(null)
+      }
+   }
+
+   const handleSendPickupSlotEmail = async (id) => {
+      try {
+         setActionLoading(`${id}-email`)
+         await api.post(`/orders/${id}/send-pickup-email`)
+         addToast('Pickup slot invitation email sent successfully!', 'success')
+      } catch (err) {
+         addToast(err.response?.data?.message || 'Failed to send slot link email.', 'error')
       } finally {
          setActionLoading(null)
       }
@@ -194,7 +240,10 @@ export default function AdminOrders() {
    })
 
    const getOrderStyle = (status) => ORDER_STATUS_OPTIONS.find(o => o.value === status) || ORDER_STATUS_OPTIONS[0]
-   const getShippingStyle = (status) => SHIPPING_STATUS_OPTIONS.find(o => o.value === status) || SHIPPING_STATUS_OPTIONS[0]
+   const getShippingStyle = (status) => {
+      const merged = [...SHIPPING_STATUS_OPTIONS, ...PICKUP_STATUS_OPTIONS]
+      return merged.find(o => o.value === status) || SHIPPING_STATUS_OPTIONS[0]
+   }
 
    return (
       <div className="min-h-screen bg-artisan-dark bg-noise flex flex-col pb-24 text-artisan-light">
@@ -279,6 +328,11 @@ export default function AdminOrders() {
                         {filteredBookings.map((booking) => {
                            const orderStyle = getOrderStyle(booking.orderStatus)
                            const shippingStyle = getShippingStyle(booking.shippingStatus)
+                           const isOrderLoading = actionLoading && actionLoading.startsWith(booking._id)
+                           const isStatusLoading = actionLoading === `${booking._id}-status`
+                           const isTrackingLoading = actionLoading === `${booking._id}-tracking`
+                           const isVerifyLoading = actionLoading === `${booking._id}-verify`
+                           const isEmailLoading = actionLoading === `${booking._id}-email`
 
                            return (
                               <motion.div
@@ -290,6 +344,13 @@ export default function AdminOrders() {
                               >
                                  {/* Status badges — top right corner */}
                                  <div className="absolute top-4 right-4 sm:top-5 sm:right-5 flex items-center gap-2">
+                                     <span className={`text-[8px] font-mono font-bold uppercase tracking-widest px-3 py-1.5 border rounded-full ${
+                                        booking.deliveryOption === 'instore_pickup'
+                                           ? 'border-artisan-grey/30 text-artisan-grey bg-artisan-grey/5'
+                                           : 'border-artisan-light/20 text-artisan-grey bg-artisan-light/5'
+                                     }`}>
+                                       {booking.deliveryOption === 'instore_pickup' ? 'Store Pickup' : 'Delivery'}
+                                    </span>
                                     <span className={`text-[8px] font-mono font-bold uppercase tracking-widest px-3 py-1.5 border rounded-full ${orderStyle.border} ${orderStyle.text} ${orderStyle.bg}`}>
                                        {booking.orderStatus || 'pending'}
                                     </span>
@@ -334,6 +395,19 @@ export default function AdminOrders() {
                                           <span className="text-[9px] font-mono text-artisan-light/50 uppercase font-semibold">
                                              Payment: <span className="text-artisan-light">{booking.paymentStatus || 'N/A'}</span>
                                           </span>
+                                          {booking.deliveryOption === 'instore_pickup' && (
+                                             <>
+                                                <span className="text-artisan-light/20">•</span>
+                                                <span className="text-[9px] font-mono text-artisan-light/50 uppercase font-semibold">
+                                                   Slot: <span className="text-artisan-grey font-bold">
+                                                      {booking.pickupSlot && booking.pickupSlot.date 
+                                                         ? `${new Date(booking.pickupSlot.date).toLocaleDateString()} at ${booking.pickupSlot.time}`
+                                                         : 'Not Scheduled Yet'
+                                                      }
+                                                   </span>
+                                                </span>
+                                             </>
+                                          )}
                                        </div>
                                     </div>
                                  </div>
@@ -345,66 +419,129 @@ export default function AdminOrders() {
                                           value={booking.orderStatus || 'pending'}
                                           options={ORDER_STATUS_OPTIONS}
                                           onChange={(val) => handleStatusUpdate(booking._id, null, val, null)}
-                                          disabled={actionLoading === booking._id}
+                                          disabled={isOrderLoading}
                                           icon={Package}
                                           label="Order Status"
                                        />
                                        <CustomDropdown
                                           value={booking.shippingStatus || 'pending'}
-                                          options={SHIPPING_STATUS_OPTIONS}
+                                          options={booking.deliveryOption === 'instore_pickup' ? PICKUP_STATUS_OPTIONS : SHIPPING_STATUS_OPTIONS}
                                           onChange={(val) => handleStatusUpdate(booking._id, null, null, val)}
-                                          disabled={actionLoading === booking._id}
+                                          disabled={isOrderLoading}
                                           icon={Truck}
-                                          label="Shipping Status"
+                                          label={booking.deliveryOption === 'instore_pickup' ? "Pickup Status" : "Shipping Status"}
                                        />
                                        {/* Tracking ID input/display next to Shipping Status */}
-                                       <div className="flex flex-col gap-1.5 relative">
-                                          <span className="text-[7px] font-mono text-artisan-light/40 uppercase tracking-wider font-bold">Tracking ID</span>
-                                          {!booking.shippingTrackingNumber || editingTrackingId === booking._id ? (
-                                             <div className="flex items-center gap-2 h-10">
-                                                <input
-                                                   type="text"
-                                                   value={trackingInputs[booking._id] || ''}
-                                                   onChange={(e) => setTrackingInputs(prev => ({ ...prev, [booking._id]: e.target.value }))}
-                                                   placeholder="ENTER TRACKING ID"
-                                                   className="bg-artisan-dark border border-artisan-light/10 text-artisan-light font-mono text-[9px] uppercase px-3 py-2 outline-none focus:border-artisan-grey/50 transition-colors rounded-xl h-10 w-44"
-                                                />
-                                                <button
-                                                   onClick={() => handleUpdateTracking(booking._id)}
-                                                   disabled={actionLoading === booking._id}
-                                                   className="h-10 px-4 bg-artisan-light hover:bg-artisan-grey disabled:bg-artisan-light/20 text-artisan-dark font-mono text-[9px] font-bold uppercase tracking-wider transition-all rounded-xl flex items-center justify-center cursor-pointer select-none"
-                                                >
-                                                   Share
-                                                </button>
-                                                {booking.shippingTrackingNumber && (
+                                       {booking.deliveryOption !== 'instore_pickup' && (
+                                          <div className="flex flex-col gap-1.5 relative">
+                                             <span className="text-[7px] font-mono text-artisan-light/40 uppercase tracking-wider font-bold">Tracking ID</span>
+                                             {!booking.shippingTrackingNumber || editingTrackingId === booking._id ? (
+                                                <div className="flex items-center gap-2 h-10">
+                                                   <input
+                                                      type="text"
+                                                      disabled={isOrderLoading}
+                                                      value={trackingInputs[booking._id] || ''}
+                                                      onChange={(e) => setTrackingInputs(prev => ({ ...prev, [booking._id]: e.target.value }))}
+                                                      placeholder="ENTER TRACKING ID"
+                                                      className="bg-artisan-dark border border-artisan-light/10 text-artisan-light font-mono text-[9px] uppercase px-3 py-2 outline-none focus:border-artisan-grey/50 transition-colors rounded-xl h-10 w-44 disabled:opacity-50"
+                                                   />
                                                    <button
-                                                      onClick={() => setEditingTrackingId(null)}
-                                                      disabled={actionLoading === booking._id}
-                                                      className="h-10 px-4 border border-artisan-light/10 hover:border-artisan-light/20 text-artisan-light font-mono text-[9px] font-bold uppercase tracking-wider transition-all rounded-xl flex items-center justify-center cursor-pointer select-none"
+                                                      onClick={() => handleUpdateTracking(booking._id)}
+                                                      disabled={isOrderLoading}
+                                                      className="h-10 px-4 bg-artisan-light hover:bg-artisan-grey disabled:bg-artisan-light/20 text-artisan-dark font-mono text-[9px] font-bold uppercase tracking-wider transition-all rounded-xl flex items-center justify-center cursor-pointer select-none"
                                                    >
-                                                      Cancel
+                                                      {isTrackingLoading ? (
+                                                         <Loader2 className="w-3.5 h-3.5 animate-spin text-artisan-dark" />
+                                                      ) : (
+                                                         'Share'
+                                                      )}
                                                    </button>
-                                                )}
-                                             </div>
-                                          ) : (
-                                             <div className="flex items-center gap-3 h-10 bg-artisan-light/[0.02] border border-artisan-light/10 px-4 rounded-xl w-64 justify-between">
-                                                <span className="font-mono text-[9px] text-artisan-light/60 truncate uppercase font-bold">{booking.shippingTrackingNumber}</span>
-                                                <button
-                                                   onClick={() => {
-                                                      setEditingTrackingId(booking._id)
-                                                      setTrackingInputs(prev => ({ ...prev, [booking._id]: booking.shippingTrackingNumber }))
-                                                   }}
-                                                   className="text-artisan-grey hover:text-artisan-light font-mono text-[9px] font-bold uppercase tracking-wider cursor-pointer"
-                                                >
-                                                   Edit
-                                                </button>
-                                             </div>
-                                          )}
-                                       </div>
+                                                   {booking.shippingTrackingNumber && (
+                                                      <button
+                                                         onClick={() => setEditingTrackingId(null)}
+                                                         disabled={isOrderLoading}
+                                                         className="h-10 px-4 border border-artisan-light/10 hover:border-artisan-light/20 text-artisan-light font-mono text-[9px] font-bold uppercase tracking-wider transition-all rounded-xl flex items-center justify-center cursor-pointer select-none"
+                                                      >
+                                                         Cancel
+                                                      </button>
+                                                   )}
+                                                </div>
+                                             ) : (
+                                                <div className="flex items-center gap-3 h-10 bg-artisan-light/[0.02] border border-artisan-light/10 px-4 rounded-xl w-64 justify-between">
+                                                   <span className="font-mono text-[9px] text-artisan-light/60 truncate uppercase font-bold">{booking.shippingTrackingNumber}</span>
+                                                   <button
+                                                      onClick={() => {
+                                                         setEditingTrackingId(booking._id)
+                                                         setTrackingInputs(prev => ({ ...prev, [booking._id]: booking.shippingTrackingNumber }))
+                                                      }}
+                                                      disabled={isOrderLoading}
+                                                      className="text-artisan-grey hover:text-artisan-light font-mono text-[9px] font-bold uppercase tracking-wider cursor-pointer disabled:opacity-50"
+                                                   >
+                                                      Edit
+                                                   </button>
+                                                </div>
+                                             )}
+                                          </div>
+                                       )}
+                                       {/* Verification PIN verification next to Pickup Status */}
+                                       {booking.deliveryOption === 'instore_pickup' && (
+                                          <div className="flex flex-col gap-1.5 relative">
+                                             <span className="text-[7px] font-mono text-artisan-light/40 uppercase tracking-wider font-bold">Verify Collection PIN</span>
+                                             {booking.shippingStatus !== 'picked_up' ? (
+                                                <div className="flex items-center gap-2 h-10">
+                                                   <input
+                                                      type="text"
+                                                      maxLength={7}
+                                                      disabled={isOrderLoading}
+                                                      value={verificationInputs[booking._id] || ''}
+                                                      onChange={(e) => {
+                                                         let val = e.target.value.replace(/[^0-9]/g, '');
+                                                         if (val.length > 3) {
+                                                            val = val.slice(0, 3) + '-' + val.slice(3, 6);
+                                                         }
+                                                         setVerificationInputs(prev => ({ ...prev, [booking._id]: val }));
+                                                      }}
+                                                      placeholder="PIN (E.G. 582-910)"
+                                                      className="bg-artisan-dark border border-artisan-light/10 text-artisan-light font-mono text-[9px] uppercase px-3 py-2 outline-none focus:border-artisan-grey/50 transition-colors rounded-xl h-10 w-44 disabled:opacity-50"
+                                                   />
+                                                   <button
+                                                      onClick={() => handleVerifyPickupPin(booking._id)}
+                                                      disabled={isOrderLoading}
+                                                      className="h-10 px-4 bg-green-600 hover:bg-green-700 disabled:bg-green-600/20 text-white font-mono text-[9px] font-bold uppercase tracking-wider transition-all rounded-xl flex items-center justify-center cursor-pointer select-none"
+                                                   >
+                                                      {isVerifyLoading ? (
+                                                         <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                                      ) : (
+                                                         'Verify'
+                                                      )}
+                                                   </button>
+                                                   <button
+                                                      onClick={() => handleSendPickupSlotEmail(booking._id)}
+                                                      disabled={isOrderLoading}
+                                                      className="h-10 px-4 bg-artisan-grey hover:bg-artisan-grey/95 disabled:bg-artisan-grey/25 text-white font-mono text-[9px] font-bold uppercase tracking-wider transition-all rounded-xl flex items-center justify-center cursor-pointer select-none"
+                                                      title="Send Pickup Slot Selection Email to Customer"
+                                                   >
+                                                      {isEmailLoading ? (
+                                                         <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
+                                                      ) : (
+                                                         'Send Slot Link'
+                                                      )}
+                                                   </button>
+                                                </div>
+                                             ) : (
+                                                <div className="flex items-center gap-3 h-10 bg-green-500/5 border border-green-500/20 px-4 rounded-xl w-64 justify-between">
+                                                   <span className="font-mono text-[9px] text-green-600 truncate uppercase font-bold flex items-center gap-1.5">
+                                                      <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                                                      Verified PIN: {booking.pickupVerificationPin ? `${booking.pickupVerificationPin.slice(0, 3)}-${booking.pickupVerificationPin.slice(3)}` : 'SUCCESS'}
+                                                   </span>
+                                                </div>
+                                             )}
+                                          </div>
+                                       )}
                                     </div>
 
                                     {/* Loading spinner */}
-                                    {actionLoading === booking._id && (
+                                    {isOrderLoading && (
                                        <Loader2 className="w-4 h-4 text-artisan-grey animate-spin shrink-0 sm:ml-auto" />
                                     )}
                                  </div>

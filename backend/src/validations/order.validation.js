@@ -22,6 +22,7 @@ const checkout = {
     conversionSource: Joi.string().allow('').default('direct'),
     couponCode: Joi.string().allow('').trim().uppercase().optional(),
     addressId: Joi.string().custom(objectId).required(),
+    deliveryOption: Joi.string().valid('delivery', 'instore_pickup').optional().default('delivery'),
   }),
 };
 

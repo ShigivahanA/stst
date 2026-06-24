@@ -26,6 +26,7 @@ import Cart from './pages/Cart'
 import Profile from './pages/Profile'
 import OrdersHistory from './pages/OrdersHistory'
 import OrderDetail from './pages/OrderDetail'
+import PickupSlot from './pages/PickupSlot'
 import Shipping from './pages/Shipping'
 import ReturnsAndRefunds from './pages/ReturnsAndRefunds'
 import NotFound from './pages/NotFound'
@@ -194,6 +195,11 @@ function App() {
                 <Route path="/orders/:id" element={
                   <ProtectedRoute>
                     <OrderDetail />
+                  </ProtectedRoute>
+                } />
+                <Route path="/pickup-slot/:orderId" element={
+                  <ProtectedRoute>
+                    <PickupSlot />
                   </ProtectedRoute>
                 } />
                 <Route path="/admin" element={

@@ -4,7 +4,7 @@ import app from './app.js';
 import logger from './config/logger.js';
 import { startCartScheduler } from './services/cartScheduler.service.js';
 
-// Load environment variables configuration
+// Load environment variables configuration (reloaded for send-pickup-email)
 dotenv.config();
 
 const PORT = process.env.PORT || 8000;

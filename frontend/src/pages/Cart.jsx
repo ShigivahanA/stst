@@ -42,6 +42,9 @@ export default function Cart() {
   const [checkoutStep, setCheckoutStep] = useState(0) // 0: Cart, 1: Address, 2: Review, 3: Payment, 4: Success
   const [selectedAddressId, setSelectedAddressId] = useState(null)
   const [isTransitioningStep, setIsTransitioningStep] = useState(false)
+  const [deliveryOption, setDeliveryOption] = useState('delivery') // 'delivery' or 'instore_pickup'
+  const [pickupConfirmed, setPickupConfirmed] = useState(false)
+  const [isChennaiAddress, setIsChennaiAddress] = useState(false)
 
   // ADDRESS FORM STATES
   const [isAddingAddress, setIsAddingAddress] = useState(false)
@@ -131,7 +134,7 @@ export default function Cart() {
   const discountAmount = appliedCoupon ? appliedCoupon.discountAmount : 0
   const discountedSubtotal = Math.max(0, itemsSubtotal - discountAmount)
 
-  const shippingFee = discountedSubtotal > 1000 || discountedSubtotal === 0 ? 0 : 150 // Free shipping above ₹5,000
+  const shippingFee = deliveryOption === 'instore_pickup' ? 0 : (discountedSubtotal > 1000 || discountedSubtotal === 0 ? 0 : 150) // Free shipping above ₹5,000
 
   const paymentMethod = 'online'
   const orderTotal = discountedSubtotal + shippingFee
@@ -215,6 +218,49 @@ export default function Cart() {
       setIsTransitioningStep(false)
       window.scrollTo(0, 0)
     }, 600)
+  }
+
+  const handleProceedFromAddress = async () => {
+    if (!selectedAddressId) {
+      addToast('Please select shipping address', 'error')
+      return
+    }
+    try {
+      setIsProcessing(true)
+      const res = await api.post('/orders/check-chennai', { addressId: selectedAddressId })
+      const isChennai = res.data.data.isChennai
+      setIsChennaiAddress(isChennai)
+      if (isChennai) {
+        setDeliveryOption('delivery')
+        setPickupConfirmed(false)
+        changeStep(5) // Step 5 is pickup/delivery option screen
+      } else {
+        setDeliveryOption('delivery')
+        changeStep(2) // proceed to review
+      }
+    } catch (err) {
+      console.error('Failed to check address location', err)
+      setDeliveryOption('delivery')
+      changeStep(2)
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  const handleGoBack = () => {
+    if (checkoutStep === 5) {
+      changeStep(1)
+    } else if (checkoutStep === 2) {
+      if (isChennaiAddress) {
+        changeStep(5)
+      } else {
+        changeStep(1)
+      }
+    } else if (checkoutStep === 3) {
+      changeStep(2)
+    } else {
+      changeStep(checkoutStep - 1)
+    }
   }
 
   // Update item quantity
@@ -388,7 +434,8 @@ export default function Cart() {
         sessionId,
         conversionSource: 'cart_checkout',
         couponCode: appliedCoupon ? appliedCoupon.code : undefined,
-        addressId: selectedAddressId
+        addressId: selectedAddressId,
+        deliveryOption: deliveryOption
       })
 
       setRazorpayOrderInfo(res.data.data)
@@ -573,41 +620,54 @@ export default function Cart() {
       <div className="container-custom">
 
         {/* --- STEPPER (1-2-3) CENTERED AT THE TOP --- */}
-        {checkoutStep > 0 && checkoutStep < 4 && (
+        {(checkoutStep > 0 && checkoutStep < 4 || checkoutStep === 5) && (
           <div className="flex items-center justify-center gap-3 sm:gap-6 mb-12 pb-6 border-b border-artisan-light/5 overflow-x-auto scrollbar-hide">
             {[
               { step: 1, label: 'Shipping Address', shortLabel: 'Address' },
               { step: 2, label: 'Review Order', shortLabel: 'Review' },
               { step: 3, label: 'Payment', shortLabel: 'Payment' }
-            ].map((item, idx) => (
-              <div key={item.step} className="flex items-center gap-3 sm:gap-6 shrink-0">
-                <div className="flex items-center gap-2">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-mono font-bold border transition-all duration-500 ${checkoutStep === item.step
-                    ? 'bg-artisan-light text-artisan-dark border-artisan-light shadow-lg shadow-artisan-light/10'
-                    : checkoutStep > item.step
-                      ? 'bg-green-500/10 text-green-500 border-green-500/25'
-                      : 'bg-artisan-light/5 text-artisan-light/20 border-artisan-light/10'
-                    }`}>
-                    {checkoutStep > item.step ? <Check className="w-3.5 h-3.5" /> : item.step}
+            ].map((item, idx) => {
+              let isActive = false;
+              let isCompleted = false;
+
+              if (checkoutStep === 5) {
+                isActive = item.step === 1;
+                isCompleted = false;
+              } else {
+                isActive = checkoutStep === item.step;
+                isCompleted = checkoutStep > item.step;
+              }
+
+              return (
+                <div key={item.step} className="flex items-center gap-3 sm:gap-6 shrink-0">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-mono font-bold border transition-all duration-500 ${isActive
+                      ? 'bg-artisan-light text-artisan-dark border-artisan-light shadow-lg shadow-artisan-light/10'
+                      : isCompleted
+                        ? 'bg-green-500/10 text-green-500 border-green-500/25'
+                        : 'bg-artisan-light/5 text-artisan-light/20 border-artisan-light/10'
+                      }`}>
+                      {isCompleted ? <Check className="w-3.5 h-3.5" /> : item.step}
+                    </div>
+                    <span className={`text-[10px] font-mono font-bold uppercase tracking-widest ${isActive ? 'text-artisan-light' : 'text-artisan-light/20'
+                      }`}>
+                      <span className="hidden sm:inline">{item.label}</span>
+                      <span className="inline sm:hidden">{item.shortLabel}</span>
+                    </span>
                   </div>
-                  <span className={`text-[10px] font-mono font-bold uppercase tracking-widest ${checkoutStep === item.step ? 'text-artisan-light' : 'text-artisan-light/20'
-                    }`}>
-                    <span className="hidden sm:inline">{item.label}</span>
-                    <span className="inline sm:hidden">{item.shortLabel}</span>
-                  </span>
+                  {idx < 2 && (
+                    <div className="w-6 sm:w-16 md:w-20 h-[2px] bg-artisan-light/5 relative overflow-hidden">
+                      <motion.div
+                        className="absolute inset-0 bg-artisan-grey origin-left"
+                        initial={{ scaleX: 0 }}
+                        animate={{ scaleX: isCompleted ? 1 : 0 }}
+                        transition={{ duration: 0.4 }}
+                      />
+                    </div>
+                  )}
                 </div>
-                {idx < 2 && (
-                  <div className="w-6 sm:w-16 md:w-20 h-[2px] bg-artisan-light/5 relative overflow-hidden">
-                    <motion.div
-                      className="absolute inset-0 bg-artisan-grey origin-left"
-                      initial={{ scaleX: 0 }}
-                      animate={{ scaleX: checkoutStep > item.step ? 1 : 0 }}
-                      transition={{ duration: 0.4 }}
-                    />
-                  </div>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
@@ -706,7 +766,7 @@ export default function Cart() {
                 <div className="flex items-center justify-between">
                   {checkoutStep > 0 ? (
                     <button
-                      onClick={() => changeStep(checkoutStep - 1)}
+                      onClick={handleGoBack}
                       className="inline-flex items-center gap-2 text-[9px] font-mono font-bold uppercase tracking-widest text-artisan-light/40 hover:text-artisan-light transition-colors"
                     >
                       <ArrowLeft className="w-4 h-4" />
@@ -1172,6 +1232,104 @@ export default function Cart() {
                         </div>
                       )}
 
+                      {/* --- DELIVERY / PICKUP OPTION VIEW (STEP 5) --- */}
+                      {checkoutStep === 5 && (
+                        <div className="space-y-8">
+                          <div className="space-y-3">
+                            <h1 className="text-4xl md:text-5xl font-display font-extrabold uppercase tracking-tighter leading-none">
+                              DELIVERY <br />
+                              <span className="text-outline">OPTIONS.</span>
+                            </h1>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            {/* Option 1: Delivery */}
+                            <div
+                              onClick={() => {
+                                setDeliveryOption('delivery')
+                                setPickupConfirmed(false)
+                              }}
+                              className={`group p-6 border cursor-pointer transition-all relative flex flex-col justify-between min-h-[160px] rounded-xl ${deliveryOption === 'delivery'
+                                ? 'bg-artisan-light/[0.02] border-artisan-grey'
+                                : 'bg-artisan-light/[0.003] border-artisan-light/5 hover:border-artisan-light/20'
+                                }`}
+                            >
+                              <div className="space-y-3">
+                                <div className="flex items-center justify-between">
+                                  <span className={`px-2.5 py-1 text-[8px] font-mono font-bold uppercase tracking-widest border rounded-xl ${deliveryOption === 'delivery'
+                                    ? 'bg-artisan-grey text-artisan-dark border-artisan-grey'
+                                    : 'border-artisan-light/15 text-artisan-grey'
+                                    }`}>
+                                    Courier Delivery
+                                  </span>
+                                  {deliveryOption === 'delivery' && (
+                                    <CheckCircle2 className="w-4 h-4 text-artisan-light animate-pulse" />
+                                  )}
+                                </div>
+                                <div className="text-xs font-mono space-y-1 text-artisan-light/75 leading-relaxed">
+                                  <p className="font-bold text-artisan-light">Home / Clinic Delivery</p>
+                                  <p className="text-[10px] text-artisan-light/45">Deliver directly to your selected Chennai address via local courier. Standard shipping rates apply.</p>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Option 2: Pickup */}
+                            <div
+                              onClick={() => setDeliveryOption('instore_pickup')}
+                              className={`group p-6 border cursor-pointer transition-all relative flex flex-col justify-between min-h-[160px] rounded-xl ${deliveryOption === 'instore_pickup'
+                                ? 'bg-artisan-light/[0.02] border-artisan-grey'
+                                : 'bg-artisan-light/[0.003] border-artisan-light/5 hover:border-artisan-light/20'
+                                }`}
+                            >
+                              <div className="space-y-3">
+                                <div className="flex items-center justify-between">
+                                  <span className={`px-2.5 py-1 text-[8px] font-mono font-bold uppercase tracking-widest border rounded-xl ${deliveryOption === 'instore_pickup'
+                                    ? 'bg-artisan-grey text-artisan-dark border-artisan-grey'
+                                    : 'border-artisan-light/15 text-artisan-grey'
+                                    }`}>
+                                    In-Store Pickup
+                                  </span>
+                                  {deliveryOption === 'instore_pickup' && (
+                                    <CheckCircle2 className="w-4 h-4 text-artisan-light animate-pulse" />
+                                  )}
+                                </div>
+                                <div className="text-xs font-mono space-y-1 text-artisan-light/75 leading-relaxed">
+                                  <p className="font-bold text-artisan-light">Free Pickup at Pammal Store</p>
+                                  <p className="text-[10px] text-artisan-light/45">Collect order yourself from our main office in Chennai. No shipping fee will be charged.</p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {deliveryOption === 'instore_pickup' && (
+                            <motion.div
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="border border-artisan-light/10 p-6 bg-artisan-light/[0.005] space-y-4 rounded-xl"
+                            >
+                              <div className="space-y-1">
+                                <span className="text-[8px] font-mono font-bold text-artisan-light/40 uppercase tracking-[0.2em] block">Store Address</span>
+                                <p className="text-xs font-mono font-bold text-artisan-light">No 85, Nalla Thambi Road, Pammal, Chennai - 600075</p>
+                                <p className="text-[10px] font-mono text-artisan-light/45 uppercase tracking-wide">Hours: Monday - Saturday, 9:00 AM - 6:00 PM</p>
+                              </div>
+
+                              <label className="flex items-start gap-3 cursor-pointer select-none pt-2">
+                                <input
+                                  type="checkbox"
+                                  checked={pickupConfirmed}
+                                  onChange={(e) => setPickupConfirmed(e.target.checked)}
+                                  className="w-4.5 h-4.5 rounded border-artisan-light/20 text-artisan-dark focus:ring-0 bg-transparent focus:ring-offset-0 mt-0.5"
+                                />
+                                <div className="space-y-0.5">
+                                  <span className="text-[10px] font-mono font-bold text-artisan-light uppercase tracking-wider">Yes, Confirm In-Store Pickup</span>
+                                  <p className="text-[8px] font-mono text-artisan-light/40 uppercase">I confirm that I will visit the store to collect this order.</p>
+                                </div>
+                              </label>
+                            </motion.div>
+                          )}
+                        </div>
+                      )}
+
                       {/* --- REVIEW VIEW (STEP 2) --- */}
                       {checkoutStep === 2 && (
                         <div className="space-y-8">
@@ -1184,31 +1342,56 @@ export default function Cart() {
 
                           <div className="space-y-6">
 
-                            {/* Address Summary */}
+                            {/* Collection Method or Shipping Address Summary */}
                             <div className="border border-artisan-light/5 p-6 bg-artisan-light/[0.003] space-y-4 rounded-xl">
-                              <div className="flex items-center justify-between border-b border-artisan-light/5 pb-3">
-                                <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-artisan-grey">Shipping Address</span>
-                                <button
-                                  onClick={() => changeStep(1)}
-                                  className="text-[9px] font-mono font-bold uppercase tracking-widest text-artisan-light/40 hover:text-artisan-light rounded-full"
-                                >
-                                  Change Address
-                                </button>
-                              </div>
-                              {(() => {
-                                const addr = user?.addresses?.find(a => a._id === selectedAddressId)
-                                if (!addr) return <p className="text-xs text-red-400">Please choose an address.</p>
-                                return (
-                                  <div className="text-xs font-mono text-artisan-light/70 leading-relaxed">
-                                    <span className="px-2 py-0.5 bg-artisan-light/5 border border-artisan-light/10 text-[8px] font-bold uppercase tracking-widest text-artisan-grey mr-2 inline-block mb-2 rounded-xl">
-                                      {addr.tag}
-                                    </span>
-                                    <p className="font-bold text-artisan-light">{addr.doorNumber}</p>
-                                    {addr.secondLine && <p>{addr.secondLine}</p>}
-                                    <p>{addr.city}, {addr.state} - {addr.pincode}</p>
+                              {deliveryOption === 'instore_pickup' ? (
+                                <>
+                                  <div className="flex items-center justify-between border-b border-artisan-light/5 pb-3">
+                                    <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-artisan-grey">Collection Method</span>
+                                    <button
+                                      onClick={() => changeStep(5)}
+                                      className="text-[9px] font-mono font-bold uppercase tracking-widest text-artisan-light/40 hover:text-artisan-light rounded-full"
+                                    >
+                                      Change Option
+                                    </button>
                                   </div>
-                                )
-                              })()}
+                                  <div className="text-xs font-mono text-artisan-light/70 leading-relaxed space-y-2">
+                                    <span className="px-2 py-0.5 bg-artisan-grey text-artisan-dark border border-artisan-grey text-[8px] font-bold uppercase tracking-widest mr-2 inline-block rounded-xl">
+                                      In-Store Pickup
+                                    </span>
+                                    <p className="font-bold text-artisan-light">STAT SURGICAL SUPPLIES</p>
+                                    <p>No 85, Nalla Thambi Road, Pammal,</p>
+                                    <p>Chennai - 600075, Tamil Nadu, India</p>
+                                    <p className="text-[10px] text-artisan-light/45 pt-1">TIMINGS: MONDAY - SATURDAY, 9:00 AM - 6:00 PM</p>
+                                  </div>
+                                </>
+                              ) : (
+                                <>
+                                  <div className="flex items-center justify-between border-b border-artisan-light/5 pb-3">
+                                    <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-artisan-grey">Shipping Address</span>
+                                    <button
+                                      onClick={() => changeStep(1)}
+                                      className="text-[9px] font-mono font-bold uppercase tracking-widest text-artisan-light/40 hover:text-artisan-light rounded-full"
+                                    >
+                                      Change Address
+                                    </button>
+                                  </div>
+                                  {(() => {
+                                    const addr = user?.addresses?.find(a => a._id === selectedAddressId)
+                                    if (!addr) return <p className="text-xs text-red-400">Please choose an address.</p>
+                                    return (
+                                      <div className="text-xs font-mono text-artisan-light/70 leading-relaxed">
+                                        <span className="px-2 py-0.5 bg-artisan-light/5 border border-artisan-light/10 text-[8px] font-bold uppercase tracking-widest text-artisan-grey mr-2 inline-block mb-2 rounded-xl">
+                                          {addr.tag}
+                                        </span>
+                                        <p className="font-bold text-artisan-light">{addr.doorNumber}</p>
+                                        {addr.secondLine && <p>{addr.secondLine}</p>}
+                                        <p>{addr.city}, {addr.state} - {addr.pincode}</p>
+                                      </div>
+                                    )
+                                  })()}
+                                </>
+                              )}
                             </div>
 
                             {/* Items Summary list */}
@@ -1233,7 +1416,10 @@ export default function Cart() {
                             <div className="flex items-center gap-4 p-5 bg-artisan-light/[0.01] border border-artisan-light/5 rounded-xl">
                               <FileText className="w-5 h-5 text-artisan-grey shrink-0" />
                               <p className="text-[8px] font-mono text-artisan-grey uppercase tracking-widest leading-relaxed">
-                                "Please verify your shipping details and items before continuing. You cannot change your cart after starting payment."
+                                {deliveryOption === 'instore_pickup'
+                                  ? "Please verify your collection details and items before continuing. You cannot change your cart after starting payment."
+                                  : "Please verify your shipping details and items before continuing. You cannot change your cart after starting payment."
+                                }
                               </p>
                             </div>
                           </div>
@@ -1336,13 +1522,7 @@ export default function Cart() {
 
                     {checkoutStep === 1 && (
                       <motion.button
-                        onClick={() => {
-                          if (!selectedAddressId) {
-                            addToast('Please select shipping address', 'error')
-                            return
-                          }
-                          changeStep(2)
-                        }}
+                        onClick={handleProceedFromAddress}
                         className="w-full py-4 bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-[0.3em] text-xs border border-black flex items-center justify-center gap-3 rounded-full cursor-pointer"
                         initial={{ y: 0, boxShadow: "0 6px 0 0 #000000" }}
                         whileHover={{ 
@@ -1359,6 +1539,51 @@ export default function Cart() {
                         Next Step
                         <ArrowRight className="w-4 h-4" />
                       </motion.button>
+                    )}
+
+                    {checkoutStep === 5 && (
+                      <div className="space-y-3">
+                        {deliveryOption === 'delivery' ? (
+                          <motion.button
+                            onClick={() => changeStep(2)}
+                            className="w-full py-4 bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-[0.3em] text-xs border border-black flex items-center justify-center gap-3 rounded-full cursor-pointer"
+                            initial={{ y: 0, boxShadow: "0 6px 0 0 #000000" }}
+                            whileHover={{ 
+                               y: -2,
+                               boxShadow: "0 8px 0 0 #000000",
+                               backgroundColor: "#eb5e28"
+                            }}
+                            whileTap={{ 
+                               y: 6,
+                               boxShadow: "0 0px 0 0 #000000"
+                            }}
+                            transition={{ type: "spring", stiffness: 600, damping: 18 }}
+                          >
+                            Continue to Review
+                            <ArrowRight className="w-4 h-4" />
+                          </motion.button>
+                        ) : (
+                          <motion.button
+                            onClick={() => changeStep(2)}
+                            disabled={!pickupConfirmed || isProcessing}
+                            className="w-full py-4 bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-[0.3em] text-xs border border-black flex items-center justify-center gap-3 disabled:opacity-50 disabled:pointer-events-none rounded-full cursor-pointer"
+                            initial={{ y: 0, boxShadow: "0 6px 0 0 #000000" }}
+                            whileHover={!pickupConfirmed || isProcessing ? {} : { 
+                               y: -2,
+                               boxShadow: "0 8px 0 0 #000000",
+                               backgroundColor: "#eb5e28"
+                            }}
+                            whileTap={!pickupConfirmed || isProcessing ? {} : { 
+                               y: 6,
+                               boxShadow: "0 0px 0 0 #000000"
+                            }}
+                            transition={{ type: "spring", stiffness: 600, damping: 18 }}
+                          >
+                            Continue to Review
+                            <ArrowRight className="w-4 h-4" />
+                          </motion.button>
+                        )}
+                      </div>
                     )}
 
                     {checkoutStep === 2 && (
@@ -1525,13 +1750,7 @@ export default function Cart() {
 
                       {checkoutStep === 1 && (
                         <motion.button
-                          onClick={() => {
-                            if (!selectedAddressId) {
-                              addToast('Please select shipping address', 'error')
-                              return
-                            }
-                            changeStep(2)
-                          }}
+                          onClick={handleProceedFromAddress}
                           className="w-full py-4.5 rounded-full bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-[0.3em] text-xs border border-black flex items-center justify-center gap-3 cursor-pointer"
                           initial={{ y: 0, boxShadow: "0 6px 0 0 #000000" }}
                           whileHover={{ 
@@ -1548,6 +1767,51 @@ export default function Cart() {
                           Next Step
                           <ArrowRight className="w-4 h-4" />
                         </motion.button>
+                      )}
+
+                      {checkoutStep === 5 && (
+                        <div className="space-y-3">
+                          {deliveryOption === 'delivery' ? (
+                            <motion.button
+                              onClick={() => changeStep(2)}
+                              className="w-full py-4.5 rounded-full bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-[0.3em] text-xs border border-black flex items-center justify-center gap-3 cursor-pointer"
+                              initial={{ y: 0, boxShadow: "0 6px 0 0 #000000" }}
+                              whileHover={{ 
+                                 y: -2,
+                                 boxShadow: "0 8px 0 0 #000000",
+                                 backgroundColor: "#eb5e28"
+                              }}
+                              whileTap={{ 
+                                 y: 6,
+                                 boxShadow: "0 0px 0 0 #000000"
+                              }}
+                              transition={{ type: "spring", stiffness: 600, damping: 18 }}
+                            >
+                              Continue to Review
+                              <ArrowRight className="w-4 h-4" />
+                            </motion.button>
+                          ) : (
+                            <motion.button
+                              onClick={() => changeStep(2)}
+                              disabled={!pickupConfirmed || isProcessing}
+                              className="w-full py-4.5 rounded-full bg-artisan-light text-artisan-dark font-display font-black uppercase tracking-[0.3em] text-xs border border-black flex items-center justify-center gap-3 disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
+                              initial={{ y: 0, boxShadow: "0 6px 0 0 #000000" }}
+                              whileHover={!pickupConfirmed || isProcessing ? {} : { 
+                                 y: -2,
+                                 boxShadow: "0 8px 0 0 #000000",
+                                 backgroundColor: "#eb5e28"
+                              }}
+                              whileTap={!pickupConfirmed || isProcessing ? {} : { 
+                                 y: 6,
+                                 boxShadow: "0 0px 0 0 #000000"
+                              }}
+                              transition={{ type: "spring", stiffness: 600, damping: 18 }}
+                            >
+                              Continue to Review
+                              <ArrowRight className="w-4 h-4" />
+                            </motion.button>
+                          )}
+                        </div>
                       )}
 
                       {checkoutStep === 2 && (
