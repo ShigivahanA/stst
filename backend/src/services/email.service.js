@@ -124,40 +124,13 @@ export const sendBookingConfirmationEmail = async (to, { name, productName, date
 
 export const sendAdminPickupNotificationEmail = async (orderId, customerName, totalAmount, items) => {
   const adminEmail = process.env.ADMIN_EMAIL || 'statsurgicalsupplies@gmail.com';
-  const itemsList = items.map(item => `<li>${item.product?.name || 'Product'} (Qty: ${item.quantity})</li>`).join('');
-  const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee;">
-      <h2 style="color: #e63946;">New In-Store Pickup Order</h2>
-      <p>An order has been placed with <strong>In-Store Pickup</strong> option.</p>
-      <p><strong>Order ID:</strong> ${orderId}</p>
-      <p><strong>Customer:</strong> ${customerName}</p>
-      <p><strong>Total Amount:</strong> ₹${totalAmount.toLocaleString()}</p>
-      <h3>Items:</h3>
-      <ul>
-        ${itemsList}
-      </ul>
-      <p>Please prepare the items for pickup at the store location: <strong>No 85, Nalla Thambi Road, Pammal, Chennai - 600075</strong>.</p>
-    </div>
-  `;
+  const html = templates.getAdminPickupNotificationTemplate(orderId, customerName, totalAmount, items);
   return await sendEmail(adminEmail, `[PICKUP ORDER] New In-Store Pickup Order #${orderId.slice(-8).toUpperCase()}`, html);
 };
 
 export const sendPickupSlotInvitationEmail = async (to, name, orderId) => {
   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-  const slotLink = `${frontendUrl}/pickup-slot/${orderId}`;
-  const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee;">
-      <h2 style="color: #e63946;">Order Ready for Pickup - Select Your Slot</h2>
-      <p>Dear ${name},</p>
-      <p>Great news! Your order <strong>#${orderId.slice(-8).toUpperCase()}</strong> is sterilized, packaged, and ready for pickup at our Pammal store.</p>
-      <p>Please click the link below to select your convenient date and time slot for pickup:</p>
-      <p style="text-align: center; margin: 30px 0;">
-        <a href="${slotLink}" style="background-color: #e63946; color: white; padding: 12px 24px; text-decoration: none; font-weight: bold; border-radius: 4px;">Select Pickup Slot</a>
-      </p>
-      <p>Store Address: <strong>No 85, Nalla Thambi Road, Pammal, Chennai - 600075</strong>.</p>
-      <p>If you have any questions, please contact our support team.</p>
-    </div>
-  `;
+  const html = templates.getPickupSlotInvitationTemplate(name, orderId, frontendUrl);
   return await sendEmail(to, `Action Required: Select Pickup Slot for Order #${orderId.slice(-8).toUpperCase()}`, html);
 };
 

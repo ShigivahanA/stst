@@ -715,3 +715,64 @@ export const getBookingCustomerTemplate = (name, productName, date, timeSlot, de
   return wrapTemplate('Demo Trial Appointment Scheduled', content);
 };
 
+export const getPickupSlotInvitationTemplate = (name, orderId, frontendUrl) => {
+  const slotLink = `${frontendUrl || 'http://localhost:5173'}/pickup-slot/${orderId}`;
+  const content = `
+    <h2 style="color: #eb5e28; font-size: 20px; font-weight: 700; margin-top: 0; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.02em;">Order Ready for Pickup</h2>
+    <p style="margin-top: 0; margin-bottom: 16px;">Dear ${name},</p>
+    <p style="margin-top: 0; margin-bottom: 24px;">Great news! Your order <strong>#${orderId.slice(-8).toUpperCase()}</strong> is sterilized, packaged, and ready for collection at our Pammal store.</p>
+    
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 28px;">
+      <tr>
+        <td align="center" style="background-color: #fffcf2; border: 1px dashed #eb5e28; border-radius: 8px; padding: 24px 16px;">
+          <span style="font-size: 11px; color: #403d39; text-transform: uppercase; font-weight: bold; letter-spacing: 0.1em; display: block; margin-bottom: 10px;">Select Your Collection Slot</span>
+          <p style="margin: 0 0 16px 0; font-size: 13px; color: #252422; line-height: 1.4;">Please select your preferred date and time slot to collect your order:</p>
+          <a href="${slotLink}" style="display: inline-block; background-color: #eb5e28; color: #ffffff; font-weight: 700; text-decoration: none; padding: 12px 28px; text-transform: uppercase; letter-spacing: 0.1em; font-size: 12px; border-radius: 4px; box-shadow: 0 2px 4px rgba(235,94,40,0.2);">
+            Schedule Pickup Slot
+          </a>
+        </td>
+      </tr>
+    </table>
+    
+    <table border="0" cellpadding="10" cellspacing="0" width="100%" style="background-color: #fffcf2; border: 1px solid #ccc5b9; border-radius: 6px; margin-bottom: 24px; font-size: 13px;">
+      <tr>
+        <td style="color: #403d39; line-height: 1.5;">
+          <strong>Store Address:</strong> No 85, Nalla Thambi Road, Pammal, Chennai - 600075 <br />
+          <strong>Collection Timings:</strong> Monday - Saturday: 9:00 AM - 8:00 PM <br />
+          <strong>Important:</strong> Present your digital pass or the 6-digit Verification PIN at the counter to verify collection.
+        </td>
+      </tr>
+    </table>
+    
+    <p style="margin-bottom: 0;">If you have any questions or require support, please connect with our administrative team.</p>
+  `;
+  return wrapTemplate('Schedule Order Collection Slot', content);
+};
+
+export const getAdminPickupNotificationTemplate = (orderId, customerName, totalAmount, items) => {
+  const itemsList = items.map(item => `<li>${item.product?.name || 'Product'} (Qty: ${item.quantity})</li>`).join('');
+  const content = `
+    <h2 style="color: #eb5e28; font-size: 20px; font-weight: 700; margin-top: 0; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.02em;">New In-Store Pickup Order</h2>
+    <p style="margin-top: 0; margin-bottom: 16px;">An order has been placed with the <strong>In-Store Pickup</strong> option.</p>
+    
+    <table border="0" cellpadding="10" cellspacing="0" width="100%" style="background-color: #fffcf2; border: 1px solid #ccc5b9; border-radius: 6px; margin-bottom: 24px; font-size: 13px;">
+      <tr>
+        <td style="color: #252422; line-height: 1.5;">
+          <strong>Order ID:</strong> ${orderId} <br />
+          <strong>Customer Name:</strong> ${customerName} <br />
+          <strong>Total Amount:</strong> ₹${totalAmount.toLocaleString()}
+        </td>
+      </tr>
+    </table>
+
+    <h3 style="color: #eb5e28; font-size: 14px; font-weight: 700; margin-top: 0; margin-bottom: 10px; text-transform: uppercase; tracking-wider;">Items in Order:</h3>
+    <ul style="margin-top: 0; margin-bottom: 24px; padding-left: 20px; font-size: 13px; line-height: 1.6; color: #252422;">
+      ${itemsList}
+    </ul>
+
+    <p style="margin-bottom: 0;">Please prepare the items for pickup at the store location: <strong>No 85, Nalla Thambi Road, Pammal, Chennai - 600075</strong>.</p>
+  `;
+  return wrapTemplate('New In-Store Pickup Order', content);
+};
+
+
