@@ -84,11 +84,11 @@ export default function ToolCard({ tool, idx, showAddToCart = false }) {
     <Link to={`/product/${tool._id}`} className="block h-full outline-none">
       <div className="group flex flex-col bg-artisan-dark/40 backdrop-blur-sm border border-artisan-light/10 hover:border-artisan-light/30 transition-all duration-300 h-full rounded-2xl overflow-hidden hover:shadow-[0_8px_30px_rgba(235,94,40,0.05)]">
         {/* Image Area - Aspect Video for compactness */}
-        <div className="relative aspect-video w-full overflow-hidden bg-artisan-dark/60 shrink-0">
+        <div className="relative aspect-video w-full bg-white overflow-hidden flex items-center justify-center p-2 shrink-0">
           <img
             src={displayImage}
             alt={tool.name || tool.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out opacity-90 group-hover:opacity-100"
+            className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-700 ease-out"
           />
 
           {/* Top Overlays */}
