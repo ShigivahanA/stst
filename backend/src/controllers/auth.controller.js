@@ -236,7 +236,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
   await user.save({ validateBeforeSave: false });
 
   // Send password reset link
-  const resetUrl = `http://localhost:5173/resetpassword/${resetToken}`;
+  const resetUrl = `${process.env.FRONTEND_URL || 'https://www.statsurgicals.com'}/resetpassword/${resetToken}`;
   sendForgotPasswordEmail(user.email, user.name, resetUrl);
 
   return res.status(200).json(new ApiResponse(200, {}, 'Recovery link dispatched successfully.'));

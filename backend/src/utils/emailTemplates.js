@@ -1,3 +1,5 @@
+const FRONTEND_URL = process.env.FRONTEND_URL || 'https://www.statsurgicals.com';
+
 const wrapTemplate = (title, content) => `
 <!DOCTYPE html>
 <html lang="en">
@@ -83,7 +85,7 @@ export const getWelcomeTemplate = (name) => {
     <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 24px;">
       <tr>
         <td align="center">
-          <a href="http://localhost:5173/allproduct" style="display: inline-block; background-color: #eb5e28; color: #ffffff; font-weight: 700; text-decoration: none; padding: 14px 30px; text-transform: uppercase; letter-spacing: 0.1em; font-size: 12px; border-radius: 4px;">
+          <a href="${FRONTEND_URL}/allproduct" style="display: inline-block; background-color: #eb5e28; color: #ffffff; font-weight: 700; text-decoration: none; padding: 14px 30px; text-transform: uppercase; letter-spacing: 0.1em; font-size: 12px; border-radius: 4px;">
             Access Supply Inventory
           </a>
         </td>
@@ -133,7 +135,7 @@ export const getLoginTemplate = (name, time, ipAddress, userAgent) => {
     <table border="0" cellpadding="0" cellspacing="0" width="100%">
       <tr>
         <td align="center">
-          <a href="http://localhost:5173/forgot-password" style="display: inline-block; background-color: #eb5e28; color: #ffffff; font-weight: 700; text-decoration: none; padding: 12px 24px; text-transform: uppercase; letter-spacing: 0.15em; font-size: 11px; border-radius: 4px;">
+          <a href="${FRONTEND_URL}/forgot-password" style="display: inline-block; background-color: #eb5e28; color: #ffffff; font-weight: 700; text-decoration: none; padding: 12px 24px; text-transform: uppercase; letter-spacing: 0.15em; font-size: 11px; border-radius: 4px;">
             Reset Account Credentials
           </a>
         </td>
@@ -185,7 +187,7 @@ export const getResetSuccessTemplate = (name) => {
     <table border="0" cellpadding="0" cellspacing="0" width="100%">
       <tr>
         <td align="center">
-          <a href="http://localhost:5173/login" style="display: inline-block; background-color: #eb5e28; color: #ffffff; font-weight: 700; text-decoration: none; padding: 14px 30px; text-transform: uppercase; letter-spacing: 0.1em; font-size: 12px; border-radius: 4px;">
+          <a href="${FRONTEND_URL}/login" style="display: inline-block; background-color: #eb5e28; color: #ffffff; font-weight: 700; text-decoration: none; padding: 14px 30px; text-transform: uppercase; letter-spacing: 0.1em; font-size: 12px; border-radius: 4px;">
             Access Portal Login
           </a>
         </td>
@@ -221,7 +223,7 @@ export const getResetFailureTemplate = (name, errorReason) => {
     <table border="0" cellpadding="0" cellspacing="0" width="100%">
       <tr>
         <td align="center">
-          <a href="http://localhost:5173/forgot-password" style="display: inline-block; background-color: #eb5e28; color: #ffffff; font-weight: 700; text-decoration: none; padding: 14px 30px; text-transform: uppercase; letter-spacing: 0.10em; font-size: 12px; border-radius: 4px;">
+          <a href="${FRONTEND_URL}/forgot-password" style="display: inline-block; background-color: #eb5e28; color: #ffffff; font-weight: 700; text-decoration: none; padding: 14px 30px; text-transform: uppercase; letter-spacing: 0.10em; font-size: 12px; border-radius: 4px;">
             Request Recovery Link
           </a>
         </td>
@@ -302,7 +304,7 @@ export const getOrderSuccessPickupTemplate = (name, orderId, items, totalAmount,
     `;
   });
 
-  const slotLink = `${frontendUrl || 'http://localhost:5173'}/pickup-slot/${orderId}`;
+  const slotLink = `${frontendUrl || FRONTEND_URL}/pickup-slot/${orderId}`;
 
   const content = `
     <h2 style="color: #eb5e28; font-size: 20px; font-weight: 700; margin-top: 0; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.02em;">In-Store Pickup Order Confirmed</h2>
@@ -388,7 +390,7 @@ export const getOrderFailureTemplate = (name, orderId, totalAmount) => {
     <table border="0" cellpadding="0" cellspacing="0" width="100%">
       <tr>
         <td align="center">
-          <a href="http://localhost:5173/allproduct" style="display: inline-block; background-color: #eb5e28; color: #ffffff; font-weight: 700; text-decoration: none; padding: 14px 30px; text-transform: uppercase; letter-spacing: 0.10em; font-size: 12px; border-radius: 4px;">
+          <a href="${FRONTEND_URL}/allproduct" style="display: inline-block; background-color: #eb5e28; color: #ffffff; font-weight: 700; text-decoration: none; padding: 14px 30px; text-transform: uppercase; letter-spacing: 0.10em; font-size: 12px; border-radius: 4px;">
             Rebuild Cart & Retry
           </a>
         </td>
@@ -437,7 +439,7 @@ export const getAbandonedCartTemplate = (name, cartItems) => {
     <table border="0" cellpadding="0" cellspacing="0" width="100%">
       <tr>
         <td align="center">
-          <a href="http://localhost:5173/wishlist" style="display: inline-block; background-color: #eb5e28; color: #ffffff; font-weight: 700; text-decoration: none; padding: 14px 30px; text-transform: uppercase; letter-spacing: 0.10em; font-size: 12px; border-radius: 4px;">
+          <a href="${FRONTEND_URL}/wishlist" style="display: inline-block; background-color: #eb5e28; color: #ffffff; font-weight: 700; text-decoration: none; padding: 14px 30px; text-transform: uppercase; letter-spacing: 0.10em; font-size: 12px; border-radius: 4px;">
             Complete Checkout
           </a>
         </td>
@@ -521,7 +523,7 @@ export const getShippingUpdateTemplate = (name, orderId, shippingStatus, descrip
     <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 24px;">
       <tr>
         <td align="center">
-          <a href="http://localhost:5173/orders/${orderId}" style="display: inline-block; background-color: #eb5e28; color: #ffffff; font-weight: 700; text-decoration: none; padding: 14px 30px; text-transform: uppercase; letter-spacing: 0.1em; font-size: 12px; border-radius: 4px;">
+          <a href="${FRONTEND_URL}/orders/${orderId}" style="display: inline-block; background-color: #eb5e28; color: #ffffff; font-weight: 700; text-decoration: none; padding: 14px 30px; text-transform: uppercase; letter-spacing: 0.1em; font-size: 12px; border-radius: 4px;">
             Track Order Details
           </a>
         </td>
@@ -716,7 +718,7 @@ export const getBookingCustomerTemplate = (name, productName, date, timeSlot, de
 };
 
 export const getPickupSlotInvitationTemplate = (name, orderId, frontendUrl) => {
-  const slotLink = `${frontendUrl || 'http://localhost:5173'}/pickup-slot/${orderId}`;
+  const slotLink = `${frontendUrl || FRONTEND_URL}/pickup-slot/${orderId}`;
   const content = `
     <h2 style="color: #eb5e28; font-size: 20px; font-weight: 700; margin-top: 0; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.02em;">Order Ready for Pickup</h2>
     <p style="margin-top: 0; margin-bottom: 16px;">Dear ${name},</p>

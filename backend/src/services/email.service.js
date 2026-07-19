@@ -70,7 +70,7 @@ export const sendOrderSuccessEmail = async (to, name, orderId, items, totalAmoun
 };
 
 export const sendOrderSuccessPickupEmail = async (to, name, orderId, items, totalAmount) => {
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const frontendUrl = process.env.FRONTEND_URL || 'https://www.statsurgicals.com';
   const html = templates.getOrderSuccessPickupTemplate(name, orderId, items, totalAmount, frontendUrl);
   return await sendEmail(to, `Order Confirmation - In-Store Pickup Invoice #${orderId.slice(-6).toUpperCase()}`, html);
 };
@@ -129,7 +129,7 @@ export const sendAdminPickupNotificationEmail = async (orderId, customerName, to
 };
 
 export const sendPickupSlotInvitationEmail = async (to, name, orderId) => {
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const frontendUrl = process.env.FRONTEND_URL || 'https://www.statsurgicals.com';
   const html = templates.getPickupSlotInvitationTemplate(name, orderId, frontendUrl);
   return await sendEmail(to, `Action Required: Select Pickup Slot for Order #${orderId.slice(-8).toUpperCase()}`, html);
 };
